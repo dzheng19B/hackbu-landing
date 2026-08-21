@@ -2,6 +2,7 @@ import { useMemo, useRef, useState } from 'react'
 import { motion, useMotionValueEvent, useScroll, useTransform } from 'motion/react'
 import { Container } from './Layout'
 import { ButtonLink } from './ButtonLink'
+import { HeroClouds } from './HeroClouds'
 import { DISCORD_URL } from '../lib/links'
 import {
   HERO_PAN_EASE,
@@ -190,13 +191,10 @@ export function Hero() {
             />
           </div>
 
-          {/* Phase 4 mounts the drifting cloud layers here. They should call
-              useHeroScroll() rather than opening their own subscription. */}
-          <div
-            data-hero-clouds
-            aria-hidden="true"
-            className="pointer-events-none absolute inset-0"
-          />
+          {/* Phase 4: the drifting cloud parallax. <HeroClouds> renders the
+              `data-hero-clouds` layer itself and reads useHeroScroll() from the
+              context above rather than opening its own subscription. */}
+          <HeroClouds />
 
           {/*
            * Legibility scrim. cloud-on-sky is only ~2.9:1 unaided; this bottom
