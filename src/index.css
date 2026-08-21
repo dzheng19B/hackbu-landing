@@ -1,0 +1,25 @@
+@import 'tailwindcss';
+
+/*
+ * HackBU design tokens.
+ * Tailwind v4 reads these CSS variables and generates the matching utilities:
+ *   --color-<name>  ->  bg-<name>, text-<name>, border-<name>, fill-<name>, ...
+ *   --font-<name>   ->  font-<name>
+ */
+@theme {
+  /* Palette — winter campus */
+  --color-sky: #4a96d2;
+  --color-horizon: #a8d0eb;
+  --color-cloud: #f7f5ee;
+  --color-frost: #dce3ea;
+  --color-brick: #a2593a;
+  --color-stone: #c4b79e;
+  --color-pine: #3c5c48;
+  --color-haze: #7c99b4;
+
+  /* Typography — Fraunces for display, Inter for body.
+     Faces are self-hosted via @fontsource (imported in src/main.tsx). */
+  --font-display: 'Fraunces', ui-serif, Georgia, 'Times New Roman', serif;
+  --font-sans: 'Inter', ui-sans-serif, system-ui, -apple-system, 'Segoe UI',
+    Roboto, Helvetica, Arial, sans-serif;
+}
