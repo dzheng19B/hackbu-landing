@@ -1,6 +1,15 @@
 @import 'tailwindcss';
 
 /*
+ * The class scanner reads every source file as loose text, so the `transition`
+ * key of motion's animation config (src/components/HeroClouds.tsx) reads to it
+ * as a use of the `transition` utility and it emits the rule. Nothing in this
+ * project uses `transition` or `transition-*`; blocklisting the bare candidate
+ * keeps the dead rule out of the production stylesheet.
+ */
+@source not inline("transition");
+
+/*
  * HackBU design tokens.
  * Tailwind v4 reads these CSS variables and generates the matching utilities:
  *   --color-<name>  ->  bg-<name>, text-<name>, border-<name>, fill-<name>, ...
