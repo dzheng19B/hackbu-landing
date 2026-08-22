@@ -302,33 +302,45 @@ matching ignore rule. **Resolved in `9a5a72d`.** The 13 PNGs (6 in `artwork/clou
 `git ls-files`), and `moreclouds.zip` is now explicitly `.gitignore`d and untracked (confirmed via
 `git check-ignore -v` and `git ls-files`). Not re-raised.
 
-## 8. Tailwind content-scanning bleed into `audit/*.md` — attempted verification
+## 8. Tailwind content-scanning bleed from `audit/*.md` — verified (see P1-5)
 
-The concern: Tailwind v4's automatic content detection (via `@tailwindcss/vite`, configured in
-`vite.config.ts:21`) scans the whole project by default (respecting `.gitignore`), and `audit/`
-is not gitignored, so any file under `audit/*.md` containing text that looks like a utility class
-could add bytes to the generated CSS.
+The concern: Tailwind v4's automatic content detection (via `@tailwindcss/vite`, registered in
+`vite.config.ts:21`) scans every non-gitignored file in the project for utility-class candidates.
+`audit/` is not gitignored, so prose in `audit/*.md` can add rules to the shipped CSS. The first
+run of this phase (against `audit/02-code.md` only) could not isolate an audit-only token; the
+checker's rebuild at `1c4fa9f` (with `audit/01-baseline.md` on disk) and the orchestrator's
+follow-up did.
 
-I looked for a class token that appears in `audit/02-code.md` but *not* in `src/`, to see if it
-independently shows up in the built CSS (which would be conclusive evidence of bleed). Candidates
-checked:
+**A/B byte sizes (JS chunks byte-identical in both builds):**
 
-- `object-[52%_0%]` (from `audit/02-code.md:45,53`) — already present verbatim in
-  `src/components/Hero.tsx:131` and `src/sheet/parts/HeroPart.tsx:55`.
-- `w-[calc(100%*var(--cloud-sets))]` (from `audit/02-code.md`) — already present verbatim in
-  `src/components/HeroClouds.tsx:754`.
+| File | Build with `audit/02-code.md` only (§4) | Build with both audit reports | Δ |
+| --- | ---: | ---: | ---: |
+| `index-*.css` | 17,563 | 17,862 | +299 |
+| `components-*.css` | 20,818 | 21,117 | +299 |
 
-Both distinctive class-like strings I found in `audit/02-code.md` turned out to be direct quotes
-of source lines that already exist in `src/`, so they don't demonstrate incremental bytes — Tailwind
-would find the same candidates from `src/` alone, audit file or not. I did not find a class token
-unique to `audit/*.md` this run, so I could not produce positive evidence of the bleed-through
-effect on this specific tree.
+**Selectors present in the built landing CSS whose class token occurs nowhere in the landing
+source set** (`src/` minus `src/sheet/`, `index.html`, `components.html`), found by extracting
+every `.class{` selector from `dist/assets/index-*.css` and grepping the source set for the
+unescaped token:
 
-**unverified: Tailwind CSS bundle size may shift by a few bytes as `audit/*.md` files are added**,
-per the note in the task brief describing a prior run's observation. No such shift could be
-demonstrated from the current `audit/` contents (`audit/02-code.md` only, no `audit/01-baseline.md`
-was present yet during the build in §3) because I could not isolate an audit-only class token.
-Mechanism plausibility (unscanned-content scoping) stands, but is not evidenced against this tree.
+```
+$ grep -o '\.isolate{[^}]*}\|\.table{[^}]*}\|\.grid-cols-5{[^}]*}' dist/assets/index-CePBE3nM.css
+.table{display:table}
+.grid-cols-5{grid-template-columns:repeat(5,minmax(0,1fr))}
+.isolate{isolation:isolate}
+$ grep -rn "isolate" src/ index.html components.html
+(no output)
+$ grep -rn "grid-cols-5" src/ audit/
+src/sheet/parts/PrimitivesPart.tsx:492:            className="grid grid-cols-2 gap-3 sm:grid-cols-5"
+audit/02-code.md:522:stylesheet and not the landing one (`grid-cols-5`: 0 hits in `index-*.css`, 1 in
+audit/02-code.md:690:$ grep -c 'grid-cols-5' dist/assets/index-hTiJsblS.css ; grep -c 'grid-cols-5' dist/assets/components-V_S1l_xU.css
+```
+
+`isolate` occurs only as English prose in this report (the word "isolate" in §8's earlier
+draft); `grid-cols-5` is a sheet-only utility that `src/landing.css:22` (`@source not "./sheet"`)
+deliberately excludes from the landing bundle — it re-entered via the quotation at
+`audit/02-code.md:522`. So the scanning bleed is real and it also partially defeats the
+landing/sheet CSS split.
 
 ---
 
@@ -337,15 +349,54 @@ Mechanism plausibility (unscanned-content scoping) stands, but is not evidenced 
 No findings were raised against typecheck, lint, or build output — all three commands ran clean
 with no warnings/errors, and no chunk-reachability or `src/sheet/` isolation anomaly was observed.
 
-**P1-3** and **P1-4** from the previous baseline (duplicate `.vercel` ignore rule; untracked cloud
-PNGs/`moreclouds.zip`) are both **resolved** as of `9a5a72d` — see §7. Not re-raised as open
-findings.
+### P1-1 — `note` — shared vendor chunk is named `SiteFooter-*.js` (carried over from the first baseline)
 
-One **note** was raised and left **unverified** (see §8): the possibility that Tailwind's
-content-scanning of `audit/*.md` shifts CSS bundle byte counts by a few bytes per audit report
-added. No file-size delta was reproduced this run; flagged for later phases to watch (compare the
-`index-*.css`/`components-*.css` byte sizes recorded in §4 above against the equivalent numbers
-once `audit/01-baseline.md` itself exists on disk during a rebuild).
+**Evidence.** §4/§5: `dist/assets/SiteFooter-D2vbYzEP.js` is 328,964 bytes (103,956 gz), is
+`modulepreload`ed by both `dist/index.html` and `dist/components.html`, and contains React
+(`grep -ac "react.transitional.element" dist/assets/SiteFooter-D2vbYzEP.js` → 2). `src/components/SiteFooter.tsx`
+is a 72-line footer component.
+
+**Expected.** Rollup names a shared chunk after its first "facade" module (Rollup docs,
+`output.chunkFileNames` / manual chunks); the behaviour is correct, but the name suggests
+footer-only code to anyone reading a build log or a performance trace.
+
+**Fix.** `build.rollupOptions.output.manualChunks` in `vite.config.ts` (e.g. `vendor: ['react',
+'react-dom', 'motion']`), or accept the name and document it in the README build section.
+
+### P1-2 — `note` — gzip size exceeds raw size for the six font files (carried over; informational)
+
+**Evidence.** §4 table: e.g. `inter-latin-400-normal-C38fXH4l.woff2` 23,664 raw → 23,701 gz.
+
+**Expected.** WOFF/WOFF2 are already compressed (W3C WOFF2 spec §1: Brotli-compressed
+container), so gzip cannot shrink them; Vercel does not apply gzip to `font/woff2` responses.
+Not a defect — listed so the §4 gzip column is not misread.
+
+**Fix.** None needed.
+
+### P1-3 / P1-4 — resolved
+
+**P1-3** (duplicate `.vercel` ignore rule) and **P1-4** (untracked `moreclouds.zip` / cloud PNGs)
+from the previous baseline are both **resolved** as of `9a5a72d` — see §7. Not re-raised.
+
+### P1-5 — `low` — Tailwind scans `audit/*.md` (and any other non-ignored file) into the shipped CSS
+
+**Evidence.** §8: with both audit reports on disk the landing CSS grows 17,563 → 17,862 bytes and
+gains `.isolate`, `.table` and `.grid-cols-5` rules; `isolate` appears nowhere in `src/` or the
+HTML entries, and `grid-cols-5` exists only at `src/sheet/parts/PrimitivesPart.tsx:492` (excluded
+from the landing bundle by `src/landing.css:22`) and in prose at `audit/02-code.md:522`.
+Configuration: `vite.config.ts:21` registers `tailwindcss()` with no `@source` restriction;
+`src/index.css:1` is a bare `@import 'tailwindcss';`.
+
+**Expected.** Tailwind v4 docs, "Detecting classes in source files": automatic detection scans
+every file not covered by `.gitignore`; projects that keep non-source text (docs, reports, fixtures)
+in the tree should scope it with `@import "tailwindcss" source("../src")` or `@source not`. The
+landing/sheet split in `src/landing.css:22` presumes the only way a sheet utility reaches the
+landing CSS is through `src/sheet/`, which is no longer true once any other file quotes one.
+
+**Fix.** In `src/index.css` change line 1 to `@import 'tailwindcss' source('.')` (or
+`source(none)` plus explicit `@source` lines for `src/` and the two HTML entries) so scanning is
+limited to real source. Until then, note that `README.md`/`ASSETS.md` can also contribute rules
+(none do today — every other landing-CSS selector was matched to a landing source file).
 
 ---
 
@@ -394,4 +445,11 @@ grep -oE '[a-zA-Z0-9_-]+:?[a-zA-Z0-9_/.\[\]%*()-]*\[[^]]*\]' audit/02-code.md | 
 grep -rn "object-\[52%_0%\]" src/
 for f in dist/assets/*.css; do grep -oE '[A-Za-z0-9_-]+\.(woff2?|png|jpg|avif|webp)' "$f" | sort -u; done
 git show --stat 9a5a72d
+
+# added after the checker's rebuild at 1c4fa9f (orchestrator follow-up, §8 / P1-5)
+ls -l dist/assets/*.css dist/assets/*.js
+grep -o '\.isolate{[^}]*}\|\.table{[^}]*}\|\.grid-cols-5{[^}]*}' dist/assets/index-CePBE3nM.css
+grep -rn "isolate" src/ index.html components.html
+grep -rn "grid-cols-5" src/ audit/
+grep -n "@source\|@import" src/index.css src/landing.css
 ```
