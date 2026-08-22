@@ -1,7 +1,12 @@
+# Dependencies and build output
 node_modules/
 dist/
-.vercel/
 
-.vercel
+# Vercel CLI link and the local env it writes (contains an OIDC token)
+.vercel/
 .env*
+
+# Source archives the artwork and branding were delivered in. Their contents
+# live unpacked in artwork/ and brand-source/, so the zips are redundant here.
 HackBULogo.zip
+moreclouds.zip

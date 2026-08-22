@@ -34,7 +34,7 @@ import {
  *     <div data-hero-stage>        sticky top-0, exactly one viewport tall.
  *       <div data-hero-artwork>    the campus illustration, as a <picture> —
  *                                  scaled up and panned down.
- *       <div data-hero-clouds>     the cloud-1..6 parallax layers.
+ *       <div data-hero-clouds>     the cloud-1..12 parallax layers.
  *
  * Everything inside the stage is wrapped in a HeroScrollContext, so the cloud
  * layers read the same progress values instead of opening a second scroll

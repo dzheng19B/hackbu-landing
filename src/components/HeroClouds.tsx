@@ -136,40 +136,88 @@ type CloudLayerSpec = {
 }
 
 /**
- * Three depth layers — kept at three on every viewport. Phase 6 asked whether
- * small screens should drop one, and the measurement says no.
+ * Three depth layers, four cutouts each — twelve clouds, cast by size.
  *
- * At 390x844 the stage clips all but 8 of the 24 mounted `<img>` nodes, so the
- * other 16 cost layout, not paint. The 8 that do paint cover 32.66% of the
- * stage between them, and that total is very unevenly split:
+ *     far   cloud-6, cloud-12, cloud-4, cloud-10
+ *     mid   cloud-7, cloud-2,  cloud-9, cloud-3
+ *     near  cloud-5, cloud-1,  cloud-8, cloud-11
  *
- *     near  23.28% of the stage   (cloud-1 + cloud-5, the two large cutouts)
- *     mid    8.18%
- *     far    1.19%
+ * The casting is a sort on **intrinsic height**, not width, because height is
+ * what reads as scale for clouds sitting in a horizontal sky band. Sorting on
+ * height happens to separate the layers in *both* dimensions, which a
+ * width-based sort does not — at and above `REFERENCE_WIDTH` the rendered
+ * boxes are:
  *
- * The layer a reduction would take is `far` — smallest, most distant, least
- * missed — and it is worth 1.19% of one viewport of alpha blending. Dropping it
- * cannot buy a frame; dropping `near` might, but `near` is the parallax. So the
- * count stands at every width.
+ *     far    123-160 px wide    38-92 px tall
+ *     mid    210-344 px wide   136-183 px tall
+ *     near   359-493 px wide   291-348 px tall
+ *
+ * so no cloud in a nearer layer is ever drawn smaller than one in a more
+ * distant layer, on either axis. (The tightest margin is width, 344 -> 359
+ * across the mid/near boundary; the height margins are 44px and 108px.)
+ *
+ * The sort also lands where shape says it should. `far` gets the flat wisps —
+ * cloud-6 at 3.20:1, cloud-12 at 2.45:1, cloud-4 at 2.46:1, cloud-10 at
+ * 1.74:1 — which is what distant cloud reads as. `near` gets the tall cumulus
+ * towers: cloud-11 at 1.13:1, cloud-8 at 1.06:1, cloud-5 at 1.36:1, cloud-1 at
+ * 1.66:1. `mid` takes the four in between.
+ *
+ * `scale`, `opacity` and speed all rise together toward the viewer, and speed
+ * is derived from `scale` rather than picked — see `driftSeconds` above.
+ *
+ * ---------------------------------------------------------------------------
+ * Why all three layers still render at every viewport
+ * ---------------------------------------------------------------------------
+ * Phase 6 asked whether small screens should drop a layer and answered no on a
+ * measurement taken at six clouds. Twelve clouds doubles the mounted node count
+ * and the layer coverage, so the measurement is retaken here rather than
+ * inherited.
+ *
+ * At 390x844, with `SET_COUNT` = 4, **48 `<img>` nodes are mounted and 16 of
+ * them intersect the stage box** — the other 32 are tiles the stage clips
+ * whole, so they cost layout, not paint. (At 1440x900 it is 14 of 48.) The 16
+ * that do paint cover 66.4% of one stage in bounding boxes; weighted by each
+ * cutout's mean alpha — the cheap pixels in a cloud PNG are the transparent
+ * ones — the real blend is **29.6% of one viewport**, split:
+ *
+ *     near  46.30% bbox / 20.84% alpha-weighted   (4 cutouts, 7 copies)
+ *     mid   16.97% bbox /  7.47%                  (4 cutouts, 5 copies)
+ *     far    3.12% bbox /  1.31%                  (4 cutouts, 4 copies)
+ *
+ * That is up from 8 painting nodes and 32.66% bbox at six clouds — the node
+ * count doubled and the coverage roughly doubled with it, but the total is
+ * still under one third of a single full-screen alpha pass, and the twelve
+ * decoded bitmaps are shared across all 48 nodes rather than allocated per
+ * node. The layer a reduction would take is still `far`: four cutouts worth
+ * **1.31%** of one viewport of blending, up from 1.19%. Dropping it still
+ * cannot buy a frame. Dropping `near` might — and `near` is the parallax. So
+ * the count stands at every width, and the honest reason is that the growth
+ * landed on a budget that was never close to spent.
  *
  * (Frame rate itself was not measurable in the verification browser — it runs
  * with `document.hidden`, so `requestAnimationFrame` never fires and motion's
  * loop is frozen. This is a fill-rate and node-count argument, not a profile.)
  *
- * Three depth layers, distinct in all four parameters the brief calls out.
- * `scale`, `opacity` and speed all rise together toward the viewer, and speed
- * is derived from `scale` rather than picked — see `driftSeconds` above.
+ * ---------------------------------------------------------------------------
+ * The sky band
+ * ---------------------------------------------------------------------------
+ * Vertical placement keeps every cloud over sky. At the pan's starting scale of
+ * 3 the stage shows image rows 0..f1/3 (see PAN_START_SCALE in Hero.tsx), and
+ * the first silhouette pixel of the hills is source row 182 of 941 = 0.1934 of
+ * the image height, so **the ridgeline breaks the stage at 58.02% of its
+ * height** at every aspect at or below the artwork's 16:9, and lower still on
+ * wider ones. 58.02% — not the 60% it is usually quoted at — is the number the
+ * placement is checked against.
  *
- * The cutouts are cast by shape, not just size: cloud-6 (3.2:1) and cloud-4
- * (2.5:1) are flat wisps, which is what distant cloud reads as; cloud-1 and
- * cloud-5 are tall, detailed cumulus towers, which is what a near cloud reads
- * as. cloud-2 and cloud-3 sit between the two and take the middle layer.
- *
- * Vertical placement keeps every cloud inside the sky band. At the pan's
- * starting scale of 3 the stage shows the top third of the illustration
- * (source rows 0..~314), and the hills break the horizon around source row
- * 190 — about 60% of the stage height. The lowest cloud edge here bottoms out
- * near 44%, so the layers sit over sky, never over the ridgeline.
+ * At 1440x900 the lowest cloud edge is **43.64%** of the stage height
+ * (cloud-9, mid), clearing the ridgeline by 14.38 points; cloud-8 and cloud-1
+ * are next at 43.6% and 43.1%. Every cloud clears at every viewport whose stage
+ * is at least **650 CSS px tall**, and below 720px wide — where the clouds
+ * scale with the viewport — down to a 352px stage. Under that the two tallest
+ * cutouts (cloud-11 at 348px rendered, cloud-8 at 338px) do not fit the band:
+ * a 405px-tall landscape phone has no sky band to speak of. The six-cloud
+ * layout had the same failure below a 522px stage; the threshold moved because
+ * the new near cutouts are taller, not because of where they were placed.
  */
 const CLOUD_LAYERS: CloudLayerSpec[] = [
   {
@@ -185,19 +233,37 @@ const CLOUD_LAYERS: CloudLayerSpec[] = [
         file: 'cloud-6.png',
         width: 224,
         height: 70,
-        left: '13%',
-        top: '26%',
-        restingLeft: '88%',
-        restingBottom: '87%',
+        left: '8%',
+        top: '27%',
+        restingLeft: '11.5%',
+        restingBottom: '89%',
+      },
+      {
+        file: 'cloud-12.png',
+        width: 238,
+        height: 97,
+        left: '30%',
+        top: '17%',
+        restingLeft: '25.5%',
+        restingBottom: '88%',
       },
       {
         file: 'cloud-4.png',
         width: 266,
         height: 108,
-        left: '51%',
-        top: '14%',
-        restingLeft: '62%',
-        restingBottom: '88%',
+        left: '52%',
+        top: '13%',
+        restingLeft: '74.5%',
+        restingBottom: '88.5%',
+      },
+      {
+        file: 'cloud-10.png',
+        width: 291,
+        height: 167,
+        left: '77%',
+        top: '30%',
+        restingLeft: '50%',
+        restingBottom: '87%',
       },
     ],
   },
@@ -211,21 +277,39 @@ const CLOUD_LAYERS: CloudLayerSpec[] = [
     fadeEnd: 0.26,
     clouds: [
       {
+        file: 'cloud-7.png',
+        width: 413,
+        height: 170,
+        left: '3%',
+        top: '20%',
+        restingLeft: '65.5%',
+        restingBottom: '85%',
+      },
+      {
         file: 'cloud-2.png',
         width: 430,
         height: 194,
-        left: '25%',
+        left: '30%',
         top: '9%',
-        restingLeft: '26%',
+        restingLeft: '16%',
         restingBottom: '84.5%',
+      },
+      {
+        file: 'cloud-9.png',
+        width: 380,
+        height: 221,
+        left: '57%',
+        top: '24%',
+        restingLeft: '90.5%',
+        restingBottom: '84%',
       },
       {
         file: 'cloud-3.png',
         width: 263,
         height: 229,
-        left: '61%',
-        top: '23%',
-        restingLeft: '72%',
+        left: '82%',
+        top: '14%',
+        restingLeft: '43.5%',
         restingBottom: '85.5%',
       },
     ],
@@ -239,14 +323,25 @@ const CLOUD_LAYERS: CloudLayerSpec[] = [
     fadeStart: 0.01,
     fadeEnd: 0.22,
     /**
-     * Both near clouds are deliberately hung off a viewport edge, so the layer
-     * reads as passing in front of the camera rather than as a tidy vignette.
-     * At 1440px: cloud-5 renders 394px wide at left -115.2px (115.2px clipped
-     * by the left edge) and cloud-1 renders 493px wide at left 1094.4px,
-     * running to 1587.4px — 147.4px past the right edge.
+     * The two clouds at the ends of this layer are deliberately hung off a
+     * viewport edge, so the layer reads as passing in front of the camera
+     * rather than as a tidy vignette. At 1440px: cloud-5 renders 394px wide at
+     * left -115.2px (115.2px clipped by the left edge) and cloud-1 renders
+     * 493px wide at left 1065.6px, running to 1558.6px — 118.6px past the
+     * right edge.
      *
      * That overhang is exactly why the drift track needs more than two tiles;
      * see `TILE_OVERHANG` below.
+     *
+     * Four near clouds total 1639px of rendered width against a 1440px tile,
+     * so the layer cannot be laid out without something overlapping. The
+     * arrangement puts all of that overlap at the tile seam, where cloud-1's
+     * tail runs over the head of the *next* tile's cloud-5 (233.8px of overlap,
+     * of which only 115.2px is ever on screen at once) and leaves the three
+     * interior junctions as real gaps: 9.2px, 15.4px, 10.2px. Those gaps are
+     * narrow, so vertical separation does the rest of the work — the tops run
+     * 0% -> 6% -> 2% -> 10% left to right, which staggers the four bases by up
+     * to 90px and stops the layer reading as one continuous bank.
      */
     clouds: [
       {
@@ -254,17 +349,35 @@ const CLOUD_LAYERS: CloudLayerSpec[] = [
         width: 343,
         height: 253,
         left: '-8%',
+        top: '0%',
+        restingLeft: '0.7%',
+        restingBottom: '82.5%',
+      },
+      {
+        file: 'cloud-8.png',
+        width: 312,
+        height: 294,
+        left: '20%',
+        top: '6%',
+        restingLeft: '55.5%',
+        restingBottom: '82.2%',
+      },
+      {
+        file: 'cloud-11.png',
+        width: 342,
+        height: 303,
+        left: '46%',
         top: '2%',
-        restingLeft: '5%',
+        restingLeft: '79.5%',
         restingBottom: '82%',
       },
       {
         file: 'cloud-1.png',
         width: 429,
         height: 259,
-        left: '76%',
-        top: '0%',
-        restingLeft: '45%',
+        left: '74%',
+        top: '10%',
+        restingLeft: '30.5%',
         restingBottom: '83%',
       },
     ],
@@ -294,8 +407,10 @@ function renderedWidth(layer: CloudLayerSpec, cloud: CloudSpec): number {
  *     right overhang = max(0, L + vwFraction - 1)
  *
  * Measured over the specs above that is left 0.08 (cloud-5, `left: -8%`) and
- * right 0.4447 (cloud-1, `left: 76%` + `68.47vw`). Every other cloud is 0 on
- * both sides — far and mid already wrapped cleanly.
+ * right 0.4247 (cloud-1, `left: 74%` + `68.47vw`). One other cloud overhangs —
+ * cloud-3, `left: 82%` + `29.17vw`, for 0.1117 on the right — and the far layer
+ * is clear on both sides. Only the maxima matter, so the loop is still sized by
+ * the near layer alone.
  */
 type TileOverhang = { left: number; right: number }
 
@@ -331,9 +446,10 @@ const TILE_OVERHANG = measureTileOverhang(CLOUD_LAYERS)
  * of its own tile, which the near layer deliberately breaks in order to get the
  * viewport-edge crop. With clouds hanging out of the tile, the start frame
  * wanted a tile at `-W` to supply cloud-1's tail and the end frame wanted a
- * tile at `+2W` to supply cloud-5's head; neither existed, so a 115.2 x 291px
- * slice of cloud-5 popped in at the right edge and a 147.4 x 298px slice of
- * cloud-1 popped out at the left edge, once every near-layer loop.
+ * tile at `+2W` to supply cloud-5's head; neither existed, so a slice of
+ * cloud-5 popped in at the right edge and a slice of cloud-1 popped out at the
+ * left edge, once every near-layer loop. At the current placement those slices
+ * would be 115.2 x 291px and 118.6 x 298px.
  *
  * **Why this construction is exact.** Write the measured overhangs as `oL` and
  * `oR`, so every cloud's box within its own tile is `[p, p + w]` with
@@ -352,7 +468,7 @@ const TILE_OVERHANG = measureTileOverhang(CLOUD_LAYERS)
  * position, which makes the two frames element-for-element identical. The
  * keyframe jump back to `LOOP_START` swaps two identical frames.
  *
- * With the specs above `oR = 0.4447` and `oL = 0.08`, so `LEAD_SETS = 1` and
+ * With the specs above `oR = 0.4247` and `oL = 0.08`, so `LEAD_SETS = 1` and
  * `SET_COUNT = 4`: a `400%` track animating `-25% → -50%`. Both endpoints are
  * exact quarters of the track, and a percentage translate resolves against the
  * element's own border box, so `-25%` of a `4W` track is exactly `-W`.
@@ -392,7 +508,7 @@ const LOOP_END = trackPercent(LEAD_SETS + 1)
  *    the whole scene is a third of the size it was. The clouds follow the same
  *    camera: `RESTING_SCALE = 1/3`. The sky band is only about 92px tall at
  *    1440x900 once the header has taken its bite, so at full size the near
- *    clouds — 291px and 298px — could not sit in it at all.
+ *    clouds — 291px to 348px — could not sit in it at all.
  * 2. **Position.** Each cloud is pinned by its *bottom* edge to a percentage of
  *    the stage height, so the edge that matters — the low one — is placed
  *    directly rather than inferred from a `top` plus a height.
@@ -405,18 +521,41 @@ const LOOP_END = trackPercent(LEAD_SETS + 1)
  * `object-cover` into a stage that is narrower than its 16:9, so it is
  * height-constrained and image-height fraction `f` lands at stage `f·H`. Every
  * `restingBottom` above is therefore >= 82% (bottom edge at or above 0.18·H),
- * clearing the ridgeline by at least 1.2% of the stage height and the first
- * brick by 7.5%.
+ * clearing the ridgeline by at least 1.23% of the stage height — 11.1px at
+ * 1440x900, held by cloud-11 — and the first brick by 7.5%.
  *
- * The sizes are given as a percentage of the *stage height* rather than in px,
- * so that clearance is a ratio and holds at every viewport rather than only at
- * the reference one.
+ * All twelve clouds are placed here, interleaved across the width rather than
+ * grouped by layer, so neighbours differ in depth and size: cloud-5, cloud-6,
+ * cloud-2, cloud-12, cloud-1, cloud-3, cloud-10, cloud-8, cloud-7, cloud-4,
+ * cloud-11, cloud-9. They sum to 78-80% of the stage width, and the placement
+ * leaves **no two of them overlapping at all** — measured on the 1425px stage a
+ * 1440x900 window actually gives, the tightest gap between neighbours is 18.3px
+ * and the widest 27.6px.
+ *
+ * The heights are `min()` of two terms, and both are needed:
+ *
+ *   - a percentage of the *stage height*, which is what makes the ridgeline
+ *     clearance a ratio that holds at every viewport rather than only at the
+ *     reference one;
+ *   - a `vw` value equal to that same size at 1440x900, which is what makes the
+ *     *horizontal* composition hold. Without it a cloud's width as a fraction
+ *     of the stage grows with `H/W`: at 390x844 the boxes would be 3.46x wider
+ *     relative to the stage than they are here, the twelve would sum to 271% of
+ *     it, and the sky would collapse into one bank. With it they still sum to
+ *     78.4%, and the twelve are measurably non-overlapping at 390x844 (gaps
+ *     5.3-7.7px) and at 768x1024 (9.2-14.4px) as well as at the reference.
+ *
+ * The two terms cross exactly at the 1440x900 reference: taller viewports take
+ * the `vw` term, wider-and-shorter ones the percentage. Either way the term
+ * that wins is the *smaller*, and since these are bottom-pinned, shrinking only
+ * moves a cloud's top edge down. The ridgeline clearance is untouched by which
+ * term binds.
  *
  * The fixed site header is an opaque `bg-cloud` bar 81px tall (`h-20` + a 1px
  * border; 65px below `sm`) across the top of the stage. The layers are stacked
- * so the small far clouds sit clear of it and the two tall near clouds tuck
- * their tops a little way behind it — at 1440x900 the least-visible cloud,
- * cloud-1, still shows 72px of its 99px height below the header.
+ * so the far clouds sit clear of it and the four tall near clouds tuck their
+ * tops a little way behind it — at 1440x900 the least-visible cloud, cloud-1,
+ * still shows 72px of its 99px height below the header.
  *
  * (This was written assuming a stage narrower than the artwork's 16:9, and
  * noted that a wider viewport ate the sky band from both ends. Phase 6 fixed
@@ -432,7 +571,11 @@ const RESTING_SCALE = 1 / 3
 function restingHeight(layer: CloudLayerSpec, cloud: CloudSpec): string {
   const px =
     renderedWidth(layer, cloud) * (cloud.height / cloud.width) * RESTING_SCALE
-  return `${((px / REFERENCE_HEIGHT) * 100).toFixed(3)}%`
+  const percent = (px / REFERENCE_HEIGHT) * 100
+  // The same size expressed against the reference *width*, so the horizontal
+  // composition survives viewports taller than 1440x900. See above.
+  const vw = (px / REFERENCE_WIDTH) * 100
+  return `min(${percent.toFixed(3)}%, ${vw.toFixed(3)}vw)`
 }
 
 /* -------------------------------------------------------------------------- */

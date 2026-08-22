@@ -19,9 +19,14 @@
  * below therefore stops at the source width and steps down for small and
  * low-DPR viewports.
  *
- * The clouds are 224-430px cutouts rendered at up to 1.15x, so they are also
- * already at or past 1:1 on every screen. One derivative each, at the
+ * The twelve clouds are 224-430px cutouts rendered at up to 1.15x, so they are
+ * also already at or past 1:1 on every screen. One derivative each, at the
  * intrinsic width; a <picture> with no srcset, switching on format only.
+ *
+ * `generateClouds` reads whatever PNGs sit in `public/artwork/clouds/`, which is
+ * the cutouts and only the cutouts. `artwork/clouds/clouds-all-b.png` is a
+ * reference contact sheet of all twelve, not a cutout, and is deliberately not
+ * copied into `public/` — so it never reaches this script or the browser.
  *
  * ---------------------------------------------------------------------------
  * Quality
@@ -247,7 +252,10 @@ for (const [base, { width, height }] of Object.entries(brandInk)) {
   )
 }
 
-// The realistic first load: one campus tier + all six clouds, in one format.
+// The realistic first load: one campus tier + every cloud, in one format.
+const cloudCount = written.filter(
+  (w) => w.path.includes('clouds') && w.path.endsWith('avif'),
+).length
 for (const ext of ['avif', 'webp']) {
   const campusTop = written.find((w) => w.path.endsWith(`Campus-1672.${ext}`))
   const clouds = written
@@ -255,7 +263,7 @@ for (const ext of ['avif', 'webp']) {
     .reduce((sum, w) => sum + w.bytes, 0)
   const pngStat = await stat(join(ARTWORK, 'campus', 'Campus.png'))
   console.log(
-    `\nFirst load, ${ext.toUpperCase()} path (widest campus tier + 6 clouds): ` +
+    `\nFirst load, ${ext.toUpperCase()} path (widest campus tier + ${cloudCount} clouds): ` +
       `${kb(campusTop.bytes + clouds)}` +
       (ext === 'avif' ? `  [campus PNG alone is ${kb(pngStat.size)}]` : ''),
   )

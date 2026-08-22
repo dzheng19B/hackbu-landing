@@ -101,8 +101,8 @@ artwork/                     read-only originals
 public/artwork/
   campus/Campus.png          the campus illustration
   campus/Campus-{640,960,1280,1672}.{avif,webp}
-  clouds/cloud-1..6.png      transparent cloud cutouts
-  clouds/cloud-1..6.{avif,webp}
+  clouds/cloud-1..12.png     transparent cloud cutouts
+  clouds/cloud-1..12.{avif,webp}
 ```
 
 To replace the artwork:
@@ -132,9 +132,14 @@ Two numbers in the hero are tied to the specific artwork and will need re-derivi
   it at `0%`.
 
 Cloud placement and the three depth layers are configured at the top of
-`src/components/HeroClouds.tsx`. The horizontal drift loop derives its tile count from how
-far clouds hang past the tile edge, so clouds can be repositioned freely without breaking
-the seamless wrap.
+`src/components/HeroClouds.tsx` — twelve cutouts, four per layer, cast onto the layers by
+intrinsic height. The horizontal drift loop derives its tile count from how far clouds
+hang past the tile edge, so clouds can be repositioned freely without breaking the
+seamless wrap.
+
+`artwork/clouds/clouds-all-b.png` is a reference contact sheet of the twelve cutouts, not
+a cutout. It stays in `artwork/` and must not be copied into `public/`, or `npm run
+images` will encode it and the browser will download it.
 
 ## Swapping the branding
 

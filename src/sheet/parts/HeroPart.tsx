@@ -70,23 +70,27 @@ const CLOUD_LAYERS: readonly {
     id: 'far',
     cutouts: [
       { file: 'cloud-6.png', width: 224, height: 70 },
+      { file: 'cloud-12.png', width: 238, height: 97 },
       { file: 'cloud-4.png', width: 266, height: 108 },
+      { file: 'cloud-10.png', width: 291, height: 167 },
     ],
     scale: '0.55',
     opacity: '0.5',
-    drift: '88s',
+    drift: '188s',
     rise: '10%',
     fade: '0.04 → 0.30',
   },
   {
     id: 'mid',
     cutouts: [
+      { file: 'cloud-7.png', width: 413, height: 170 },
       { file: 'cloud-2.png', width: 430, height: 194 },
+      { file: 'cloud-9.png', width: 380, height: 221 },
       { file: 'cloud-3.png', width: 263, height: 229 },
     ],
     scale: '0.8',
     opacity: '0.75',
-    drift: '74s',
+    drift: '129s',
     rise: '16%',
     fade: '0.02 → 0.26',
   },
@@ -95,10 +99,12 @@ const CLOUD_LAYERS: readonly {
     cutouts: [
       { file: 'cloud-5.png', width: 343, height: 253 },
       { file: 'cloud-1.png', width: 429, height: 259 },
+      { file: 'cloud-8.png', width: 312, height: 294 },
+      { file: 'cloud-11.png', width: 342, height: 303 },
     ],
     scale: '1.15',
     opacity: '1',
-    drift: '62s',
+    drift: '90s',
     rise: '24%',
     fade: '0.01 → 0.22',
   },
@@ -208,7 +214,7 @@ export function HeroPart() {
         path="src/components/HeroClouds.tsx"
         use="The hero’s cloud parallax. It renders the data-hero-clouds layer itself and is only valid inside the hero stage."
       >
-        <Block title="The three layers">
+        <Block title="The three layers, four cutouts each">
           <ul className="border-frost border-t">
             {CLOUD_LAYERS.map((layer) => (
               <li key={layer.id} className="border-frost border-b py-5">
@@ -249,13 +255,24 @@ export function HeroPart() {
             ))}
           </ul>
           <Caption>
-            The cutouts are cast by shape, not only size: cloud-6 (3.2:1) and
-            cloud-4 (2.5:1) are flat wisps, which is what distant cloud reads
-            as; cloud-1 and cloud-5 are tall cumulus towers, which is what a near
-            cloud reads as. All three layers render at every viewport — at
-            390×844 the stage clips all but 8 of the 24 mounted nodes, and the
-            layer a reduction would take (far) is worth 1.19% of one viewport of
-            alpha blending.
+            Twelve cutouts, cast by a sort on <b>intrinsic height</b> — the
+            dimension that reads as scale for clouds in a sky band, and the one
+            sort that separates the layers in both dimensions at once. Rendered
+            at the layer scales that is 123–160px wide / 38–92px tall for far,
+            210–344 / 136–183 for mid and 359–493 / 291–348 for near, with no
+            overlap on either axis. Shape follows: the flat wisps (3.20:1,
+            2.45:1, 2.46:1) land in far, the near-square cumulus towers (1.06:1,
+            1.13:1, 1.36:1) in near.
+          </Caption>
+          <Caption>
+            All three layers still render at every viewport, on the measurement
+            retaken at twelve. At 390×844 the stage clips 32 of the 48 mounted
+            nodes whole; the 16 that paint cover 66.4% of one stage in bounding
+            boxes and <b>29.6%</b> weighted by each cutout’s mean alpha. The
+            layer a reduction would take is still far — four cutouts worth{' '}
+            <b>1.31%</b> of one viewport of blending, up from 1.19% at six
+            clouds. Dropping it cannot buy a frame; dropping near might, and near
+            is the parallax.
           </Caption>
         </Block>
 
@@ -271,13 +288,15 @@ export function HeroPart() {
           <Caption>
             Four rather than two because the near clouds deliberately hang off
             the viewport edges: measured over the specs, the worst overhang is
-            0.08 of a stage width on the left (cloud-5 at left: -8%) and 0.4447
-            on the right (cloud-1 at left: 76% + 68.47vw). With two tiles the
+            0.08 of a stage width on the left (cloud-5 at left: -8%) and 0.4247
+            on the right (cloud-1 at left: 74% + 68.47vw). With two tiles the
             start frame wanted a tile at -W and the end frame wanted one at +2W;
             neither existed, so a slice of cloud popped in at one edge and out at
-            the other once every 62 seconds. The tile count is derived from those
+            the other once every 90 seconds. The tile count is derived from those
             overhangs, not hardcoded — add a cloud that hangs further out and the
-            track widens on its own.
+            track widens on its own. Going from six cutouts to twelve did not
+            move it: the widest overhang is still cloud-1’s, and four tiles still
+            cover it.
           </Caption>
         </Block>
       </Entry>
