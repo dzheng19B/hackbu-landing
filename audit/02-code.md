@@ -186,7 +186,9 @@ $ grep -nE "og:|twitter:|<title>|name=\"description\"" index.html
 74:    <title>HackBU</title>
 ```
 
-Five `og:` properties are declared and all five are `og:image*`. The Open Graph protocol
+Four `og:` properties are declared (`index.html:66`, `:69`, `:70`, `:71`) and all four are
+`og:image*`; the fifth `og:` hit above (`:58`) is prose inside the `<!-- Social preview -->`
+comment, not a property. The Open Graph protocol
 (ogp.me, "Basic Metadata") names four required properties: `og:title`, `og:type`,
 `og:image`, `og:url`. Three of the four are absent.
 
@@ -291,6 +293,10 @@ brief asks for a complete inventory of TS escape hatches, not because it is a de
 **Fix (optional).** Throw an explicit error if the node is missing, so a future HTML edit
 fails loudly instead of at `createRoot`.
 
+**Expected.** No rule is asserted. TypeScript handbook ("Non-null Assertion Operator")
+describes `!` as an unchecked assertion; the project's own `tsconfig` strictness (P2-3)
+is the only convention in play, and it permits `!`. Inventory item, not a defect.
+
 ---
 
 ### P2-6 — `note` — `as CSSProperties` assertion to smuggle a CSS custom property
@@ -383,6 +389,10 @@ finished by 0.75 of the track. Cannot demonstrate a dropped frame from a static 
 it is a `note`; **Phase 6 (perf) should measure the compositor-memory cost** rather than
 take this as a finding.
 
+**Fix.** Drop `will-change-transform` from the campus `<img>` once the pan completes
+(e.g. swap the class on a `useMotionValueEvent` at progress ≥ 0.75), or leave as-is pending
+Phase 6 measurement. Leave the six cloud elements alone.
+
 ---
 
 ### P2-9 — `note` — the lint config has no exhaustive-deps rule
@@ -403,6 +413,10 @@ $ cat .oxlintrc.json
 
 `react/rules-of-hooks` is on; nothing checks dependency arrays.
 
+**Expected.** `eslint-plugin-react-hooks` ships `exhaustive-deps` alongside
+`rules-of-hooks` as the conventional guardrail for stale closures (React docs, "Rules of
+Hooks" → "ESLint plugin"); oxlint's `react` plugin exposes it as `react/exhaustive-deps`.
+
 **Assessment.** No bug follows from it *today* — the landing code has exactly one
 `useEffect` and one `useMemo`, and I checked both by hand:
 
@@ -410,6 +424,9 @@ $ cat .oxlintrc.json
   outer value the handler reads. Cleanup present at `:43`.
 - `src/components/Hero.tsx:159-162`: deps `[progress, reducedMotion]`, which is the exact
   set the memo closes over; `progress` is a stable `MotionValue`.
+
+**Fix.** Enable `"react/exhaustive-deps": "warn"` in `.oxlintrc.json`, or record in the
+README a deliberate decision not to.
 
 Listed so a later phase knows the guardrail is absent, not that a rule was violated.
 
