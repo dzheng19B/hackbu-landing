@@ -2536,7 +2536,7 @@ file** at which the closure entry's `###` heading sits.
 | P5-11 | note | **FIXED** | Phase 5 | `08-fix-log.md:1866` — `### P5-11 · FIXED · index.html:26–31` |
 | P2-1 | low | **FIXED** | Phase 5 | `08-fix-log.md:1884` — `### P2-1 · FIXED · src/lib/links.ts:10,12,19,21,26,28` |
 | P5-7 | note | **FIXED** | Phase 6 | `08-fix-log.md:2098` — `### P5-7 (with P2-8) · FIXED · Hero.tsx:180,252 · HeroClouds.tsx:820` |
-| P2-8 | note | **FIXED** | Phase 6 | `08-fix-log.md:2005` — same entry |
+| P2-8 | note | **FIXED** | Phase 6 | `08-fix-log.md:2098` — same entry |
 | P1-1 | note | **FIXED** | Phase 6 | `08-fix-log.md:2174` — `### P1-1 · FIXED · vite.config.ts:167,191` |
 | P1-2 | note | **DOCUMENTED** (no defect, no code) | Phase 6 | `08-fix-log.md:2254` — `### P1-2 · DOCUMENTED · dist/assets/*.woff2` |
 | P2-5 | note | **FIXED** | Phase 6 | `08-fix-log.md:2269` — `### P2-5 · FIXED · src/main.tsx:17 · src/sheet/main.tsx:14` |
