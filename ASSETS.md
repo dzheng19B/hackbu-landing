@@ -47,6 +47,30 @@ independently.
 All seven are valid PNGs at 8-bit depth. Dimensions were read directly from each file's
 IHDR chunk; sizes are from the filesystem.
 
+## Derivatives (Phase 6)
+
+`npm run images` (`scripts/generate-images.mjs`, using `sharp` as a devDependency)
+writes AVIF and WebP derivatives **beside** each PNG. The PNGs above are untouched and
+remain the last-resort `<img src>` inside each `<picture>`. The derivatives are
+committed, so a deploy runs `vite build` and nothing else.
+
+| Output | Widths | Encoder | Total |
+| --- | --- | --- | --- |
+| `campus/Campus-{640,960,1280,1672}.avif` | 4 | AVIF q68 | 738 KB |
+| `campus/Campus-{640,960,1280,1672}.webp` | 4 | WebP q82 | 790 KB |
+| `clouds/cloud-N.avif` | 1 each (intrinsic) | AVIF q70 | 78 KB |
+| `clouds/cloud-N.webp` | 1 each (intrinsic) | WebP q82, alphaQuality 90 | 122 KB |
+
+The campus ladder stops at the intrinsic **1672px**: the hero magnifies the artwork up
+to 3x, so no viewport wants fewer pixels than the source has and none can be given more.
+The clouds render at up to 1.15x their intrinsic width, so they get one derivative each
+and their `<picture>` switches on format only, with no `srcset`.
+
+**Measured first load** (production build, Chrome, both 1440x900 and 390x844): 7 image
+requests, **401,963 bytes (392.5 KB)** — the widest campus AVIF plus the six cloud
+AVIFs, each fetched exactly once. That is 12% of the 3.18 MB the PNGs would have cost
+and 26% of the 1.5 MB budget.
+
 ## Notes for later phases
 
 These are observations from the raw files, not design decisions:

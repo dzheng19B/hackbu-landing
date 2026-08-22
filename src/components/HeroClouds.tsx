@@ -1,5 +1,6 @@
 import type { CSSProperties } from 'react'
 import { motion, useTransform } from 'motion/react'
+import { cloudSources } from '../lib/images'
 import { rangeProgress, useHeroScroll } from '../lib/motion'
 
 /**
@@ -106,6 +107,26 @@ type CloudLayerSpec = {
 }
 
 /**
+ * Three depth layers — kept at three on every viewport. Phase 6 asked whether
+ * small screens should drop one, and the measurement says no.
+ *
+ * At 390x844 the stage clips all but 8 of the 24 mounted `<img>` nodes, so the
+ * other 16 cost layout, not paint. The 8 that do paint cover 32.66% of the
+ * stage between them, and that total is very unevenly split:
+ *
+ *     near  23.28% of the stage   (cloud-1 + cloud-5, the two large cutouts)
+ *     mid    8.18%
+ *     far    1.19%
+ *
+ * The layer a reduction would take is `far` — smallest, most distant, least
+ * missed — and it is worth 1.19% of one viewport of alpha blending. Dropping it
+ * cannot buy a frame; dropping `near` might, but `near` is the parallax. So the
+ * count stands at every width.
+ *
+ * (Frame rate itself was not measurable in the verification browser — it runs
+ * with `document.hidden`, so `requestAnimationFrame` never fires and motion's
+ * loop is frozen. This is a fill-rate and node-count argument, not a profile.)
+ *
  * Three depth layers, distinct in all four parameters the brief calls out.
  *
  * The cutouts are cast by shape, not just size: cloud-6 (3.2:1) and cloud-4
@@ -366,10 +387,14 @@ const LOOP_END = trackPercent(LEAD_SETS + 1)
  * their tops a little way behind it — at 1440x900 the least-visible cloud,
  * cloud-1, still shows 72px of its 99px height below the header.
  *
- * (Like the pan itself, this assumes a stage narrower than the artwork's 16:9,
- * which 1440x900 and 390x844 both are. On a viewport *wider* than 16:9 the
- * cover crop is width-constrained and eats the sky band from both ends; that
- * limitation predates this layer and belongs to the pan, not to the clouds.)
+ * (This was written assuming a stage narrower than the artwork's 16:9, and
+ * noted that a wider viewport ate the sky band from both ends. Phase 6 fixed
+ * that in the pan: the illustration is now pinned by its top edge at every
+ * aspect, so at 2545x1080 the resting frame shows image rows 0..0.754 and the
+ * ridgeline lands at 25.5% of the stage height instead of 9.2%. Every
+ * `restingBottom` above puts its cloud's lower edge in the top 18%, so the
+ * clearance over the ridgeline is now larger at ultrawide than it was at 16:9,
+ * not smaller.)
  */
 const RESTING_SCALE = 1 / 3
 
@@ -384,20 +409,48 @@ function restingHeight(layer: CloudLayerSpec, cloud: CloudSpec): string {
 /* -------------------------------------------------------------------------- */
 
 /**
- * The shared attributes for every cloud cutout. The images are pure decoration
- * over an illustration that is itself `aria-hidden` — `alt=""` plus
- * `aria-hidden` keeps them out of the tree twice over.
+ * One cloud cutout, as an AVIF/WebP/PNG `<picture>`.
+ *
+ * The cutouts are 224-430px wide and render at up to 1.15x, so they are already
+ * at or past 1:1 on every screen — there is no width above the intrinsic one
+ * worth delivering and no `srcset` here, only a format switch. The PNG stays as
+ * the `<img src>` fallback.
+ *
+ * `display: contents` on the `<picture>` keeps it out of layout entirely, so
+ * the `<img>` positions against the tile exactly as it did before the wrapper
+ * existed.
+ *
+ * The clouds are pure decoration sitting over the campus illustration, which
+ * carries the real description — `alt=""` plus `aria-hidden` keeps them out of
+ * the accessibility tree twice over.
  */
-function cloudImageProps(cloud: CloudSpec) {
-  return {
-    src: `/artwork/clouds/${cloud.file}`,
-    alt: '',
-    'aria-hidden': true as const,
-    width: cloud.width,
-    height: cloud.height,
-    draggable: false,
-    decoding: 'async' as const,
-  }
+function CloudImage({
+  cloud,
+  className,
+  style,
+}: {
+  cloud: CloudSpec
+  className: string
+  style: CSSProperties
+}) {
+  const sources = cloudSources(cloud.file)
+  return (
+    <picture className="contents">
+      <source type="image/avif" srcSet={sources.avif} />
+      <source type="image/webp" srcSet={sources.webp} />
+      <img
+        src={sources.png}
+        alt=""
+        aria-hidden="true"
+        width={cloud.width}
+        height={cloud.height}
+        draggable={false}
+        decoding="async"
+        className={className}
+        style={style}
+      />
+    </picture>
+  )
 }
 
 /**
@@ -412,9 +465,9 @@ function CloudSet({ layer, index }: { layer: CloudLayerSpec; index: number }) {
       style={{ transform: `translateX(${index * 100}%)` }}
     >
       {layer.clouds.map((cloud) => (
-        <img
+        <CloudImage
           key={cloud.file}
-          {...cloudImageProps(cloud)}
+          cloud={cloud}
           className="absolute h-auto max-w-none select-none"
           style={{
             left: cloud.left,
@@ -436,9 +489,9 @@ function RestingCloudSet({ layer }: { layer: CloudLayerSpec }) {
   return (
     <div aria-hidden="true" className="absolute inset-0">
       {layer.clouds.map((cloud) => (
-        <img
+        <CloudImage
           key={cloud.file}
-          {...cloudImageProps(cloud)}
+          cloud={cloud}
           className="absolute w-auto max-w-none select-none"
           style={{
             left: cloud.restingLeft,

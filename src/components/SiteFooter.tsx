@@ -23,7 +23,7 @@ export function SiteFooter() {
         <div className="grid gap-12 md:grid-cols-4 md:gap-8">
           <div className="md:col-span-1">
             <Wordmark className="text-2xl" />
-            <p className="text-caption text-haze mt-4 max-w-xs">
+            <p className="text-caption text-pine/90 mt-4 max-w-xs">
               The student tech club at Binghamton University. No experience
               required.
             </p>
@@ -39,7 +39,7 @@ export function SiteFooter() {
             email={CONTACT_EMAIL}
             className={`${FOOTER_LINK_CLASSES} underline underline-offset-4`}
           />
-          <p className="text-caption text-haze">
+          <p className="text-caption text-pine/90">
             © {new Date().getFullYear()} HackBU · Binghamton University
           </p>
         </div>
@@ -57,7 +57,7 @@ function FooterColumn({
 }) {
   return (
     <div>
-      <h2 className="text-eyebrow text-haze font-medium uppercase">{title}</h2>
+      <h2 className="text-eyebrow text-pine/90 font-medium uppercase">{title}</h2>
       <ul className="mt-4 flex flex-col gap-3">
         {links.map((link) => (
           <li key={link.label}>

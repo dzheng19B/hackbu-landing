@@ -63,7 +63,7 @@ export function SectionHeader({
 }) {
   return (
     <header className={`max-w-2xl ${className}`}>
-      <p className="text-eyebrow text-haze font-medium uppercase">{eyebrow}</p>
+      <p className="text-eyebrow text-pine/90 font-medium uppercase">{eyebrow}</p>
       <h2
         id={titleId}
         className="font-display text-display-lg text-pine mt-4 font-semibold text-balance"

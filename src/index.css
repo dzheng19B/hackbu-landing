@@ -10,6 +10,20 @@
 @source not inline("transition");
 
 /*
+ * The site header is fixed and opaque (h-16, h-20 from `sm`), so anything the
+ * browser scrolls to the top of the viewport lands underneath it. Section
+ * anchors already carry `scroll-mt-24`, but sequential focus navigation scrolls
+ * the *viewport*, not the anchor — without this, tabbing to a link just below
+ * the fold parks it behind the header with no visible focus. `scroll-padding`
+ * on the scroll container covers both paths at once.
+ */
+@layer base {
+  html {
+    scroll-padding-top: 6rem;
+  }
+}
+
+/*
  * HackBU design tokens.
  * Tailwind v4 reads these CSS variables and generates the matching utilities:
  *   --color-<name>  ->  bg-<name>, text-<name>, border-<name>, fill-<name>, ...
@@ -24,6 +38,14 @@
   --color-brick: #a2593a;
   --color-stone: #c4b79e;
   --color-pine: #3c5c48;
+  /*
+   * haze is a scene colour, not a text colour. Measured against the two page
+   * backgrounds it reaches only 2.72:1 on cloud and 2.29:1 on frost — below
+   * WCAG AA for normal text (4.5:1) and below AA large (3:1) as well, so it
+   * cannot legibly carry copy at any size. Phase 6 moved every eyebrow and
+   * caption that used it to `text-pine/90` (5.36:1 on cloud, 4.65:1 on frost),
+   * which is the lightest tint of the only token that clears AA on both.
+   */
   --color-haze: #7c99b4;
 
   /* Typography — Fraunces for display, Inter for body.

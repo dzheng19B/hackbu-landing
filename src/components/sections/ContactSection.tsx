@@ -26,20 +26,20 @@ export function ContactSection() {
 
       <RevealGroup className="mt-12 grid gap-10 sm:grid-cols-2">
         <RevealItem>
-          <p className="text-eyebrow text-haze font-medium uppercase">
+          <p className="text-eyebrow text-pine/90 font-medium uppercase">
             Email us
           </p>
           <MailLink
             email={CONTACT_EMAIL}
             className={`${LINK_CLASSES} mt-4 inline-block`}
           />
-          <p className="text-caption text-haze mt-4">
+          <p className="text-caption text-pine/90 mt-4">
             Goes to the organizing team.
           </p>
         </RevealItem>
 
         <RevealItem>
-          <p className="text-eyebrow text-haze font-medium uppercase">
+          <p className="text-eyebrow text-pine/90 font-medium uppercase">
             If you want a head start
           </p>
           <ExternalLink
@@ -48,7 +48,7 @@ export function ContactSection() {
           >
             Workshop resources
           </ExternalLink>
-          <p className="text-caption text-haze mt-4">
+          <p className="text-caption text-pine/90 mt-4">
             Material from past workshops, in case you’d like a look before you
             show up.
           </p>

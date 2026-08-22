@@ -49,7 +49,7 @@ export function GetInvolvedSection() {
             </ButtonLink>
           </div>
 
-          <p className="text-caption text-haze border-stone/60 mt-8 border-t pt-6">
+          <p className="text-caption text-pine/90 border-stone/60 mt-8 border-t pt-6">
             The mailing list is for hackathon updates — dates, registration and
             what to expect.{' '}
             <ExternalLink

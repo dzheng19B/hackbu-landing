@@ -43,14 +43,14 @@ export function AboutSection() {
             key={pillar.title}
             className="border-frost bg-cloud flex flex-col rounded-2xl border p-7 sm:p-9"
           >
-            <p className="text-eyebrow text-haze font-medium uppercase">
+            <p className="text-eyebrow text-pine/90 font-medium uppercase">
               {pillar.kicker}
             </p>
             <h3 className="font-display text-display-md text-pine mt-4 font-semibold">
               {pillar.title}
             </h3>
             <p className="text-body text-pine mt-4">{pillar.body}</p>
-            <p className="text-caption text-haze mt-6">{pillar.meta}</p>
+            <p className="text-caption text-pine/90 mt-6">{pillar.meta}</p>
           </RevealItem>
         ))}
       </RevealGroup>

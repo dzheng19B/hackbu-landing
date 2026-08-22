@@ -7,6 +7,36 @@
       href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><circle cx='16' cy='16' r='14' fill='%234A96D2'/></svg>"
     />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+    <!--
+      LCP preload for the campus illustration.
+
+      The hero <img> lives inside the React bundle, so without this the browser
+      cannot discover it until the module graph has parsed and the app has
+      mounted. `imagesrcset`/`imagesizes` are byte-identical to the <picture>
+      sources in src/components/Hero.tsx (via src/lib/images.ts) so the preload
+      and the element resolve to the same URL and the image is fetched once.
+
+      `type="image/avif"` gates the hint on AVIF support, which is the same
+      condition that decides whether <picture> picks the AVIF <source> — so a
+      browser without it skips the preload rather than warming the wrong file,
+      and still gets the WebP source normally. `href` is deliberately omitted:
+      with `imagesrcset` present it is redundant, and a stale `href` is the
+      usual way a preload ends up double-fetching.
+    -->
+    <link
+      rel="preload"
+      as="image"
+      type="image/avif"
+      fetchpriority="high"
+      imagesrcset="
+        /artwork/campus/Campus-640.avif 640w,
+        /artwork/campus/Campus-960.avif 960w,
+        /artwork/campus/Campus-1280.avif 1280w,
+        /artwork/campus/Campus-1672.avif 1672w
+      "
+      imagesizes="(min-aspect-ratio: 1672/941) 100vw, 177.68vh"
+    />
     <meta
       name="description"
       content="HackBU — the student tech club at Binghamton University. No experience required."
