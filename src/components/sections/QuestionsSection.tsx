@@ -1,41 +1,46 @@
 import { Section, SectionHeader } from '../Layout'
+import { Reveal, RevealGroup, RevealItem } from '../Reveal'
 
 /**
  * "Questions newcomers actually have" — exactly three, answered in plain
  * language. Static list by design: the answers are short enough that hiding
  * them behind a toggle would only add a click.
+ *
+ * The three rows stagger in as a RevealGroup.
  */
 
 const QUESTIONS = [
   {
-    question: 'Do I need to know how to code?',
+    question: 'What is a hackathon?',
     answer:
-      'Placeholder answer: no. A sentence or two here about workshops starting from nothing and most people arriving with zero experience.',
+      'Teams get 24 to 48 hours to build a web app, a mobile app or a hardware project. You start from an idea and end with whatever you managed to make in the time. Almost nothing is finished by the end, and that is the normal outcome.',
   },
   {
-    question: 'Do I have to be a computer science major?',
+    question: 'Do I need experience?',
     answer:
-      'Placeholder answer: no. A sentence about members coming from every school at Binghamton, and what non-CS students get out of it.',
+      'No. A lot of our members started with none, and the workshops are written for that. If you have written code before, there is still plenty here to build.',
   },
   {
-    question: 'What actually happens at a meeting?',
+    question: 'What do the workshops cover?',
     answer:
-      'Placeholder answer describing an hour: a short walkthrough, time to build the thing yourself, and people around to unstick you.',
+      'Web development and mobile development, starting from the first step: putting a page on screen, making it respond to someone using it, and getting an app running on a phone. You go at your own pace and organizers help when you get stuck.',
   },
 ] as const
 
 export function QuestionsSection() {
   return (
     <Section id="questions" labelledBy="questions-title" className="bg-cloud">
-      <SectionHeader
-        eyebrow="Before you ask"
-        titleId="questions-title"
-        title="Questions newcomers actually have."
-      />
+      <Reveal>
+        <SectionHeader
+          eyebrow="Before you ask"
+          titleId="questions-title"
+          title="Questions newcomers actually have."
+        />
+      </Reveal>
 
-      <dl className="border-frost mt-12 border-t">
+      <RevealGroup as="dl" className="border-frost mt-12 border-t">
         {QUESTIONS.map((item) => (
-          <div
+          <RevealItem
             key={item.question}
             className="border-frost grid gap-3 border-b py-8 md:grid-cols-[minmax(0,20rem)_1fr] md:gap-10"
           >
@@ -43,9 +48,9 @@ export function QuestionsSection() {
               {item.question}
             </dt>
             <dd className="text-body text-pine max-w-2xl">{item.answer}</dd>
-          </div>
+          </RevealItem>
         ))}
-      </dl>
+      </RevealGroup>
     </Section>
   )
 }

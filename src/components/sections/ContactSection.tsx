@@ -1,5 +1,6 @@
 import { Section, SectionHeader } from '../Layout'
 import { ExternalLink, MailLink } from '../ExternalLink'
+import { Reveal, RevealGroup, RevealItem } from '../Reveal'
 import { CONTACT_EMAIL, RESOURCES_URL } from '../../lib/links'
 
 const LINK_CLASSES =
@@ -14,27 +15,32 @@ const LINK_CLASSES =
 export function ContactSection() {
   return (
     <Section id="contact" labelledBy="contact-title" className="bg-cloud">
-      <SectionHeader
-        eyebrow="Contact"
-        titleId="contact-title"
-        title="Still have a question?"
-        lede="A short placeholder sentence inviting people to email the organizers directly, and noting roughly how quickly they will hear back."
-      />
+      <Reveal>
+        <SectionHeader
+          eyebrow="Contact"
+          titleId="contact-title"
+          title="Still have a question?"
+          lede="Email the organizers and ask it. It is a small team of students, and no question is too basic to send."
+        />
+      </Reveal>
 
-      <div className="mt-12 grid gap-10 sm:grid-cols-2">
-        <div>
+      <RevealGroup className="mt-12 grid gap-10 sm:grid-cols-2">
+        <RevealItem>
           <p className="text-eyebrow text-haze font-medium uppercase">
             Email us
           </p>
-          <MailLink email={CONTACT_EMAIL} className={`${LINK_CLASSES} mt-4 inline-block`} />
+          <MailLink
+            email={CONTACT_EMAIL}
+            className={`${LINK_CLASSES} mt-4 inline-block`}
+          />
           <p className="text-caption text-haze mt-4">
             Goes to the organizing team.
           </p>
-        </div>
+        </RevealItem>
 
-        <div>
+        <RevealItem>
           <p className="text-eyebrow text-haze font-medium uppercase">
-            Browse first
+            Start early
           </p>
           <ExternalLink
             href={RESOURCES_URL}
@@ -43,10 +49,11 @@ export function ContactSection() {
             Workshop resources
           </ExternalLink>
           <p className="text-caption text-haze mt-4">
-            Slides and code from past sessions.
+            Material from past workshops, if you want to start learning before
+            you show up.
           </p>
-        </div>
-      </div>
+        </RevealItem>
+      </RevealGroup>
     </Section>
   )
 }

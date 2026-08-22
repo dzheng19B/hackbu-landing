@@ -1,40 +1,45 @@
 import { Section, SectionHeader } from '../Layout'
+import { Reveal, RevealGroup, RevealItem } from '../Reveal'
 
 /**
  * "What HackBU is" — mission statement plus the two pillars of the club,
  * side by side from `md` up and stacked below it.
  *
- * Placeholder copy; Phase 5 replaces the wording, not the layout.
+ * The header reveals on its own; the two pillars are a RevealGroup so they
+ * land one after the other rather than together.
  */
 
 const PILLARS = [
   {
     kicker: 'Every week',
     title: 'Development workshops',
-    body: 'A short sentence about the weekly workshop: one topic, taught from zero, laptop optional.',
-    meta: 'Beginner track and project track run in parallel.',
+    body: 'Each week we walk through building something for the web or for mobile. You work at your own pace, and organizers are in the room the whole time to help when something breaks.',
+    meta: 'Web development one week, mobile the next. You can start at either.',
   },
   {
-    kicker: 'Every spring',
+    kicker: 'Every year',
     title: 'An annual hackathon',
-    body: 'A short sentence about HackBU’s hackathon: a weekend to build something with people you just met.',
-    meta: 'Teams form on the day. First-timers welcome.',
+    body: 'Once a year we run our own hackathon: a weekend where teams build something that did not exist on Friday. It is the same club, concentrated.',
+    meta: 'One weekend, one team, one thing you made.',
   },
 ] as const
 
 export function AboutSection() {
   return (
     <Section id="about" labelledBy="about-title" className="bg-cloud">
-      <SectionHeader
-        eyebrow="What HackBU is"
-        titleId="about-title"
-        title="A student tech club that assumes you have never written code."
-        lede="Two or three sentences of mission statement go here — who we are, who it is for, and the promise that no experience is required to show up."
-      />
+      <Reveal>
+        <SectionHeader
+          eyebrow="What HackBU is"
+          titleId="about-title"
+          title="A community of people who solve problems with technology."
+          lede="HackBU is a student club at Binghamton that builds things — web apps, mobile apps, whatever the idea calls for — and learns the tools along the way. Plenty of people arrive having never written a line of code."
+        />
+      </Reveal>
 
-      <ul className="mt-14 grid gap-6 md:grid-cols-2 md:gap-8">
+      <RevealGroup as="ul" className="mt-14 grid gap-6 md:grid-cols-2 md:gap-8">
         {PILLARS.map((pillar) => (
-          <li
+          <RevealItem
+            as="li"
             key={pillar.title}
             className="border-frost bg-cloud flex flex-col rounded-2xl border p-7 sm:p-9"
           >
@@ -46,9 +51,9 @@ export function AboutSection() {
             </h3>
             <p className="text-body text-pine mt-4">{pillar.body}</p>
             <p className="text-caption text-haze mt-6">{pillar.meta}</p>
-          </li>
+          </RevealItem>
         ))}
-      </ul>
+      </RevealGroup>
     </Section>
   )
 }
