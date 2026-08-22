@@ -1,0 +1,64 @@
+/*
+ * Component-sheet-only CSS. Loaded by components.html and by nothing else.
+ *
+ * Two rules, both of which exist because the sheet has to show components that
+ * were built for a page, inside a page of its own.
+ */
+
+/*
+ * 1. Reveals, pinned to their resting frame.
+ *
+ * <Reveal>/<RevealGroup>/<RevealItem> start at `opacity: 0` and wait for an
+ * IntersectionObserver crossing. That is right on the landing page and wrong in
+ * a catalogue: a component you cannot see is not documented, and anything that
+ * stops the observer firing (a background tab, a headless browser, an
+ * off-screen section that never scrolls) leaves the sheet blank.
+ *
+ * So the sheet defaults to `data-reveals="resting"`, which pins every
+ * motion-driven element to the frame its entrance would finish on. The toggle
+ * in the sheet header switches to `data-reveals="scroll"` and hands the real
+ * behaviour back.
+ *
+ * `!important` is not decoration here: motion writes `opacity`/`transform` to
+ * the inline style attribute, and a stylesheet only outranks that when it is
+ * marked important. `[style*='opacity']` is what identifies a motion-driven
+ * element — the sheet writes no inline opacity of its own.
+ *
+ * This overrides the *rendered output* of the reveal components. It does not
+ * touch them: nothing in src/components/Reveal.tsx knows the sheet exists.
+ */
+[data-reveals='resting'] [style*='opacity'] {
+  opacity: 1 !important;
+  transform: none !important;
+}
+
+/*
+ * 2. A containing block for <SiteHeader>, which is `position: fixed`.
+ *
+ * Rendered as-is it would pin itself to the sheet's viewport and sit on top of
+ * everything. A transform on an ancestor makes that ancestor the containing
+ * block for fixed descendants, so the header lands at the top of its own frame
+ * instead — which is also what makes the frame read as a small window onto the
+ * top of the page. `translateZ(0)` is the cheapest transform that is not
+ * `none`; nothing here animates.
+ *
+ * The same transform opens a stacking context, so the header's `z-50` is
+ * scoped to the frame and cannot climb over the sheet's own sticky header.
+ */
+.sheet-fixed-frame {
+  transform: translateZ(0);
+}
+
+/*
+ * 3. Inline emphasis, at a weight that exists.
+ *
+ * The sheet's prose names a lot of classes and CSS values, and `<b>` is the
+ * honest element for them. Inter ships here at 400 and 500 only, so the
+ * default `bold` (700) would be synthesised by the browser — a smeared face
+ * that appears nowhere on the landing page. 500 is the weight the design
+ * system actually has for emphasis, so that is what `<b>` means here.
+ */
+b,
+strong {
+  font-weight: 500;
+}

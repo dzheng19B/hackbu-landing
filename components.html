@@ -1,0 +1,35 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+
+    <!-- Same bearcat favicons as the landing page. -->
+    <link rel="icon" type="image/png" sizes="32x32" href="/brand/favicon-32.png" />
+    <link rel="icon" type="image/png" sizes="64x64" href="/brand/favicon-64.png" />
+
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+    <!--
+      Internal tool. It deploys alongside the landing page because that is the
+      cheapest way to keep it in step with the components it documents, but it
+      is not a page anyone should arrive at from a search result.
+    -->
+    <meta name="robots" content="noindex, nofollow" />
+    <meta
+      name="description"
+      content="Every component in the HackBU landing page, in one place: tokens, primitives and the composed sections."
+    />
+
+    <!--
+      No og:image, no preload. The sheet ships no LCP illustration above the
+      fold (the campus image is documentation, far down the page) and is never
+      shared as a link.
+    -->
+
+    <title>HackBU component sheet</title>
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/sheet/main.tsx"></script>
+  </body>
+</html>

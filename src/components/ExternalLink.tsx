@@ -49,7 +49,7 @@ type ExternalLinkProps = {
  */
 export function ExternalLink({ href, children, ...rest }: ExternalLinkProps) {
   return (
-    <a href={href} target="_blank" rel="noopener noreferrer" {...rest}>
+    <a {...rest} href={href} target="_blank" rel="noopener noreferrer">
       {children}
     </a>
   )
@@ -64,7 +64,7 @@ export function MailLink({
   'href' | 'children'
 >) {
   return (
-    <a href={`mailto:${email}`} rel="noopener noreferrer" {...rest}>
+    <a {...rest} href={`mailto:${email}`}>
       {children ?? email}
     </a>
   )

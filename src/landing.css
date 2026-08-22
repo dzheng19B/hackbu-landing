@@ -1,0 +1,22 @@
+/*
+ * The landing page's stylesheet root.
+ *
+ * It is `src/index.css` and one extra line. The line exists because Tailwind
+ * builds one utility set per stylesheet root, from the classes it finds by
+ * scanning the project — and since the component sheet (`src/sheet/`) reaches
+ * for utilities the landing page has no use for (five-column grids, the sheet's
+ * own chrome), those rules would otherwise be emitted into the stylesheet the
+ * landing page downloads.
+ *
+ * Excluding the sheet's sources here rather than inside `src/index.css` is what
+ * keeps the exclusion off the sheet's own build: `components.html` imports
+ * `src/index.css` directly, so it still scans everything and still gets its own
+ * classes. A negated `@source` in the shared file would have travelled with it
+ * and deleted the sheet's utilities from the sheet.
+ *
+ * Net effect: the landing page's CSS is byte-for-byte what it was before the
+ * sheet existed, and the sheet pays for itself on its own page.
+ */
+@import './index.css';
+
+@source not "./sheet";

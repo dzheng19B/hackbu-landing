@@ -16,7 +16,13 @@ import '@fontsource/fraunces/latin-600.css'
 import '@fontsource/inter/latin-400.css'
 import '@fontsource/inter/latin-500.css'
 
-import './index.css'
+/*
+ * `./landing.css` is `./index.css` plus one `@source not` line, so that the
+ * component sheet's utilities are not emitted into the stylesheet this page
+ * downloads. Everything else — tokens, type scale, brand marks — is unchanged
+ * and still lives in `./index.css`, which both pages import.
+ */
+import './landing.css'
 import App from './App.tsx'
 
 createRoot(document.getElementById('root')!).render(

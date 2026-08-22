@@ -70,6 +70,27 @@ npx vercel deploy --prod
 Image derivatives are **committed**, so `npm run images` does not run during a deploy —
 a build is just `vite build`. Run it by hand whenever the artwork changes (see below).
 
+### The component sheet, at `/components`
+
+The build has **two** entry points, declared in `vite.config.ts`: `index.html` (the
+landing page) and `components.html` (an internal component sheet — every token, every
+primitive with its variants, and the composed sections rendered live). They share the
+component tree, so Rollup hoists what both import into one shared chunk and each page's
+own entry chunk carries only its own code; nothing under `src/sheet/` reaches the landing
+page's bundle. The sheet's Tailwind utilities are kept out of the landing page's
+stylesheet by `src/landing.css`, which is `src/index.css` plus one `@source not` line.
+
+Routing it needs one rule, because the catch-all rewrite would otherwise hand `/components`
+to `index.html`:
+
+| Request | Served by |
+| --- | --- |
+| `/components`, `/components/` | the explicit rewrites in `vercel.json` |
+| `/components.html` | the filesystem — Vercel gives it precedence over `rewrites`, and the catch-all excludes `/components*` besides |
+| anything else | the catch-all rewrite to `/index.html` |
+
+The sheet is `noindex, nofollow` and is not linked from the landing page.
+
 ## Swapping the artwork
 
 Source art lives in `artwork/`, which is treated as read-only reference. The files the
