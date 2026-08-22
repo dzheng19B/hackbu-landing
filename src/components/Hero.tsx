@@ -28,8 +28,6 @@ import {
  * Everything inside the stage is wrapped in a HeroScrollContext, so Phase 4's
  * cloud layers can read the same progress values instead of opening a second
  * scroll subscription. See src/lib/motion.ts.
- *
- * Copy below is still Phase 2 placeholder wording; Phase 5 replaces it.
  */
 
 const CAMPUS_SRC = '/artwork/campus/Campus.png'
@@ -224,11 +222,12 @@ export function Hero() {
                   id="hero-title"
                   className="font-display text-display-xl text-cloud mt-5 font-semibold text-balance"
                 >
-                  A headline about learning to build things goes here.
+                  Learn to build apps with other students.
                 </h1>
                 <p className="text-lede text-cloud mt-6 max-w-xl">
-                  One placeholder sentence saying HackBU is open to everyone, no
-                  programming experience required.
+                  HackBU runs web and mobile development workshops every week
+                  and a hackathon once a year. You don’t need any programming
+                  experience to come to either.
                 </p>
                 <div className="mt-9 flex flex-wrap items-center gap-4">
                   <ButtonLink href={DISCORD_URL} size="lg">

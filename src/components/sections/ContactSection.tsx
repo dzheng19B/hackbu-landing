@@ -20,7 +20,7 @@ export function ContactSection() {
           eyebrow="Contact"
           titleId="contact-title"
           title="Still have a question?"
-          lede="Email the organizers and ask it. It is a small team of students, and no question is too basic to send."
+          lede="Email the organizers and ask it. It’s a small team of students, and no question is too basic to send."
         />
       </Reveal>
 
@@ -40,7 +40,7 @@ export function ContactSection() {
 
         <RevealItem>
           <p className="text-eyebrow text-haze font-medium uppercase">
-            Start early
+            If you want a head start
           </p>
           <ExternalLink
             href={RESOURCES_URL}
@@ -49,8 +49,8 @@ export function ContactSection() {
             Workshop resources
           </ExternalLink>
           <p className="text-caption text-haze mt-4">
-            Material from past workshops, if you want to start learning before
-            you show up.
+            Material from past workshops, in case you’d like a look before you
+            show up.
           </p>
         </RevealItem>
       </RevealGroup>

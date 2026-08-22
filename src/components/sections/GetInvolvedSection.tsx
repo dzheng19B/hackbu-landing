@@ -23,7 +23,7 @@ export function GetInvolvedSection() {
           eyebrow="Get involved"
           titleId="get-involved-title"
           title="No membership or commitment required."
-          lede="There is no application, no dues, and no attendance to keep up. Show up to a workshop when it suits you, skip the ones that do not. Everything we do gets announced in the Discord, so joining it is the whole first step."
+          lede="There’s no application, no dues, and no attendance to keep up. Show up to a workshop when it suits you, skip the ones that don’t. We announce everything we do in the Discord, so joining it is the whole first step."
         />
       </Reveal>
 
@@ -35,9 +35,9 @@ export function GetInvolvedSection() {
                 Join the HackBU Discord
               </p>
               <p className="text-body text-pine mt-3">
-                It is where workshops get announced, where people post what they
-                are building, and where you can ask a question before you know
-                the right words for it.
+                It’s where we announce workshops, where people post what they’re
+                building, and where you can ask a question before you know the
+                right words for it.
               </p>
             </div>
             <ButtonLink
@@ -58,7 +58,7 @@ export function GetInvolvedSection() {
             >
               Sign up for the mailing list
             </ExternalLink>{' '}
-            if you would rather get those by email.
+            if you’d rather get those by email.
           </p>
         </div>
       </Reveal>

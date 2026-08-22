@@ -19,7 +19,7 @@ const PILLARS = [
   {
     kicker: 'Every year',
     title: 'An annual hackathon',
-    body: 'Once a year we run our own hackathon: a weekend where teams build something that did not exist on Friday. It is the same club, concentrated.',
+    body: 'Once a year we run our own hackathon: a weekend where teams build something that didn’t exist on Friday. It’s the same club, just packed into one weekend.',
     meta: 'One weekend, one team, one thing you made.',
   },
 ] as const

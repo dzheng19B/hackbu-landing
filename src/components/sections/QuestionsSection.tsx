@@ -13,12 +13,12 @@ const QUESTIONS = [
   {
     question: 'What is a hackathon?',
     answer:
-      'Teams get 24 to 48 hours to build a web app, a mobile app or a hardware project. You start from an idea and end with whatever you managed to make in the time. Almost nothing is finished by the end, and that is the normal outcome.',
+      'Teams get 24 to 48 hours to build a web app, a mobile app or a hardware project. You start from an idea and end with whatever you managed to make in the time. Almost nothing is finished by the end, and that’s the normal outcome.',
   },
   {
     question: 'Do I need experience?',
     answer:
-      'No. A lot of our members started with none, and the workshops are written for that. If you have written code before, there is still plenty here to build.',
+      'No. A lot of our members started with none, and we write the workshops for that. If you’ve written code before, there’s still plenty here to build.',
   },
   {
     question: 'What do the workshops cover?',
@@ -32,7 +32,7 @@ export function QuestionsSection() {
     <Section id="questions" labelledBy="questions-title" className="bg-cloud">
       <Reveal>
         <SectionHeader
-          eyebrow="Before you ask"
+          eyebrow="Things people ask us"
           titleId="questions-title"
           title="Questions newcomers actually have."
         />
