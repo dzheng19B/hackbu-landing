@@ -97,8 +97,8 @@ one ever does, it needs an explicit `@source` line.
 ## Deploying
 
 Vercel picks up `vercel.json`, which pins the framework to Vite, the build command to
-`npm run build` and the output directory to `dist`. No environment variables, no backend,
-no database.
+`npm run build` and the output directory to `dist`. No backend, no database, and nothing
+to configure in the project settings.
 
 ```bash
 npx vercel deploy --prod
@@ -106,6 +106,20 @@ npx vercel deploy --prod
 
 Image derivatives are **committed**, so `npm run images` does not run during a deploy —
 a build is lint, `tsc -b` and `vite build`, nothing else. Run it by hand whenever the artwork changes (see below).
+
+### When the custom domain lands
+
+**Nothing in this repo needs editing.** The one place the site's own origin appears is
+`index.html`'s `og:url` and `og:image`, which have to be absolute, and both are written as
+`%SITE_ORIGIN%`. The `siteOrigin` plugin in `vite.config.ts` substitutes it at build time
+from **`VERCEL_PROJECT_PRODUCTION_URL`** — a variable Vercel sets on every build to the
+project's production hostname, which follows the custom domain automatically once one is
+attached. Off Vercel the variable is absent and the build falls back to the literal
+`https://hackbu-landing.vercel.app`, so a local `dist/index.html` still carries a usable
+absolute URL.
+
+If the domain ever moves somewhere without that variable, change the fallback constant in
+`vite.config.ts` — not the HTML.
 
 ### The component sheet, at `/components`
 
@@ -117,14 +131,26 @@ own entry chunk carries only its own code; nothing under `src/sheet/` reaches th
 page's bundle. The sheet's Tailwind utilities are kept out of the landing page's
 stylesheet by `src/landing.css`, which is `src/index.css` plus one `@source not` line.
 
-Routing it needs one rule, because the catch-all rewrite would otherwise hand `/components`
-to `index.html`:
+Routing it needs the two rewrites in `vercel.json`, and those are the **only** two rules
+there — there is no catch-all. Every row below is what that file now does:
 
 | Request | Served by |
 | --- | --- |
-| `/components`, `/components/` | the explicit rewrites in `vercel.json` |
-| `/components.html` | the filesystem — Vercel gives it precedence over `rewrites`, and the catch-all excludes `/components*` besides |
-| anything else | the catch-all rewrite to `/index.html` |
+| `/` | the filesystem — `dist/index.html` as the directory index. No rewrite involved. |
+| `/components`, `/components/` | the two rewrites in `vercel.json`, each an exact-match `source`, both pointing at `/components.html` |
+| `/components.html` | the filesystem — Vercel gives a real file precedence over `rewrites`. The sheet therefore has a second URL; harmless, because it is `noindex, nofollow`. |
+| any other real file (`/assets/…`, `/artwork/…`, `/brand/…`) | the filesystem |
+| **anything else** — `/nonexistent`, `/componentsfoo`, `/favicon.ico` | nothing. No file, no matching rewrite → **404**, with `public/404.html` (shipped as `dist/404.html`) as the body. |
+
+The last row is a deliberate choice: an unknown URL gets an honest 404 rather than a
+200 landing page. There is no client-side router here — one page, in-page anchors — so a
+catch-all rewrite to `/index.html` would only turn every typo and every stale inbound link
+into a soft 404 and an indexable duplicate of the home page.
+
+**The Vite dev server does not emulate this**: it applies its own unconditional
+`index.html` fallback, so `/nonexistent` and `/componentsfoo` both render the landing page
+with a 200 locally, and `dist/404.html` is never reached — 404 behaviour can only be
+checked against a real deployment.
 
 The sheet is `noindex, nofollow` and is not linked from the landing page.
 

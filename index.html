@@ -55,21 +55,45 @@
     />
 
     <!--
-      Social preview. og:image has to be an absolute URL for the scrapers that
-      never resolve a relative one, so it is pinned to the deployed origin.
+      Social preview. The four properties ogp.me calls basic metadata are all
+      declared: og:title, og:type, og:image and og:url.
+
+      og:image and og:url have to be absolute URLs — scrapers do not resolve a
+      relative one against the document — so both carry an origin, and in the
+      two content attributes below that origin is a percent-delimited
+      SITE_ORIGIN placeholder rather than a domain. The `siteOrigin` plugin in
+      vite.config.ts substitutes it at build time from Vercel's
+      `VERCEL_PROJECT_PRODUCTION_URL`; a build with no such variable gets the
+      fallback literal, which is the preview domain that used to be hardcoded
+      here. See README's "Deploying" section: nothing in this file needs
+      editing when the custom domain lands.
+
+      (The placeholder is deliberately not spelled out in this comment — the
+      substitution is a plain string replace over the whole document and would
+      rewrite the prose too.)
+
       The card is square (732x732 — the tile's own size, not an upscale), which
       is why the Twitter card is `summary` and not `summary_large_image`: the
       large card crops to 1.91:1 and would take the bearcat's ears off.
-      Title and description come from <title> and the description above.
+      og:title repeats <title> verbatim and the description still comes from
+      the `description` meta above; neither is duplicated as an og: property.
     -->
-    <meta
-      property="og:image"
-      content="https://hackbu-landing.vercel.app/brand/og-image.png"
-    />
+    <meta property="og:title" content="HackBU" />
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content="%SITE_ORIGIN%/" />
+    <meta property="og:image" content="%SITE_ORIGIN%/brand/og-image.png" />
     <meta property="og:image:width" content="732" />
     <meta property="og:image:height" content="732" />
     <meta property="og:image:alt" content="The HackBU bearcat logo" />
     <meta name="twitter:card" content="summary" />
+
+    <!--
+      Mobile browser chrome takes the page ground rather than the UA default.
+      `cloud` (#f7f5ee) from src/index.css's @theme — one of the two literal
+      hexes outside it, the other being public/404.html, which cannot reach the
+      stylesheet either. There is no dark scheme to vary it against.
+    -->
+    <meta name="theme-color" content="#f7f5ee" />
 
     <title>HackBU</title>
   </head>

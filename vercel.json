@@ -5,7 +5,6 @@
   "outputDirectory": "dist",
   "rewrites": [
     { "source": "/components", "destination": "/components.html" },
-    { "source": "/components/", "destination": "/components.html" },
-    { "source": "/((?!components).*)", "destination": "/index.html" }
+    { "source": "/components/", "destination": "/components.html" }
   ]
 }

@@ -1,0 +1,89 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="robots" content="noindex" />
+
+    <!-- Same bearcat favicons as the landing page. -->
+    <link rel="icon" type="image/png" sizes="32x32" href="/brand/favicon-32.png" />
+    <link rel="icon" type="image/png" sizes="64x64" href="/brand/favicon-64.png" />
+
+    <meta name="theme-color" content="#f7f5ee" />
+
+    <!--
+      Vercel's static 404. `public/` is copied verbatim into `dist/`, so this
+      file becomes `dist/404.html` and is what the platform serves for any path
+      that matches no file and no rewrite in `vercel.json`. It therefore has to
+      stand entirely on its own: it is not part of either Vite entry, gets no
+      bundle, and must render correctly on the first byte.
+
+      Consequences of that, both deliberate:
+
+      * **Literal hexes, not tokens.** The no-hex-outside-`@theme` rule applies
+        to `src/`; this file is outside it and cannot import the stylesheet, so
+        the two colours it uses are written out. They are copies of
+        `src/index.css`'s `@theme` values and nothing else — `cloud` #f7f5ee
+        (the page ground, as on every other page), `pine` #3c5c48 for the text
+        (6.83:1 on cloud) and `brick` #a2593a for the link (4.78:1), both over
+        WCAG AA's 4.5:1. If a token's hex ever changes, change it here too.
+      * **No webfonts.** Fraunces and Inter ship as content-hashed woff2 files
+        under `/assets/`, and a hash is not knowable from a hand-written file —
+        it changes every build. Rather than hardcode a URL that will 404, the
+        families are named with honest system fallbacks: a visitor who has
+        loaded the site already gets the real faces from cache, everyone else
+        gets Georgia and their system UI face. No `@font-face`, no stylesheet
+        link, and no scripting of any kind: the page is markup and one inline
+        style block, so there is nothing here to fail.
+    -->
+    <style>
+      :root {
+        --cloud: #f7f5ee;
+        --pine: #3c5c48;
+        --brick: #a2593a;
+      }
+      body {
+        margin: 0;
+        min-height: 100vh;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        gap: 1rem;
+        padding: 2rem;
+        box-sizing: border-box;
+        background: var(--cloud);
+        color: var(--pine);
+        font-family: Inter, system-ui, sans-serif;
+        line-height: 1.65;
+        text-align: center;
+      }
+      h1 {
+        margin: 0;
+        font-family: Fraunces, Georgia, serif;
+        font-size: clamp(2rem, 4.2vw, 3rem);
+        line-height: 1.08;
+        letter-spacing: -0.015em;
+      }
+      p {
+        margin: 0;
+        max-width: 34rem;
+      }
+      a {
+        color: var(--brick);
+        text-underline-offset: 0.2em;
+      }
+      a:focus-visible {
+        outline: 2px solid var(--pine);
+        outline-offset: 2px;
+      }
+    </style>
+
+    <title>Page not found — HackBU</title>
+  </head>
+  <body>
+    <h1>Page not found</h1>
+    <p>There is nothing at this address — it was probably mistyped, or the page has moved.</p>
+    <p><a href="/">Back to the HackBU home page</a></p>
+  </body>
+</html>

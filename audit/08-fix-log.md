@@ -564,3 +564,360 @@ is the right side of the boundary: the sheet may import from `src/components/`, 
 unchanged; the only edits to `Hero.tsx` are `tabIndex={-1}`, `focus:outline-none` and the comment
 explaining them. Reduced motion measured identical to before (track = one viewport, campus
 transform `none`, no drift nodes).
+
+---
+
+## Phase 3 — routing and metadata
+
+Four findings: P5-4 (+P7-1), P2-2, P5-12, P3-6. Files touched: `vercel.json`,
+`public/404.html` (new), `index.html`, `components.html`, `vite.config.ts`, `README.md`.
+
+**What this phase cannot observe.** Everything about the deployed routing is derived from
+`vercel.json` by reading the rewrite set, exactly as Phase 5 §7 did. There is no Vercel deployment
+reachable from this environment and none was created, so no row below that begins "on Vercel" was
+executed — the walk-throughs are static reasoning over two literal `source` strings, and the live
+readout at the end is the **dev server**, which routes differently on purpose (that is P7-1).
+
+### P5-4 · FIXED · `vercel.json:6–9`, `public/404.html` (new), `README.md:134–153` — and **P7-1** · DOCUMENTED, same change (`README.md:150–153`)
+
+**The choice: an honest 404.** The catch-all `{ "source": "/((?!components).*)", "destination":
+"/index.html" }` is gone. It was the whole of the finding: it made `/nonexistent` a 200 landing
+page (a soft 404, indexable as a duplicate of the home page) while `/componentsfoo` fell through
+the `(?!components)` lookahead to a platform 404 — two outcomes for two equally nonexistent URLs.
+The fallback existed to support client-side routes and there are none: `package.json` has no
+routing dependency and `src/App.tsx` renders one page with in-page anchors. Removing it is
+therefore a pure subtraction, not a trade.
+
+```
+$ cat vercel.json
+{
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "framework": "vite",
+  "buildCommand": "npm run build",
+  "outputDirectory": "dist",
+  "rewrites": [
+    { "source": "/components", "destination": "/components.html" },
+    { "source": "/components/", "destination": "/components.html" }
+  ]
+}
+```
+
+Both survivors are literal, exact-match strings — no parameters, no wildcards, no lookaheads — so
+their reach can be checked with regexes written out by hand rather than derived from the `source`
+string (a derived regex could inherit an escaping bug and prove nothing):
+
+```
+$ node rewrite-check.mjs
+rule count = 2
+"/components" -> "/components.html" | matches: ["/components"]
+"/components/" -> "/components.html" | matches: ["/components/"]
+matched by some rewrite   = ["/components","/components/"]
+matched by no rewrite     = ["/","/components.html","/componentsfoo","/components/foo","/nonexistent","/favicon.ico","/assets/index-KjEM9hHe.js"]
+```
+
+**The two walk-throughs the finding turns on**, by the same two-phase model Phase 5 §7 used
+(filesystem first, then rewrites, then platform 404). Derived, not observed:
+
+| Request | Filesystem phase | Rewrite phase | **Resolves to** |
+| --- | --- | --- | --- |
+| `/nonexistent` | no `dist/nonexistent` | rule 1 no (not the exact string), rule 2 no | **404**, body `dist/404.html` |
+| `/componentsfoo` | no `dist/componentsfoo` | rule 1 no — `/components` is an exact match and `/componentsfoo` is a different string; rule 2 no | **404**, body `dist/404.html` |
+
+That is the point of the change: the two now agree, and they agree on the honest answer. The rows
+that must **not** move are unchanged — `/` still resolves through directory-index resolution to
+`dist/index.html` (Phase 5 §7.3 row 1 records that the catch-all was never what served `/`);
+`/components` and `/components/` still hit their rewrites; `/components.html`, `/assets/*`,
+`/artwork/*` and `/brand/*` are still filesystem hits, which Vercel resolves before it consults
+`rewrites` at all.
+
+**`public/404.html`** is the new body. `public/` is copied verbatim into `dist/`, so it ships as
+`dist/404.html`, which is the filename Vercel's static handler looks for. It is deliberately inert:
+
+```
+$ ls -l public/404.html dist/404.html && cmp public/404.html dist/404.html && echo IDENTICAL
+-rw-r--r-- 1 danz3 197609 3307 Aug 22 12:18 dist/404.html
+-rw-r--r-- 1 danz3 197609 3307 Aug 22 12:18 public/404.html
+IDENTICAL
+$ grep -c 'assets/.*\.js' dist/404.html
+0
+$ grep -c '<script' dist/404.html
+0
+```
+
+No script, no bundle, no stylesheet link, no webfont. Two constraints forced choices worth
+recording, and both are written into the file's own comment (`public/404.html:14–38`):
+
+- **Literal hexes.** The file is outside `src/`, cannot import the stylesheet and gets no Tailwind
+  pass, so the no-hex-outside-`@theme` rule does not reach it. The three colours it writes
+  (`public/404.html:41–43`) are copies of `@theme` values and nothing else: `cloud` `#f7f5ee` as
+  the ground, `pine` `#3c5c48` for all text, `brick` `#a2593a` for the link. Measured against
+  cloud: pine **6.83:1**, brick **4.78:1** — both over WCAG AA's 4.5:1 for normal text. Six of the
+  nine tokens are unused here; the three that cannot legibly carry text on cloud (`stone` 1.81:1,
+  `haze` 2.72:1, `fern` 3.27:1 — and fern is logo-only besides) were never candidates.
+- **No webfonts.** Fraunces and Inter ship as content-hashed woff2 under `/assets/`, and the hash
+  changes every build, so a hand-written file cannot name one — any URL written here would 404 on
+  the next deploy. The families are declared with honest system fallbacks instead
+  (`public/404.html:57,63`): `Fraunces, Georgia, serif` and `Inter, system-ui, sans-serif`. A
+  visitor who already loaded the site gets the real faces from cache; everyone else gets the
+  fallback, which is the correct behaviour for a page that must render on its first byte.
+
+Content is a heading, one sentence and a link back to `/` (`public/404.html:85–87`), plus the
+`theme-color` from P3-6 and `noindex`. 3,307 bytes, most of it that comment.
+
+**`README.md:134–153`** now reconciles row-for-row with the file above — five rows where there
+were three, and the false row is gone. Previously line 90 read "anything else | the catch-all
+rewrite to `/index.html`", which Phase 5 §7.4 marked incorrect for every path beginning
+`components`; there is no catch-all now, so the row states the 404 and names the page that renders
+it. Two rows are new: `/` (served by directory-index resolution, not by any rule) and
+`/components.html` (a filesystem hit, hence a second URL for the sheet — the point Phase 5 §7.4
+flagged as unstated, benign because `components.html:17` is `noindex, nofollow`).
+
+**P7-1 closes as DOCUMENTED in the same edit** (`README.md:150–153`). The divergence it names is
+inherent — Vite's dev server applies an unconditional `index.html` fallback with no `/components*`
+exclusion and no notion of `dist/404.html` — so it is not fixable, only stated, and the README now
+states it in a sentence: unknown paths render the landing page with a 200 locally, and 404
+behaviour can only be checked against a real deployment. Measured, this phase, from the dev server
+that is now stopped:
+
+```
+$ for p in "/" "/components" "/components.html" "/nonexistent" "/componentsfoo" "/404.html"; do
+    code=$(curl -s -o /dev/null -w "%{http_code}" "http://localhost:5173$p")
+    title=$(curl -s "http://localhost:5173$p" | grep -o "<title>[^<]*</title>" | head -1)
+    echo "$p -> $code  $title"; done
+/ -> 200  <title>HackBU</title>
+/components -> 200  <title>HackBU component sheet</title>
+/components.html -> 200  <title>HackBU component sheet</title>
+/nonexistent -> 200  <title>HackBU</title>
+/componentsfoo -> 200  <title>HackBU</title>
+/404.html -> 200  <title>Page not found — HackBU</title>
+```
+
+The first five rows are identical to Phase 7's §1 table, which is the confirmation that removing
+the catch-all changed nothing locally — the dev server never reads `vercel.json`. `/componentsfoo`
+still returns the landing page here and is derived to 404 on Vercel; that gap is the finding, and
+it is now written down rather than merely true.
+
+### P2-2 · FIXED · `index.html:81–84`
+
+The three absent basic-metadata properties are declared next to the existing `og:image` block:
+
+```
+$ grep -c 'property="og:title"\|property="og:type"\|property="og:url"' index.html
+3
+$ grep -n 'og:title\|og:type\|og:url\|og:image"\|<title>' index.html
+81:    <meta property="og:title" content="HackBU" />
+82:    <meta property="og:type" content="website" />
+83:    <meta property="og:url" content="%SITE_ORIGIN%/" />
+84:    <meta property="og:image" content="%SITE_ORIGIN%/brand/og-image.png" />
+98:    <title>HackBU</title>
+```
+
+`og:title` is `HackBU`, byte-for-byte the `<title>` text at `:98`. The audit noted that a bare
+wordmark is a weak card headline; a card headline that disagrees with the page title is worse, and
+rewriting the site's title is not this phase's call. `og:type` is `website` (ogp.me's default, and
+correct for a landing page rather than `article`). `og:url` is the origin root, the canonical URL
+of the one page this document is. `og:description` is deliberately still absent: scrapers fall
+back to `<meta name="description">`, which is present and accurate, so declaring it twice would
+create two strings to keep in step. All four values appear in the live readout below.
+
+### P5-12 · FIXED · `vite.config.ts:6–45,61`, applied at `index.html:83–84`, documented at `README.md:110–121`
+
+The hardcoded `https://hackbu-landing.vercel.app` is gone from the HTML. Both absolute URLs are
+written as a percent-delimited placeholder and substituted at build time by a 15-line plugin:
+
+```ts
+const SITE_ORIGIN_FALLBACK = 'https://hackbu-landing.vercel.app'
+
+function siteOrigin(): Plugin {
+  const host = process.env['VERCEL_PROJECT_PRODUCTION_URL']
+  const origin = host ? `https://${host}` : SITE_ORIGIN_FALLBACK
+  return {
+    name: 'hackbu-site-origin',
+    transformIndexHtml: {
+      order: 'pre',
+      handler: (html) => html.replaceAll('%SITE_ORIGIN%', origin),
+    },
+  }
+}
+```
+
+**Vite's built-in `%KEY%` interpolation was checked first and does not cover this**, so the plugin
+is necessary rather than duplicative. `htmlEnvHook`
+(`node_modules/vite/dist/node/chunks/node.js:24879`, Vite 8.2.2) substitutes only keys present in
+`config.env` — `loadEnv` output filtered by `envPrefix`, default `VITE_`, plus the
+`import.meta.env` built-ins — and returns any other `%KEY%` untouched, warning only when the key
+starts with the prefix:
+
+```js
+	return (html, ctx) => {
+		return html.replace(pattern, (text, key) => {
+			if (key in env) return env[key];
+```
+
+A bare `process.env` name is not in `env`, so a `%VERCEL_PROJECT_PRODUCTION_URL%` written into the
+HTML would have shipped to production verbatim. Widening `envPrefix` to reach it would expose every
+other matching variable to client code, which is the thing the prefix exists to prevent. Reading
+`process.env` for one key by name avoids both: **no `loadEnv` call, so no `.env.local` is parsed**
+and nothing else can reach the page.
+
+Both branches were run. With the variable absent — which is this environment, and what `dist/`
+now reflects:
+
+```
+$ npm run build ; echo "EXIT=$?"
+✓ built in 512ms
+EXIT=0
+$ grep -c 'hackbu-landing.vercel.app' dist/index.html
+2
+$ grep -n 'hackbu-landing.vercel.app' dist/index.html
+78:    <meta property="og:url" content="https://hackbu-landing.vercel.app/" />
+79:    <meta property="og:image" content="https://hackbu-landing.vercel.app/brand/og-image.png" />
+$ grep -o '%[A-Za-z_][A-Za-z0-9_]*%' dist/index.html dist/components.html
+        (no output — no placeholder survives the build, in either entry)
+```
+
+With it set, standing in for the custom domain:
+
+```
+$ VERCEL_PROJECT_PRODUCTION_URL=hackbu.org npx vite build ; grep -n 'og:url\|og:image"' dist/index.html
+78:    <meta property="og:url" content="https://hackbu.org/" />
+79:    <meta property="og:image" content="https://hackbu.org/brand/og-image.png" />
+```
+
+(`dist/` was rebuilt without the variable immediately afterwards, so the tree carries the fallback.)
+
+One thing the first build got wrong, recorded because the failure mode is non-obvious: the
+substitution is a plain string replace over the whole document, so the first draft of the
+explanatory comment — which quoted the placeholder by name — was itself rewritten, and
+`dist/index.html` shipped a comment reading "the origin is `https://hackbu-landing.vercel.app`,
+replaced at build time" directly above the two tags that had just been replaced. The comment
+(`index.html:57–80`) no longer spells the placeholder out, and says why. That is also why the grep
+count above is exactly 2 rather than 3.
+
+`README.md:110–121` is the domain-move checklist item, under its own **"When the custom domain
+lands"** heading in the deploy section: nothing in the repo needs editing, because
+`VERCEL_PROJECT_PRODUCTION_URL` follows the custom domain automatically once one is attached; if
+the site ever moves somewhere without that variable, change the fallback constant in
+`vite.config.ts` and not the HTML. The section's opening line no longer claims "No environment
+variables" — the build now reads one.
+
+### P3-6 · FIXED · `index.html:96`, `components.html:30`
+
+```
+$ grep -c 'name="theme-color"' index.html components.html
+index.html:1
+components.html:1
+```
+
+Both `#f7f5ee` — `cloud`, confirmed as `--color-cloud` at `src/index.css:54`, and the page ground
+on both entries rather than a colour picked for the address bar. `sky` (`#4a96d2`) was the audit's
+other suggestion and is the hero band, not the page; tinting the chrome to it would disagree with
+the ground everywhere below the fold. No `color-scheme` and no `dark:` variants were added: there
+is no dark palette to switch to, and declaring one would be a claim the stylesheet cannot honour.
+`public/404.html:12` carries the same tag, for the same reason.
+
+### Live readout (raw)
+
+Dev server `hackbu-dev` on port 5173; headless Edge 151.0.4129.101 over CDP on port 9336,
+1280x800, 3s settle per route. The probe script lives in the session scratchpad, not the repo.
+**Both were shut down at the end of the phase** (`preview_stop`; `taskkill /PID 42364 /T /F`, then
+CDP on 9336 and the dev server on 5173 both confirmed unreachable).
+
+```
+$ node phase3-probe.mjs 9336
+Edge: Edg/151.0.4129.101
+
+##### 1. Route load: console + network (3s settle), 1280x800
+ROUTE /  docStatus=200  title="HackBU"  hero=true  docHeight=7236
+  theme-color="#f7f5ee"
+  og: ["og:title=HackBU","og:type=website","og:url=https://hackbu-landing.vercel.app/","og:image=https://hackbu-landing.vercel.app/brand/og-image.png","og:image:width=732","og:image:height=732","og:image:alt=The HackBU bearcat logo"]
+  console errors: 0  exceptions: 0  failed requests: 0  >=400 responses: 0
+ROUTE /components  docStatus=200  title="HackBU component sheet"  hero=false  docHeight=28261
+  theme-color="#f7f5ee"
+  console errors: 0  exceptions: 0  failed requests: 0  >=400 responses: 0
+ROUTE /components.html  docStatus=200  title="HackBU component sheet"  hero=false  docHeight=28261
+  theme-color="#f7f5ee"
+  console errors: 0  exceptions: 0  failed requests: 0  >=400 responses: 0
+ROUTE /nonexistent  docStatus=200  title="HackBU"  hero=true  docHeight=7236
+  theme-color="#f7f5ee"
+  og: ["og:title=HackBU","og:type=website","og:url=https://hackbu-landing.vercel.app/","og:image=https://hackbu-landing.vercel.app/brand/og-image.png","og:image:width=732","og:image:height=732","og:image:alt=The HackBU bearcat logo"]
+  console errors: 0  exceptions: 0  failed requests: 0  >=400 responses: 0
+ROUTE /componentsfoo  docStatus=200  title="HackBU"  hero=true  docHeight=7236
+  theme-color="#f7f5ee"
+  og: ["og:title=HackBU","og:type=website","og:url=https://hackbu-landing.vercel.app/","og:image=https://hackbu-landing.vercel.app/brand/og-image.png","og:image:width=732","og:image:height=732","og:image:alt=The HackBU bearcat logo"]
+  console errors: 0  exceptions: 0  failed requests: 0  >=400 responses: 0
+
+##### 2. The new static 404 page, served by the dev server from public/
+  docStatus=200
+  {
+    "title": "Page not found — HackBU",
+    "h1": "Page not found",
+    "p": [
+      "There is nothing at this address — it was probably mistyped, or the page has moved.",
+      "Back to the HackBU home page"
+    ],
+    "linkHref": "/",
+    "scripts": 0,
+    "styleSheets": 1,
+    "externalCss": [],
+    "themeColor": "#f7f5ee",
+    "body":    { "color": "rgb(60, 92, 72)",  "background": "rgb(247, 245, 238)", "font": "Inter, system-ui, sans-serif" },
+    "heading": { "color": "rgb(60, 92, 72)",  "background": "rgba(0, 0, 0, 0)",   "font": "Fraunces, Georgia, serif" },
+    "link":    { "color": "rgb(162, 89, 58)", "background": "rgba(0, 0, 0, 0)",   "font": "Inter, system-ui, sans-serif" },
+    "docHeight": 800
+  }
+  console errors: 0  exceptions: 0  failed requests: 0  >=400 responses: 0
+```
+
+Three things this pins down. **Zero console errors and zero failed requests on all three required
+routes** (`/`, `/components`, `/components.html`), and on the two 404-class paths besides. **The
+metadata is live, not merely in the file**: `theme-color` resolves on every route including the
+sheet, and all four basic og properties are present on the landing page with the fallback origin
+already substituted — the dev server runs `transformIndexHtml` too, so no placeholder is visible in
+development either. **The 404 page renders as specified**: `scripts: 0`, `externalCss: []`, one
+stylesheet (its own inline block), and the computed colours are `rgb(60,92,72)` = `#3c5c48` pine
+and `rgb(162,89,58)` = `#a2593a` brick on `rgb(247,245,238)` = `#f7f5ee` cloud — the 6.83:1 and
+4.78:1 above, confirmed as what the browser actually paints rather than as what the file says.
+
+`/404.html` returning 200 from the dev server contradicts nothing: `public/` is served at the root
+in development, so that is the static file fetched by name, which is exactly how the render was
+checked. Vercel serves the same bytes as the **body of a 404 response**; that status is the one
+part no test available here can reach.
+
+### Phase-wide verification
+
+```
+$ npm run typecheck ; echo "EXIT=$?"
+> tsc -b --noEmit
+EXIT=0
+
+$ npm run lint ; echo "EXIT=$?"
+> oxlint --deny-warnings
+EXIT=0
+
+$ npm run build ; echo "EXIT=$?"
+> npm run lint && tsc -b && vite build
+✓ 451 modules transformed.
+dist/components.html                1.60 kB │ gzip:  0.77 kB
+dist/index.html                     4.76 kB │ gzip:  2.12 kB
+dist/assets/index-CxjLmj0A.css     17.59 kB │ gzip:  4.49 kB
+dist/assets/index-KjEM9hHe.js      14.89 kB │ gzip:  5.73 kB
+dist/assets/components-DP4er_qM.js 53.59 kB │ gzip: 16.40 kB
+✓ built in 512ms
+EXIT=0
+```
+
+`dist/components.html` still exists, and the landing chunk hashes (`index-CxjLmj0A.css`,
+`index-KjEM9hHe.js`) are unchanged from Phase 2 — nothing in this phase touched `src/`, so no
+component, no stylesheet and no bundle boundary moved. The only build outputs that changed shape
+are the two HTML entries and the new `dist/404.html`.
+
+`public/` is byte-identical to its previous state apart from the one new file, which was the
+standing constraint:
+
+```
+$ git status --short -- public/
+?? public/404.html
+```
+
+Nothing modified, nothing deleted; `artwork/` and `brand-source/` were not opened.
