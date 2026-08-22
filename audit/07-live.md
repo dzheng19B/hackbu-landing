@@ -162,18 +162,18 @@ from the three `[data-cloud-drift]` tracks.
 
 | Layer | `t0` translateX | `t0 + ~6.4 s` translateX | Δ px | Documented period | Implied elapsed |
 |---|---|---|---|---|---|
-| far | −1303.42 | −1346.59 | **43.17** | 188 s | 6.42 s |
-| mid | −1320.99 | −1383.91 | **62.92** | 129 s | 6.42 s |
-| near | −1345.26 | −1435.44 | **90.18** | 90 s | 6.42 s |
+| far | −1303.10 | −1346.16 | **43.06** | 188 s | 6.40 s |
+| mid | −1320.52 | −1383.27 | **62.75** | 129 s | 6.40 s |
+| near | −1344.58 | −1434.52 | **89.94** | 90 s | 6.40 s |
 
 **Drift is running.** All three transforms changed (`[true, true, true]`).
 
 The implied-elapsed column is `Δ ÷ (W / period)` with `W = 1265 px`, one stage width of travel per
-cycle (`HeroClouds.tsx:436–441`). All three layers independently imply **6.42 s** of wall clock
+cycle (`HeroClouds.tsx:436–441`). All three layers independently imply **6.40 s** of wall clock (6.3995 / 6.3990 / 6.3989 s)
 between the samples — the `sleep(6000)` plus the round-trip cost of the two `Runtime.evaluate` calls.
 Three different periods producing one consistent elapsed time is strong evidence that the periods are
 exactly the documented **188 / 129 / 90 s** (`HeroClouds.tsx:691–702`), and that rAF was running at
-full rate. The measured near:far speed ratio is 90.18 / 43.17 = **2.089**, against the documented
+full rate. The measured near:far speed ratio is 89.94 / 43.06 = **2.089**, against the documented
 2.09× (`HeroClouds.tsx:114`).
 
 The scroll-linked wrappers were at `transform: none` with `opacity` 0.5 / 0.75 / 1 (far / mid /
@@ -227,7 +227,7 @@ animate, not merely a paused one.
 
 ## 6. Every rendered link vs `src/lib/links.ts`
 
-All 28 `<a>` elements in the rendered document, read with `getAttribute` (not the resolved
+All 29 `<a>` elements in the rendered document (28 constant-derived anchors plus the skip link `#main`), read with `getAttribute` (not the resolved
 `.href` property), at 1280×800. `visible` is `rect.width > 0 && rect.height > 0`.
 
 ### Header — `<header>`, 9 anchors
@@ -337,7 +337,7 @@ From a fresh load at 1280×800 with `Emulation.setFocusEmulationEnabled` and `Pa
 | 6 | `a` **Discord (header CTA)** | header | 1029, 22, 83.5×37 |
 | 7 | `a` Join the Discord | main | 153, 410, 223.3×63.8 |
 | 8 | `a` Join the Discord | main | 824, 412, 239.3×71.8 |
-| 9 | `a` Sign up for the mailing list | main | 748, 565, 171.1×17 |
+| 9 | `a` Sign up for the mailing list | main | 748, 564, 171.1×17 |
 | 10 | `a` hello@hackbu.org | main | 153, 432, 208.3×30 |
 | 11 | `a` Workshop resources | main | 653, 433, 235.8×30 |
 | 12–15 | `a` Schedule, Resources, Hackathons, Registration | footer | 401, 446 / 482 / 518 / 554, ~62–79×17 |
@@ -458,7 +458,7 @@ All measured live, not derived from font metrics.
 
 | Target | Desktop 1280×800 | Mobile 375×812 | ≥ 24×24? |
 |---|---|---|---|
-| Footer column links (12 of them) | 29.5–78.7 **× 17** | 29.5–78.7 **× 17** | **no — 17 px tall** |
+| Footer column links (13 of them) | 29.5–78.7 **× 17** | 29.5–78.7 **× 17** | **no — 17 px tall** |
 | Footer mail link | **119.9 × 21** | **327 × 21** | **no — 21 px tall** |
 | Header nav links | 75.1 / 84.5 / 95.6 **× 28** | *(hidden)* | **yes** |
 | Header Discord CTA | **83.5 × 37** | *(hidden)* | **yes** |
@@ -527,7 +527,7 @@ All under `audit/screenshots/`. Sizes from `ls -l`; dimensions read from each PN
 | `hero-midpan.png` | 1280×800 | 1296240 | `p = 0.370`, scale 1.66528 — rooftops entering frame |
 | `hero-revealed.png` | 1280×800 | 1558208 | `p = 0.8`, scale 1 (`transform: none`) — full campus, clouds gone |
 | `clouds-t0.png` | 1280×800 | 979183 | Clouds at `t`, drift tracks at −1303 / −1321 / −1345 px |
-| `clouds-t1.png` | 1280×800 | 978603 | Clouds at `t + 6.4 s`, tracks at −1347 / −1384 / −1435 px — visibly drifted, no seam |
+| `clouds-t1.png` | 1280×800 | 978603 | Clouds at `t + 6.4 s`, tracks at −1346 / −1383 / −1435 px — visibly drifted, no seam |
 | `hero-reduced-motion.png` | 1280×800 | 1649919 | `prefers-reduced-motion: reduce` — resting frame, static clouds, 800 px track |
 | `focus-skip-link.png` | 1280×800 | 979236 | Tab 1 — skip link un-hidden, 145.7×40, 2px pine outline |
 | `focus-header-cta.png` | 1280×800 | 980340 | Tab 6 — header Discord CTA with `:focus-visible` outline |
@@ -602,7 +602,7 @@ Each item below was measured in the browser, not inferred.
    formula gives 1.66528. Five-decimal agreement. (§3)
 8. **Pan completion.** `transform: none` and a rect exactly equal to the stage box by `p = 0.8`,
    i.e. the pan really does finish at `PAN_SCROLL_FRACTION = 0.75` and holds. (§3)
-9. **Cloud drift is running**, and all three layers imply the same 6.42 s elapsed from three
+9. **Cloud drift is running**, and all three layers imply the same 6.40 s elapsed from three
    different documented periods (188 / 129 / 90 s); measured speed ratio 2.089 vs documented 2.09. (§4)
 10. **No cloud seam** in either sampled frame, with a tile boundary on screen in both. (§4)
 11. **Reduced motion.** `transform: none`, track collapsed 2080 → 800 px, no `[data-cloud-drift]`
