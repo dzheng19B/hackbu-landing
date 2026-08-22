@@ -142,7 +142,7 @@ Each README invariant, with the phase that settled it.
 | h | Link hover only in `LINK_ON_CLOUD` / `LINK_ON_FROST` | **PASS**, with the P3-1 caveat | Ph 3 §2 Rule 5 — every text link composes one of the two; the menu toggle is a `<button>`, outside the rule but undocumented |
 | i | No scroll event listeners | **PASS** | Ph 2 §2 — 5 grep hits, none a scroll listener (3 comments, 1 `useScroll`, 1 `keydown` with cleanup) |
 | j | Sheet excluded from the landing bundle | **PASS** | Ph 1 §6 — three sheet-only string literals: 0 hits in both chunks reachable from `index.html`, 1 hit in the sheet chunk |
-| j′ | Sheet utilities kept out of the landing *stylesheet* (README:80–81) | **PARTIAL FAIL** | Ph 1 §8 / P1-5 — `src/landing.css:22` excludes `src/sheet/`, but unscoped Tailwind scanning re-admitted `.grid-cols-5` from `audit/02-code.md:522` into `dist/assets/index-*.css`; holds once P1-5 is fixed |
+| j′ | Sheet utilities kept out of the landing *stylesheet* (README:80–81) | **PARTIAL FAIL** | Ph 1 §8 / P1-5 — `src/landing.css:22` excludes `src/sheet/`, but unscoped Tailwind scanning re-admitted `.grid-cols-5` from `audit/02-code.md:526` into `dist/assets/index-*.css`; holds once P1-5 is fixed |
 | k | Srcset triple agreement | **PASS** | Ph 5 §1.2 — `images.ts:25` vs `generate-images.mjs:90` vs `index.html:44` all `[640,960,1280,1672]`; byte-identical in the built HTML; `sizes` byte-identical everywhere |
 | l | Every image URL resolves; shipped-asset dimensions and bytes match ASSETS.md (two doc cells wrong: P5-9 alpha, P5-10 units) | **PASS** | Ph 5 §2–§3 — 53 referenced URLs, 53 files, a bijection; all dimensions and byte counts match; `clouds-all-b.png` correctly absent from `public/` |
 | m | Contrast: every text pair ≥ 4.5:1 | **PASS** | Ph 4 §7.3 — 41 pairs recomputed from the WCAG formula, worst text pair 4.62:1 (pine/90 on frost, 0.12 of headroom) |
@@ -217,8 +217,7 @@ except for the intended chunk rename.
 
 ## 7. Open items / not measured
 
-
-- `/components.html` remains reachable as a second URL for the sheet (Ph 5 §7.4); benign because `components.html:17` is `noindex, nofollow`, but the README routing table (README.md:86–90) does not mention it. Documentation-only; referred by Phase 5, not picked up by Phase 6.
+- `/components.html` (a second reachable URL for the sheet) was referred by Ph 5 §7.4 to Phase 6 for a README mention. Closed on inspection: `README.md:89` already documents it as filesystem-served and `README.md:92` covers `noindex, nofollow` / not linked from the landing page. No action; recorded so the referral does not read as dropped.
 - **Vercel-side behaviour.** Everything in P5-4 and P5-3 is derived from `vercel.json` and the
   platform docs, never observed. Phase 7 could only drive the Vite dev server, which has no
   `/components*` exclusion (P7-1). The default `Cache-Control` on static output, the exact

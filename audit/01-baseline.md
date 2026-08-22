@@ -336,14 +336,14 @@ $ grep -rn "isolate" src/ index.html components.html
 (no output)
 $ grep -rn "grid-cols-5" src/ audit/
 src/sheet/parts/PrimitivesPart.tsx:492:            className="grid grid-cols-2 gap-3 sm:grid-cols-5"
-audit/02-code.md:522:stylesheet and not the landing one (`grid-cols-5`: 0 hits in `index-*.css`, 1 in
-audit/02-code.md:690:$ grep -c 'grid-cols-5' dist/assets/index-hTiJsblS.css ; grep -c 'grid-cols-5' dist/assets/components-V_S1l_xU.css
+audit/02-code.md:526:stylesheet and not the landing one (`grid-cols-5`: 0 hits in `index-*.css`, 1 in
+audit/02-code.md:694:$ grep -c 'grid-cols-5' dist/assets/index-hTiJsblS.css ; grep -c 'grid-cols-5' dist/assets/components-V_S1l_xU.css
 ```
 
 `isolate` occurs only as English prose in this report (the word "isolate" in §8's earlier
 draft); `grid-cols-5` is a sheet-only utility that `src/landing.css:22` (`@source not "./sheet"`)
 deliberately excludes from the landing bundle — it re-entered via the quotation at
-`audit/02-code.md:522`. So the scanning bleed is real and it also partially defeats the
+`audit/02-code.md:526`. So the scanning bleed is real and it also partially defeats the
 landing/sheet CSS split.
 
 ---
@@ -387,7 +387,7 @@ from the previous baseline are both **resolved** as of `9a5a72d` — see §7. No
 **Evidence.** §8: with both audit reports on disk the landing CSS grows 17,563 → 17,862 bytes and
 gains `.isolate`, `.table` and `.grid-cols-5` rules; `isolate` appears nowhere in `src/` or the
 HTML entries, and `grid-cols-5` exists only at `src/sheet/parts/PrimitivesPart.tsx:492` (excluded
-from the landing bundle by `src/landing.css:22`) and in prose at `audit/02-code.md:522`.
+from the landing bundle by `src/landing.css:22`) and in prose at `audit/02-code.md:526`.
 Configuration: `vite.config.ts:20` registers `tailwindcss()` with no `@source` restriction;
 `src/index.css:1` is a bare `@import 'tailwindcss';`.
 
