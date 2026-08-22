@@ -27,7 +27,7 @@ and copies them into `dist/` untransformed. Reference them by absolute URL, e.g.
 **`public/artwork/campus/Campus.png` is the campus illustration** — the single painterly
 scene of Binghamton University under snow that the scroll-driven hero pan reveals. It is
 the only *source* file in `public/artwork/campus/` (the AVIF/WebP derivatives sit beside
-it — see Derivatives below), and the only non-cloud asset.
+it — see Derivatives below), and the only non-cloud source asset.
 
 ## The cloud cutouts
 
@@ -81,7 +81,8 @@ are from the filesystem.
 writes AVIF and WebP derivatives **beside** each PNG. The PNGs above are untouched and
 remain the last-resort `<img src>` inside each `<picture>`. The derivatives are
 committed, so a deploy does not need to run `npm run images` — the build runs
-`npm run build` (`tsc -b && vite build`, plus the prerender step) and nothing else.
+`npm run build` (lint, `tsc -b`, `vite build`, then the prerender step — a lint warning
+fails the deploy too) and nothing else.
 
 | Output | Widths | Encoder | Total |
 | --- | --- | --- | --- |

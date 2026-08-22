@@ -1557,7 +1557,7 @@ $ ls public/artwork/campus | wc -l ; ls public/artwork/clouds | wc -l
 36
 ```
 
-### P6-2 · FIXED · `ASSETS.md:152`
+### P6-2 · FIXED · `ASSETS.md:153`
 
 "88% of the artwork bytes" (stale since commit `9a5a72d` doubled the cloud count) is now
 "78%", recomputed and shown:
@@ -1740,11 +1740,27 @@ close the finding against all three sites the original evidence named.
 ```
 $ grep -n "npm run build\|nothing else\|never this script" ASSETS.md scripts/generate-images.mjs README.md
 ASSETS.md:83:committed, so a deploy does not need to run `npm run images` — the build runs
-ASSETS.md:84:`npm run build` (`tsc -b && vite build`, plus the prerender step) and nothing else.
-scripts/generate-images.mjs:9: * deploy needs nothing but `npm run build` (`tsc -b && vite build`, plus the
-scripts/generate-images.mjs:10: * prerender step) — never this script. `sharp` is therefore a devDependency
+ASSETS.md:84:`npm run build` (lint, `tsc -b`, `vite build`, then the prerender step — a lint warning
+ASSETS.md:85:fails the deploy too) and nothing else.
+scripts/generate-images.mjs:9: * deploy needs nothing but `npm run build` (lint, `tsc -b`, `vite build`, then
+scripts/generate-images.mjs:10: * the prerender step) — never this script. `sharp` is therefore a devDependency
 README.md:108:a build is lint, `tsc -b`, `vite build` and `node scripts/prerender.mjs`, nothing else. Run
 ```
+
+**Retry note (checker round 1).** The first version of this entry expanded `npm run build` as
+"`tsc -b && vite build`, plus the prerender step" in both `ASSETS.md:84` and
+`generate-images.mjs:9–10` — omitting the lint step, i.e. the very under-description P6-10 is
+about. Both parentheticals now name all four steps; the transcript above is the post-fix
+output. Three further items from the same checker round were taken in this retry:
+`README.md:295–297` ("no focusable elements" → "nothing in the tab order", because Phase 2's
+`tabIndex={-1}` on `<section id="top">` made the old sentence literally false — claims-table
+row 45 stays TRUE); `ASSETS.md:30` ("only non-cloud asset" → "only non-cloud *source* asset",
+since eight campus derivatives sit beside it); and the P6-2 heading's `ASSETS.md:152` → `:153`.
+One item was **declined**: the audit IDs (`P5-1`, `P4-4`, …) that Phases 2 and 4 left in source
+comments (18 sites, `grep -rn 'P[0-9]-[0-9]' src scripts vite.config.ts`) are not the P6-8
+defect. P6-8 was about "Phase N" labels pointing at a plan that exists only in the git log;
+`P5-1` resolves to a tracked file in this repo (`audit/AUDIT.md` §3), so the pointer is
+followable and stays.
 
 ### P3-2 · FIXED · `README.md:261`
 

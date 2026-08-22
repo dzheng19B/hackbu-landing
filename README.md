@@ -292,8 +292,9 @@ links, one for the outlined button, and no fourth without a line here.
 render at rest, and the hero's tall scroll track collapses so no dead scroll space is left
 behind.
 
-**Text over the illustration.** The hero contains no text and no focusable elements, by
-design. The illustration is the signature moment and is never used as a background behind
+**Text over the illustration.** The hero contains no text and nothing in the tab order, by
+design (the section carries `tabIndex={-1}` only so the logo link's `#top` target can take
+focus programmatically). The illustration is the signature moment and is never used as a background behind
 copy — the headline and primary CTA sit in the intro section immediately below it.
 
 ## Layout
