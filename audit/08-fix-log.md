@@ -216,7 +216,7 @@ Edge 151.0.4129.101 over CDP, with `Emulation.setFocusEmulationEnabled` on so a 
 still reports focus. Both were shut down at the end of the phase. The probe scripts live in the
 session scratchpad, not the repo.
 
-### P2-4 · FIXED · `src/App.tsx:54` (reasoning at `:37–53`) — and **P7-2** · FIXED · `src/components/Hero.tsx:176,184`
+### P2-4 · FIXED · `src/App.tsx:67` (reasoning at `:50–66`) — and **P7-2** · FIXED · `src/components/Hero.tsx:204,202`
 
 `<main id="main">` and the hero's `<section id="top">` both carry `tabIndex={-1}`, so activating
 the skip link or the header logo link moves *focus*, not only the viewport — no longer relying on
@@ -296,7 +296,7 @@ Live, walking every `<a href>` in the rendered page:
 No same-site link carries a `target`; no external link is missing either the notice or the
 `rel`. The two `mailto:` links go through `MailLink` and are untouched.
 
-### P4-2 · FIXED · `src/components/controls.ts:39–41`, applied at `src/components/SiteHeader.tsx:78`, `src/sheet/ComponentSheet.tsx:96`, `src/sheet/parts/PrimitivesPart.tsx:510` — and **P3-1** · FIXED, same change
+### P4-2 · FIXED · `src/components/controls.ts:39–41`, applied at `src/components/SiteHeader.tsx:78`, `src/sheet/ComponentSheet.tsx:109`, `src/sheet/parts/PrimitivesPart.tsx:510` — and **P3-1** · FIXED, same change
 
 One new constant, `TOGGLE_ON_CLOUD`, is now the single definition of the outlined pill
 `<button>` that had been written inline in three files:
@@ -368,7 +368,7 @@ $ grep -n 'border-stone/60 bg-frost' src/components/sections/GetInvolvedSection.
 Live: `{"borderColor":"oklab(0.783604 0.00410199 0.0371398 / 0.6)","background":"rgb(220, 227, 234)"}`
 — `stone` at 60% over `frost` (1.28:1, a deliberate hairline) rather than frost on frost.
 
-### P4-4 · FIXED · `src/components/HeroClouds.tsx:699–718` (`driftLoop`), `:761–765` (the switch), `:809`
+### P4-4 · FIXED · `src/components/HeroClouds.tsx:699–717` (`driftLoop`), `:767–772` (the switch), `:826`
 
 Each cloud layer's drift now stops at that layer's own `fadeEnd` and starts again if the reader
 scrolls back. The switch is a `useState` boolean driven by
@@ -428,7 +428,7 @@ Reduced motion, `Emulation.setEmulatedMedia prefers-reduced-motion: reduce`, rel
 Zero `[data-cloud-drift]` nodes, three resting layers, the track collapsed to exactly one
 viewport, and the campus at scale 1 — identical to the pre-change behaviour.
 
-### P4-5 · DOCUMENTED (no code change needed) · `src/index.css:40` vs `src/components/SiteHeader.tsx:48`
+### P4-5 · DOCUMENTED (no code change needed) · `src/index.css:102` vs `src/components/SiteHeader.tsx:49`
 
 `scroll-padding-top: 6rem` = **96px** at every breakpoint, against a measured header of **81px**
 at 1280×800 (`h-20` + 1px border) and **65px** at 375×812 (`h-16` + 1px). The gutter already
@@ -456,7 +456,7 @@ Six cases, two viewports: focus scrolled the link out from under the bar every t
 The pine ring was drawn in every case. **2.4.11 Focus Not Obscured (Minimum) (AA) PASS**, now
 measured rather than derived. The finding needs no code and closes as documented.
 
-### P4-8 · DOCUMENTED (no code change needed) · `src/index.css:106,110,114` measured live
+### P4-8 · DOCUMENTED (no code change needed) · `src/index.css:170,174,178` measured live
 
 The WCAG 1.4.12 override was injected as a style element over the live page — `line-height: 1.5`,
 `letter-spacing: 0.12em`, `word-spacing: 0.16em` on everything, `margin-bottom: 2em` on every
@@ -697,7 +697,7 @@ the catch-all changed nothing locally — the dev server never reads `vercel.jso
 still returns the landing page here and is derived to 404 on Vercel; that gap is the finding, and
 it is now written down rather than merely true.
 
-### P2-2 · FIXED · `index.html:81–84`
+### P2-2 · FIXED · `index.html:83–86`
 
 The three absent basic-metadata properties are declared next to the existing `og:image` block:
 
@@ -720,7 +720,7 @@ of the one page this document is. `og:description` is deliberately still absent:
 back to `<meta name="description">`, which is present and accurate, so declaring it twice would
 create two strings to keep in step. All four values appear in the live readout below.
 
-### P5-12 · FIXED · `vite.config.ts:6–45,61`, applied at `index.html:83–84`, documented at `README.md:110–121`
+### P5-12 · FIXED · `vite.config.ts:6–45,183`, applied at `index.html:85–86`, documented at `README.md:117–122`
 
 The hardcoded `https://hackbu-landing.vercel.app` is gone from the HTML. Both absolute URLs are
 written as a percent-delimited placeholder and substituted at build time by a 15-line plugin:
@@ -801,7 +801,7 @@ the site ever moves somewhere without that variable, change the fallback constan
 `vite.config.ts` and not the HTML. The section's opening line no longer claims "No environment
 variables" — the build now reads one.
 
-### P3-6 · FIXED · `index.html:96`, `components.html:30`
+### P3-6 · FIXED · `index.html:98`, `components.html:30`
 
 ```
 $ grep -c 'name="theme-color"' index.html components.html
@@ -1008,7 +1008,7 @@ dist/assets/index-HiSFlvET.js:      isolation=0 buyscroll=0 heroprog=0
 
 ---
 
-### P5-1 · FIXED · `scripts/prerender.mjs` (new), `src/entry-server.tsx` (new), `package.json:11`, `src/main.tsx:47-51`, `src/sheet/main.tsx:29-33`, `src/lib/motion.ts:68-80`, `src/components/SiteFooter.tsx:43-58`
+### P5-1 · FIXED · `scripts/prerender.mjs` (new), `src/entry-server.tsx` (new), `package.json:11`, `src/main.tsx:52-56`, `src/sheet/main.tsx:31-34`, `src/lib/motion.ts:75-84`, `src/components/SiteFooter.tsx:52-57`
 
 **The decision: prerender, both entries.** `npm run build` is now
 `npm run lint && tsc -b && vite build && node scripts/prerender.mjs`. The last step opens a Vite
@@ -1121,7 +1121,7 @@ the `<picture>` still resolve to the same URL.
 
 ---
 
-### P5-5 · FIXED · `vite.config.ts:62-127` (`PRELOADED_FONTS`, `fontPreload()`), `vite.config.ts:143`
+### P5-5 · FIXED · `vite.config.ts:62-127` (`PRELOADED_FONTS`, `fontPreload()`), `vite.config.ts:183`
 
 A `transformIndexHtml` plugin at `order: 'post'`, reading `ctx.bundle` for the emitted `.woff2`
 asset names, so no hash is written by hand. It runs on `index.html` only (the sheet is internal and
@@ -2615,3 +2615,32 @@ phase could do from here: Vercel-side observation of routing and cache headers, 
 Safari's skip-link behaviour, and the smaller unmeasured items listed at `08-fix-verification.md`
 §16. The one §7 item that *was* still doable — the compositor Layers reading P5-7 asked for — was
 taken in Phase 6 above, at `08-fix-log.md:2039–2096`.
+
+## Final audit — renumbering and observations
+
+The cross-phase final audit (after Phase 7) found that twelve `file:line` citations in the
+closure-entry **headings** above had drifted: each was correct when written, and a later phase
+then edited the same file above the cited line (Phase 4's `@font-face` block moved everything in
+`src/index.css` by +62/+64; Phase 4's `LazyMotion` import moved `App.tsx` by +13; Phase 6's
+`panning`/`will-change` comments moved `Hero.tsx` and `HeroClouds.tsx`; Phase 6's
+`manualChunks` moved `vite.config.ts`'s `plugins:` line to 183; Phase 5's comment edits moved
+`index.html`'s meta tags by +2; Phase 6's P3-8 moved `ComponentSheet.tsx`'s toggle to 109). The
+headings for P2-4/P7-2, P4-2, P4-4, P4-5, P4-8, P2-2, P5-12, P3-6, P5-1 and P5-5 now cite the
+lines as they stand at the final commit; the bodies of those entries still quote the transcripts
+captured at the time, and the reconciliation anchors (`08-fix-log.md:<n>`) were unaffected.
+
+Also taken from the same audit: `src/components/controls.ts:11` said "all four class strings
+identical" for three call sites whose *treatment fragment* was identical (their sizing
+utilities differed) — reworded; `README.md`'s routing caveat named only the dev server, but
+`vite preview` applies the same `index.html` fallback for unknown paths — widened.
+
+Observations recorded, no action: (1) Phase 4 met "shared chunk −40 KB vs 328,964 B" at
+283,048 B; after Phase 6's `vendor`/`shared` split the shared bytes are 299,142 B (−29,822) while
+total landing JS is 344,119 → 300,329 B (−43,790), so the bar holds on the total-JS reading only.
+(2) P5-5's transcript still names the pre-Phase-6 chunks (`index-HiSFlvET.js`,
+`SiteFooter-VOpZu2sT.js`); it is a chronological record and Phase 6's entry supersedes it.
+(3) The three `[data-cloud-drift]` tracks keep `will-change: transform` while frozen past the
+hero (count 3 from progress 0.5 onward); inside Phase 6's 7 / <7 / 0 bar, and the LayerTree
+numbers show the campus `<img>` and the three layer wrappers do release. (4) Still unmeasured,
+as the plan anticipated: Vercel-side routing/headers (P7-1), FCP/LCP timings, Safari skip-link
+behaviour.

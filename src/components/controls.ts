@@ -9,8 +9,8 @@
  * the page and `ButtonLink.tsx` covers the one solid button, which left one
  * shape with no home: a small outlined `<button>` on the cloud background. It
  * had been written inline in three files (the header's menu toggle and two
- * controls on the component sheet), all four class strings identical and none
- * of them documented — see P3-1.
+ * controls on the component sheet), all three carrying the same treatment fragment
+ * (only their sizing utilities differed) and none of them documented — see P3-1.
  *
  * What was wrong with it, not just where it lived: the border and the hover
  * fill were both `frost`, which measures **1.19:1** against `cloud`. A boundary

@@ -154,9 +154,9 @@ The last row is a deliberate choice: an unknown URL gets an honest 404 rather th
 catch-all rewrite to `/index.html` would only turn every typo and every stale inbound link
 into a soft 404 and an indexable duplicate of the home page.
 
-**The Vite dev server does not emulate this**: it applies its own unconditional
-`index.html` fallback, so `/nonexistent` and `/componentsfoo` both render the landing page
-with a 200 locally, and `dist/404.html` is never reached — 404 behaviour can only be
+**The Vite dev and preview servers do not emulate this**: both apply their own unconditional
+`index.html` fallback, so `/nonexistent` and `/componentsfoo` render the landing page with a
+200 under `npm run dev` and `npm run preview` alike, and `dist/404.html` is never reached — 404 behaviour can only be
 checked against a real deployment.
 
 The sheet is `noindex, nofollow` and is not linked from the landing page.
