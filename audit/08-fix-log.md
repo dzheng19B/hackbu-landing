@@ -2646,7 +2646,10 @@ second cycle) P5-2 now cite the lines as they stand at the final commit, and the
 headings quoted in the `## Reconciliation` table's anchor column — a second copy of the same cites
 that the first renumbering pass missed — were renumbered to match; the bodies of those entries
 still quote the transcripts captured at the time, and the reconciliation anchors
-(`08-fix-log.md:<n>`) were unaffected. A targeted re-check after the second cycle found the
+(`08-fix-log.md:<n>`) were unaffected by the renumbering itself, though every later edit that
+changed a line count inside this file (the corrected P5-7 paragraph, the refreshed Phase 5
+transcripts) shifted the anchors below it, and they were recomputed from the actual `###`
+headings each time. A targeted re-check after the second cycle found the
 same +1 drift in five headings that cite documentation files (`README.md`, `ASSETS.md`) and
 `src/lib/motion.ts` — files the two renumbering passes had not covered — and one stale
 reconciliation row (P5-5); all renumbered. The second cycle also found the P5-7 rationale for the
