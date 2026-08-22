@@ -2068,7 +2068,9 @@ Three things the numbers settle that the static read could not:
    and the three `data-cloud-layer` wrappers) are still their own compositor layers at progress
    0.8, with `WillChangeTransform` as their sole compositing reason, and the campus `<img>` is
    still `drawsContent: true` holding a 1425 × 900 × 4 = 5,130,000 B raster (390 × 844 × 4 =
-   1,316,640 B on mobile). This meets the decision rule, so the hint was released.
+   1,316,640 B on mobile). The decision rule set for this phase was: release the hint if the
+   four elements that stop animating after the pan each still cost a measurable compositor
+   layer at progress 0.8; document-only if the cost is nil. They do, so the hint was released.
 3. **The drift tracks stop drawing but keep their layers.** At progress 0.8 their `drawsContent`
    is false — they are at opacity 0 — which is the whole 62,413,200 B gap between the two
    `drawsContent` columns at 1440×900 (110,968,500 − 20,520,000 − 20,520,000 − 21,373,200 =
@@ -2434,9 +2436,9 @@ non-empty
 $ sed -n '74p' src/components/Hero.tsx
 const PAN_START_SCALE = 3
 
-$ grep -n "CAMPUS_OBJECT_POSITION = \|origin-top" src/components/Hero.tsx | head -2
+$ grep -n "CAMPUS_OBJECT_POSITION = '\|origin-top \${CAMPUS" src/components/Hero.tsx
 131:const CAMPUS_OBJECT_POSITION = 'object-[52%_0%]'
-248:                className={`h-full w-full origin-top ${CAMPUS_OBJECT_POSITION} object-cover select-none ${
+251:                className={`h-full w-full origin-top ${CAMPUS_OBJECT_POSITION} object-cover select-none ${
 
 $ grep -rn "addEventListener('scroll'\|addEventListener(\"scroll\"\|onscroll" src/
 src/components/Hero.tsx:138:  // hand-rolled `addEventListener('scroll', ...)` anywhere in src/. Everything
