@@ -20,12 +20,12 @@ import {
 /**
  * The hero: a scroll-driven pan down the campus illustration.
  *
- * It is illustration and nothing else. Phase 7 moved the headline, lede and
- * Discord CTA out to <IntroSection>, on the cloud background below — cloud text
- * over the painted sky measured 1.43:1, and the only wash that lifted it past
- * 4.5:1 was a near-opaque pine field covering most of the frame. Removing the
- * copy retires that trade rather than tuning it: no text sits over the artwork
- * at any scroll position, so there is nothing left to make legible.
+ * It is illustration and nothing else. The headline, lede and Discord CTA live
+ * in <IntroSection> instead, on the cloud background below — cloud text over
+ * the painted sky measures 1.43:1, and the only wash that lifts it past 4.5:1
+ * is a near-opaque pine field covering most of the frame. Keeping the copy off
+ * the hero avoids that trade rather than tuning it: no text sits over the
+ * artwork at any scroll position, so there is nothing to make legible.
  *
  * Layer contract:
  *
@@ -90,8 +90,8 @@ const PAN_SCROLL_FRACTION = 0.75
  * How the illustration's top edge stays pinned — and why the previous scheme
  * did not.
  *
- * Phase 3 used `object-position: center` + `transform-origin: center` and paid
- * for the pin with a derived `translateY((S-1)/2 x 100%)`. Writing `C` for the
+ * An earlier scheme used `object-position: center` + `transform-origin: center`
+ * and paid for the pin with a derived `translateY((S-1)/2 x 100%)`. Writing `C` for the
  * drawn content height and `H` for the stage height, that puts the content's
  * top edge at screen `S(H - C)/2`. On any viewport narrower than the artwork's
  * 16:9, cover is height-constrained, `C = H`, and the expression is 0 — pinned.
@@ -136,7 +136,7 @@ export function Hero() {
 
   // The page's only scroll subscription, and it is motion's, not ours — no
   // hand-rolled `addEventListener('scroll', ...)` anywhere in src/. Everything
-  // downstream (and everything Phase 4 adds) derives from this one value.
+  // downstream — including HeroClouds's parallax — derives from this one value.
   const { scrollYProgress: progress } = useScroll({
     target: trackRef,
     offset: ['start start', 'end end'],

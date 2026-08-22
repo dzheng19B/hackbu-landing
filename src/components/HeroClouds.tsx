@@ -4,13 +4,13 @@ import { cloudSources } from '../lib/images'
 import { rangeProgress, useHeroScroll } from '../lib/motion'
 
 /**
- * Phase 4 — the hero's drifting cloud parallax.
+ * The hero's drifting cloud parallax.
  *
  * This component *is* the `data-hero-clouds` layer of the hero stage: it mounts
  * over the campus artwork and is the topmost layer of it (see Hero.tsx for the
  * layer contract), rendering three depth layers of cloud cutouts over the sky.
  * There is nothing above it — the pine legibility scrim that used to sit there
- * went when Phase 7 moved the hero copy out.
+ * went when the hero copy moved out to <IntroSection>.
  *
  * Two independent motions compose here, and they are deliberately kept on
  * separate elements so they never fight over one transform:
@@ -140,9 +140,9 @@ type CloudLayerSpec = {
 /**
  * Three depth layers, four cutouts each — twelve clouds, cast by size.
  *
- *     far   cloud-6, cloud-12, cloud-4, cloud-10
- *     mid   cloud-7, cloud-2,  cloud-9, cloud-3
- *     near  cloud-5, cloud-1,  cloud-8, cloud-11
+ *     far   cloud-6, cloud-12, cloud-4,  cloud-10
+ *     mid   cloud-7, cloud-2,  cloud-9,  cloud-3
+ *     near  cloud-5, cloud-8,  cloud-11, cloud-1
  *
  * The casting is a sort on **intrinsic height**, not width, because height is
  * what reads as scale for clouds sitting in a horizontal sky band. Sorting on
@@ -170,10 +170,10 @@ type CloudLayerSpec = {
  * ---------------------------------------------------------------------------
  * Why all three layers still render at every viewport
  * ---------------------------------------------------------------------------
- * Phase 6 asked whether small screens should drop a layer and answered no on a
- * measurement taken at six clouds. Twelve clouds doubles the mounted node count
- * and the layer coverage, so the measurement is retaken here rather than
- * inherited.
+ * Whether small screens should drop a layer was measured, at six clouds, and
+ * answered no. Twelve clouds doubles the mounted node count and the layer
+ * coverage, so the measurement below is retaken at twelve rather than
+ * inherited from that answer.
  *
  * At 390x844, with `SET_COUNT` = 4, **48 `<img>` nodes are mounted and 16 of
  * them intersect the stage box** — the other 32 are tiles the stage clips
@@ -559,9 +559,9 @@ const LOOP_END = trackPercent(LEAD_SETS + 1)
  * tops a little way behind it — at 1440x900 the least-visible cloud, cloud-1,
  * still shows 72px of its 99px height below the header.
  *
- * (This was written assuming a stage narrower than the artwork's 16:9, and
- * noted that a wider viewport ate the sky band from both ends. Phase 6 fixed
- * that in the pan: the illustration is now pinned by its top edge at every
+ * (An earlier version of this calculation assumed a stage narrower than the
+ * artwork's 16:9, and noted that a wider viewport ate the sky band from both
+ * ends. That was fixed in the pan: the illustration is now pinned by its top edge at every
  * aspect, so at 2545x1080 the resting frame shows image rows 0..0.754 and the
  * ridgeline lands at 25.5% of the stage height instead of 9.2%. Every
  * `restingBottom` above puts its cloud's lower edge in the top 18%, so the

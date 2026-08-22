@@ -25,9 +25,11 @@
 
       The hero <img> lives inside the React bundle, so without this the browser
       cannot discover it until the module graph has parsed and the app has
-      mounted. `imagesrcset`/`imagesizes` are byte-identical to the <picture>
-      sources in src/components/Hero.tsx (via src/lib/images.ts) so the preload
-      and the element resolve to the same URL and the image is fetched once.
+      mounted. `imagesrcset`/`imagesizes` are identical to the <picture>
+      sources in src/components/Hero.tsx (via src/lib/images.ts) after srcset
+      whitespace normalisation (and byte-identical in the built HTML, which is
+      what the browser parses), so the preload and the element resolve to the
+      same URL and the image is fetched once.
 
       `type="image/avif"` gates the hint on AVIF support, which is the same
       condition that decides whether <picture> picks the AVIF <source> — so a

@@ -7,23 +7,25 @@
 
 export const DISCORD_URL = 'https://discord.gg/Xka5uUh'
 export const CONTACT_EMAIL = 'hello@hackbu.org'
+export const SCHEDULE_URL = 'https://hackbu.org/schedule'
 export const RESOURCES_URL = 'https://hackbu.org/resources'
+export const HACKATHONS_URL = 'https://hackbu.org/hackathons'
 
 /** The mailing-list / interest-form signup. */
 export const MAILING_LIST_URL = 'https://hackbu.org/mailing-list'
 
 /** The three header nav destinations (the Discord CTA is separate). */
 export const NAV_LINKS = [
-  { label: 'Schedule', href: 'https://hackbu.org/schedule' },
-  { label: 'Resources', href: 'https://hackbu.org/resources' },
-  { label: 'Hackathons', href: 'https://hackbu.org/hackathons' },
+  { label: 'Schedule', href: SCHEDULE_URL },
+  { label: 'Resources', href: RESOURCES_URL },
+  { label: 'Hackathons', href: HACKATHONS_URL },
 ] as const
 
 /** All eight existing hackbu.org pages, split into two footer columns. */
 export const SITE_PAGES = [
-  { label: 'Schedule', href: 'https://hackbu.org/schedule' },
-  { label: 'Resources', href: 'https://hackbu.org/resources' },
-  { label: 'Hackathons', href: 'https://hackbu.org/hackathons' },
+  { label: 'Schedule', href: SCHEDULE_URL },
+  { label: 'Resources', href: RESOURCES_URL },
+  { label: 'Hackathons', href: HACKATHONS_URL },
   { label: 'Registration', href: 'https://hackbu.org/registration' },
   { label: 'Blog', href: 'https://hackbu.org/blog' },
   { label: 'Photos', href: 'https://hackbu.org/photos' },

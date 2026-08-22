@@ -26,11 +26,12 @@ and copies them into `dist/` untransformed. Reference them by absolute URL, e.g.
 
 **`public/artwork/campus/Campus.png` is the campus illustration** — the single painterly
 scene of Binghamton University under snow that the scroll-driven hero pan reveals. It is
-the only file in `public/artwork/campus/`, and the only non-cloud asset.
+the only *source* file in `public/artwork/campus/` (the AVIF/WebP derivatives sit beside
+it — see Derivatives below), and the only non-cloud asset.
 
 ## The cloud cutouts
 
-**The twelve files in `public/artwork/clouds/` (`cloud-1.png` … `cloud-12.png`) are
+**The twelve PNGs in `public/artwork/clouds/` (`cloud-1.png` … `cloud-12.png`) are
 individual cloud cutouts** — separate, independently placeable elements, each with its own alpha
 channel. They are not a spritesheet and not tiles of one image; each is one cloud on a
 transparent background, intended to be layered over the campus scene and parallaxed
@@ -74,12 +75,13 @@ All thirteen are valid PNGs at 8-bit depth, and every cutout is tightly cropped 
 ink fills its canvas. Dimensions were read directly from each file's IHDR chunk; sizes
 are from the filesystem.
 
-## Derivatives (Phase 6)
+## Derivatives
 
 `npm run images` (`scripts/generate-images.mjs`, using `sharp` as a devDependency)
 writes AVIF and WebP derivatives **beside** each PNG. The PNGs above are untouched and
 remain the last-resort `<img src>` inside each `<picture>`. The derivatives are
-committed, so a deploy runs `vite build` and nothing else.
+committed, so a deploy does not need to run `npm run images` — the build runs
+`npm run build` (`tsc -b && vite build`, plus the prerender step) and nothing else.
 
 | Output | Widths | Encoder | Total |
 | --- | --- | --- | --- |
@@ -113,7 +115,7 @@ site ships is derived, by the same `npm run images` run.
 | --- | --- | --- | --- | --- |
 | `brand-source/icon.png` | 1920 × 2033 | 1741 × 1828 (0.95241) | `#339966`, one stroke colour | Yes |
 | `brand-source/text.png` | 7690 × 1080 | 7690 × 1080 (7.12037) — no padding | `#42B872`, one stroke colour | Yes |
-| `brand-source/icon_discord.png` | 732 × 732 | n/a — opaque tile | `#97F5AC` tile, `#50B536` mark | No (opaque) |
+| `brand-source/icon_discord.png` | 732 × 732 | n/a — opaque tile | `#97F5AC` tile, `#50B536` mark | Yes — channel present, fully opaque |
 
 The two greens are not the same, and neither is a palette colour. The page does not
 reconcile them in the pixels: the marks render as `mask-image` shapes filled with the
@@ -133,20 +135,23 @@ white before encoding, which `mask-image` never reads.
 
 The mask rungs are `[1x, 2x]` against the largest place each mark is drawn — the `sm`
 header lockup, where the bearcat is 35.7 CSS px wide and the wordmark 153.8. One rung of
-each loads per device: **5.3 KB at 1x, 11.7 KB at 2x**, on top of the artwork's 483.7 KB.
+each loads per device: **5.2 KB at 1x, 11.5 KB at 2x**, on top of the artwork's 483.7 KB.
 
 `icon_discord.png` is 2,158,148 bytes as delivered, for a 14-colour 732 × 732 image;
 re-encoding it as a palette PNG is what turns it into the 10 KB social card above.
 
-## Notes for later phases
+## Notes
 
-These are observations from the raw files, not design decisions:
+Observations from the raw files. The two questions this section used to raise are both
+settled — recorded here as fact rather than as open questions:
 
-- **Campus.png is 1672 px wide and has no alpha.** At 16:9 it is roughly one screen-width
-  of image. A horizontal scroll-pan has limited travel before it upscales past 1:1 on a
-  wide desktop viewport; a vertical pan or a scale-and-translate reveal fits the source
-  dimensions better. Worth confirming against the intended motion before building it.
-- **At 2.81 MiB, Campus.png dominates page weight** — it is 88% of the artwork bytes and
-  will gate largest-contentful-paint. Compressing it or emitting a WebP/AVIF alongside is
-  the obvious lever if load time matters.
+- **The hero is a vertical scale-pan, not a horizontal scroll-pan.** Campus.png is 1672 px
+  wide and has no alpha; a horizontal scroll-pan would have had limited travel before
+  upscaling past 1:1 on a wide desktop viewport. `src/components/Hero.tsx` instead scales
+  the illustration up from a fixed top edge (`object-position: 52% 0%` +
+  `transform-origin: top`, no translation at all), which fits the source dimensions.
+- **At 2.81 MiB, Campus.png is 78% of the artwork bytes** (2,942,406 / 3,780,900 —
+  `ASSETS.md:57`'s total — = 77.8%, rounded). It is also the largest-contentful-paint
+  candidate; AVIF/WebP derivatives beside it are what keep the transferred weight far
+  below that, per Derivatives above.
 - The clouds are small (70–303 px tall) and will be visibly soft if scaled far above 1:1.

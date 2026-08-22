@@ -119,12 +119,14 @@
   --color-stone: #c4b79e;
   --color-pine: #3c5c48;
   /*
-   * haze is a scene colour, not a text colour. Measured against the two page
-   * backgrounds it reaches only 2.72:1 on cloud and 2.29:1 on frost — below
-   * WCAG AA for normal text (4.5:1) and below AA large (3:1) as well, so it
-   * cannot legibly carry copy at any size. Phase 6 moved every eyebrow and
-   * caption that used it to `text-pine/90` (5.36:1 on cloud, 4.65:1 on frost),
-   * which is the lightest tint of the only token that clears AA on both.
+   * haze was defined as a scene colour, not a text colour — but it is
+   * currently unused anywhere in `src/`, the same as `horizon` above (see
+   * README's colour table). It was retired from text use because, measured
+   * against the two page backgrounds, it reaches only 2.72:1 on cloud and
+   * 2.29:1 on frost — below WCAG AA for normal text (4.5:1) and below AA
+   * large (3:1) as well. Every eyebrow and caption uses `text-pine/90`
+   * instead (5.36:1 on cloud, 4.65:1 on frost), the lightest tint of the
+   * only token that clears AA on both.
    */
   --color-haze: #7c99b4;
 
@@ -153,7 +155,7 @@
     Roboto, Helvetica, Arial, sans-serif;
 
   /*
-   * Type scale (Phase 2). Named steps so later phases never hand-pick sizes.
+   * Type scale. Named steps so nothing hand-picks a size ad hoc.
    * Display steps are fluid; body steps are fixed.
    *
    *   text-display-xl  hero headline            (font-display)

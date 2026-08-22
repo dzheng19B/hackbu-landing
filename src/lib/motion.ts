@@ -18,8 +18,9 @@ import { cubicBezier, useReducedMotion, type MotionValue } from 'motion/react'
  *   2. where the hero's scroll progress -> HeroScrollContext / useHeroScroll()
  *      comes from
  *
- * Phase 3 establishes both. Phase 4 (cloud parallax) and Phase 5 (section
- * reveals) are expected to consume them, not re-derive them.
+ * Both are consumed rather than re-derived: `HeroClouds.tsx`'s cloud parallax
+ * and `Reveal.tsx`'s section reveals both read them from here instead of
+ * calling `useReducedMotion()` or `useScroll()` a second time.
  */
 
 /* -------------------------------------------------------------------------- */
@@ -41,8 +42,11 @@ import { cubicBezier, useReducedMotion, type MotionValue } from 'motion/react'
  * reduced-motion user is stranded in dead scroll space. See `Hero.tsx`, which
  * collapses its 260dvh track to a single viewport.
  *
- * Note: motion reads the media query once at mount and does not re-subscribe,
- * so a mid-session OS change takes effect on the next page load.
+ * Note: motion captures the value in `useState` at mount and never re-renders
+ * on a change — the underlying media query *is* subscribed to (it updates a
+ * module-level ref motion keeps for its own purposes), but nothing here reads
+ * that ref again, so a mid-session OS change takes effect only on the next
+ * page load.
  *
  * **Why it is gated on having mounted.** Both pages are prerendered at build
  * time (P5-1), and a server has no media queries: motion's own hook is written
@@ -139,9 +143,10 @@ export type HeroScroll = {
 }
 
 /**
- * Phase 4's cloud layers mount inside the hero stage and read this instead of
- * calling `useScroll` again — one scroll subscription, one source of truth,
- * and no chance of the clouds and the campus disagreeing about progress.
+ * The hero's cloud layers (`HeroClouds.tsx`) mount inside the hero stage and
+ * read this instead of calling `useScroll` again — one scroll subscription,
+ * one source of truth, and no chance of the clouds and the campus disagreeing
+ * about progress.
  */
 export const HeroScrollContext = createContext<HeroScroll | null>(null)
 

@@ -6,7 +6,8 @@
  * the PNGs in `public/artwork/` stay in place as the final <picture> fallback.
  *
  * This runs by hand, not on every build: the outputs are committed, so a
- * deploy needs nothing but `vite build`. `sharp` is therefore a devDependency
+ * deploy needs nothing but `npm run build` (`tsc -b && vite build`, plus the
+ * prerender step) — never this script. `sharp` is therefore a devDependency
  * and never reaches the browser bundle.
  *
  * ---------------------------------------------------------------------------

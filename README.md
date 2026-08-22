@@ -192,7 +192,7 @@ Two numbers in the hero are tied to the specific artwork and will need re-derivi
 - **`PAN_START_SCALE`** in `src/components/Hero.tsx` (currently `3`). The hero shows the
   top `1/scale` of the image at scroll 0, and **no buildings** may be visible there. In
   the current illustration the first buildings appear at `0.351` of the image height, so
-  the start scale must stay above `1 / 0.351 ≈ 2.86`. Measure where buildings begin in the new
+  the start scale must stay above `1 / 0.351 ≈ 2.85`. Measure where buildings begin in the new
   image and set the scale accordingly. Note this is a floor, not a preference — dropping
   below it puts rooftops on screen before the user has scrolled.
 - **`object-position`** on the campus `<img>` (currently `52% 0%`). The horizontal value
@@ -258,8 +258,8 @@ palette colours, no `#000000`.
 | `frost` | `#DCE3EA` | dividers, muted surfaces, card fills |
 | `brick` | `#A2593A` | the single accent — links, buttons, hover |
 | `stone` | `#C4B79E` | tertiary / decorative only |
-| `pine` | `#3C5C48` | body text and headings (never pure black) |
-| `haze` | `#7C99B4` | scene colour only |
+| `pine` | `#3C5C48` | body text, headings, focus rings, the button hover fill and the toggle's border/hover fill (never pure black) |
+| `haze` | `#7C99B4` | **currently unused** — retired from text (2.72:1 on `cloud`, below AA) and not used as a scene colour either |
 | `fern` | `#339966` | **logo only** — the two brand marks, and nothing else |
 
 `brick` is the **only** accent; adding a second one is a design regression. `haze` is
@@ -272,8 +272,8 @@ to one. It fills the marks and nothing else: no link, button, border, background
 It measures 3.27:1 on `cloud`, which a logotype is exempt from and a word is not.
 
 Link hover is a per-surface rule, and it lives in one place. `LINK_ON_CLOUD` and
-`LINK_ON_FROST` in `src/components/ExternalLink.tsx` are the only two link treatments on
-the page: brick hover on `cloud` (4.78:1), underline hover on `frost`, because brick on
+`LINK_ON_FROST` in `src/components/ExternalLink.tsx` are the only two **text-link**
+treatments on the page: brick hover on `cloud` (4.78:1), underline hover on `frost`, because brick on
 frost measures 4.03:1 and fails AA. Pick by the surface the link is painted on.
 
 There is a third named treatment, and it is not for links: `TOGGLE_ON_CLOUD` in
@@ -300,8 +300,11 @@ copy — the headline and primary CTA sit in the intro section immediately below
 
 ```
 src/
+  main.tsx                   landing entry: hydrateRoot in prod, createRoot in dev
+  entry-server.tsx           build-time SSR render, read by scripts/prerender.mjs
   App.tsx                    page composition
   index.css                  Tailwind theme: colour tokens, type scale, fonts
+  landing.css                index.css plus one `@source not` line, excluding the sheet
   lib/
     links.ts                 every off-site URL, centralised
     motion.ts                usePrefersReducedMotion, hero scroll context
@@ -311,17 +314,23 @@ src/
     HeroClouds.tsx           three parallax cloud layers
     Reveal.tsx               whileInView reveals (enter-once, staggered)
     Layout.tsx               Container / Section / Eyebrow / SectionHeader
-    SiteHeader.tsx           fixed header, collapses to a menu at 390px
+    SiteHeader.tsx           fixed header, collapses to a menu below `md` (768px)
     SiteFooter.tsx           all eight existing site pages, contact, socials
     SnowdriftDivider.tsx     inline SVG snowdrift dividers
     ButtonLink.tsx           the page's one button treatment
-    ExternalLink.tsx         same-site vs new-tab routing + the two link treatments
+    ExternalLink.tsx         same-site vs new-tab routing + the two text-link treatments
     controls.ts              TOGGLE_ON_CLOUD — the outlined pill button
     Wordmark.tsx             the logo lockup, as masked fern marks
     sections/                Intro, About, GetInvolved, Questions, Contact
+  sheet/                     the component sheet at /components — see above
+    main.tsx                 sheet entry: hydrateRoot in prod, createRoot in dev
+    sheet.css, kit.tsx, ComponentSheet.tsx
+    parts/                   Tokens, Primitives, Composed, Hero
 scripts/
   generate-images.mjs        artwork derivatives + brand masks and app icons
+  prerender.mjs              build-time prerender, run after `vite build`
 public/
   artwork/                   campus + cloud PNGs and their derivatives
   brand/                     logo masks, favicons, app tile
+  404.html                   the static 404 body (see "The component sheet" above)
 ```

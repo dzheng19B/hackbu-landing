@@ -22,8 +22,8 @@ type Size = 'sm' | 'md' | 'lg'
  * 5.76:1 respectively — so one ring colour covers the whole page.
  *
  * (A `light` variant existed for the hero CTA, whose ring had to clear the pine
- * legibility scrim. Phase 7 moved that CTA onto cloud with the rest of the hero
- * copy and the scrim went with it, leaving nothing that needed the second tone.)
+ * legibility scrim. That CTA now sits on cloud with the rest of the hero copy,
+ * and the scrim went with it, leaving nothing that needs the second tone.)
  */
 const BASE =
   'inline-flex items-center justify-center gap-2 rounded-full font-medium ' +

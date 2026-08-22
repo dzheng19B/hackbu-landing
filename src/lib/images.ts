@@ -1,5 +1,5 @@
 /**
- * Image delivery constants (Phase 6a).
+ * Image delivery constants.
  *
  * `scripts/generate-images.mjs` writes AVIF + WebP derivatives beside the PNGs
  * in `public/artwork/`; this module is the single place the app describes them.

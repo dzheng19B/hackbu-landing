@@ -1515,3 +1515,465 @@ $ git status --porcelain public/
 $ cmp public/404.html dist/404.html && echo identical
 identical
 ```
+
+---
+
+## Phase 5 — documentation accuracy
+
+Eighteen findings: P6-1 … P6-10, P3-2, P3-3, P3-4, P3-5, P5-9, P5-10, P5-11, P2-1. Files
+touched: `README.md`, `ASSETS.md`, `index.html`, `src/lib/links.ts`, `src/lib/images.ts`,
+`src/lib/motion.ts`, `src/App.tsx`, `src/components/Hero.tsx`,
+`src/components/HeroClouds.tsx`, `src/components/ButtonLink.tsx`,
+`src/components/sections/IntroSection.tsx`, `src/index.css`, `scripts/generate-images.mjs`.
+No file outside this list changed; `public/` is untouched; nothing in `src/lib/images.ts`'s
+srcset arrays, `scripts/generate-images.mjs`'s srcset array, or any `@theme` value was
+edited — every diff to those three files is comment-only (verified below).
+
+**Method.** Walked `audit/06-docs-hygiene.md` §1 (148 rows) in order, plus the specific
+items named in this phase's brief from `audit/03-design-system.md` (P3-2/3/4/5),
+`audit/05-performance.md` (P5-9/10/11) and `audit/02-code.md` (P2-1). For each FALSE/STALE
+row, opened the source by searching for the quoted text (not the audit's line number, which
+predates Phases 1–4's edits), confirmed the current code, and rewrote the claim. Every TRUE
+row was re-derived against the code as it stands now rather than trusted; one — the
+`ASSETS.md` "Notes" bullet on the hero's motion — had gone stale since Phase 2 replaced the
+hero's `translateY` compensation with a pure top-anchored scale (`Hero.tsx:69,
+"translateY is gone; scale alone drives the pan"`), which an earlier draft of this phase's
+own edit to that bullet had not accounted for; caught on re-read and corrected in the same
+pass (see `ASSETS.md:148–151` below).
+
+### P6-1 · FIXED · `ASSETS.md:29`, `ASSETS.md:34`
+
+`public/artwork/campus/` now reads "the only *source* file … (the AVIF/WebP derivatives sit
+beside it — see Derivatives below)"; `public/artwork/clouds/` now reads "twelve **PNGs**"
+rather than "twelve files", so the sentence no longer contradicts the same document's own
+Derivatives section 50 lines below it.
+
+```
+$ grep -n "only \*source\* file\|twelve PNGs" ASSETS.md
+29:the only *source* file in `public/artwork/campus/` (the AVIF/WebP derivatives sit beside
+34:**The twelve PNGs in `public/artwork/clouds/` (`cloud-1.png` … `cloud-12.png`) are
+$ ls public/artwork/campus | wc -l ; ls public/artwork/clouds | wc -l
+9
+36
+```
+
+### P6-2 · FIXED · `ASSETS.md:152`
+
+"88% of the artwork bytes" (stale since commit `9a5a72d` doubled the cloud count) is now
+"78%", recomputed and shown:
+
+```
+$ ls -l public/artwork/campus/Campus.png
+-rw-r--r-- 1 danz3 197609 2942406 ... public/artwork/campus/Campus.png
+$ du -cb public/artwork/campus/Campus.png public/artwork/clouds/*.png | tail -1
+3780900 total
+$ node -e "console.log(2942406/3780900*100)"
+77.82289930968817
+```
+
+2,942,406 / 3,780,900 = 77.8%, rounded to 78% — matching `ASSETS.md:57`'s stated total.
+
+### P6-3 · FIXED · `ASSETS.md:143–156`
+
+The "Notes for later phases" heading and its two resolved bullets are gone. The section is
+now "## Notes" and states both facts in the present tense: the hero is a vertical scale-pan
+(citing `Hero.tsx`'s `object-position: 52% 0%` / `transform-origin: top`, no translation),
+and the AVIF/WebP derivatives that were "the obvious lever" are cross-referenced to the
+Derivatives section that already ships them. The third bullet (cloud heights) is untouched.
+
+```
+$ grep -n "Notes for later phases\|Worth confirming against the intended motion\|is the obvious lever" ASSETS.md ; echo "EXIT=$?"
+EXIT=1
+$ sed -n '143,156p' ASSETS.md
+## Notes
+
+Observations from the raw files. The two questions this section used to raise are both
+settled — recorded here as fact rather than as open questions:
+
+- **The hero is a vertical scale-pan, not a horizontal scroll-pan.** Campus.png is 1672 px
+  wide and has no alpha; a horizontal scroll-pan would have had limited travel before
+  upscaling past 1:1 on a wide desktop viewport. `src/components/Hero.tsx` instead scales
+  the illustration up from a fixed top edge (`object-position: 52% 0%` +
+  `transform-origin: top`, no translation at all), which fits the source dimensions.
+- **At 2.81 MiB, Campus.png is 78% of the artwork bytes** (2,942,406 / 3,780,900 —
+  `ASSETS.md:57`'s total — = 77.8%, rounded). It is also the largest-contentful-paint
+  candidate; AVIF/WebP derivatives beside it are what keep the transferred weight far
+  below that, per Derivatives above.
+- The clouds are small (70–303 px tall) and will be visibly soft if scaled far above 1:1.
+```
+
+### P6-4 · FIXED · `README.md:317`
+
+"collapses to a menu at 390px" → "collapses to a menu below `md` (768px)", matching
+`src/components/SiteHeader.tsx:16`'s own (already-correct) header comment.
+
+```
+$ grep -c '390px' README.md
+0
+$ grep -n '768\|md:' README.md
+317:    SiteHeader.tsx           fixed header, collapses to a menu below `md` (768px)
+```
+
+### P6-5 · FIXED · `README.md:195`
+
+`1 / 0.351 ≈ 2.86` → `≈ 2.85`, matching `src/components/Hero.tsx:69`'s "S > 2.85" (Hero.tsx
+itself already said 2.85; only the README quotient was stale).
+
+```
+$ grep -n "2.85\|2.86" README.md src/components/Hero.tsx
+README.md:195:  the start scale must stay above `1 / 0.351 ≈ 2.85`. Measure where buildings begin in the new
+src/components/Hero.tsx:69: * The binding constraint is 1/S < 0.351, i.e. S > 2.85; 2.4 would have shown
+```
+
+### P6-6 · FIXED · `README.md:301–336`
+
+The Layout tree gained `main.tsx`, `entry-server.tsx`, `landing.css`, a `sheet/` entry
+(pointing at the "component sheet" section), `scripts/prerender.mjs` and `public/404.html` —
+every file Phases 1–4 added that the tree had never listed.
+
+```
+$ grep -n "main.tsx\|entry-server.tsx\|landing.css\|^  sheet/\|prerender.mjs\|404.html" README.md
+303:  main.tsx                   landing entry: hydrateRoot in prod, createRoot in dev
+304:  entry-server.tsx           build-time SSR render, read by scripts/prerender.mjs
+307:  landing.css                index.css plus one `@source not` line, excluding the sheet
+325:  sheet/                     the component sheet at /components — see above
+331:  prerender.mjs              build-time prerender, run after `vite build`
+335:  404.html                   the static 404 body (see "The component sheet" above)
+$ ls -R src/sheet
+ComponentSheet.tsx  kit.tsx  main.tsx  parts  sheet.css
+parts:
+ComposedPart.tsx  HeroPart.tsx  PrimitivesPart.tsx  TokensPart.tsx
+```
+
+### P6-7 · FIXED · `src/components/HeroClouds.tsx:145`
+
+The `near` row of the cast-list comment read `cloud-5, cloud-1, cloud-8, cloud-11`; the
+array at `:350,359,368,377` is `cloud-5, cloud-8, cloud-11, cloud-1`. Reordered the comment
+to match. `far` (`:235,244,253,262`) and `mid` (`:282,291,300,309`) already matched their
+rows and were untouched.
+
+```
+$ grep -n "id: 'far'\|id: 'mid'\|id: 'near'\|file: 'cloud" src/components/HeroClouds.tsx | head -20
+226:    id: 'far',
+235:        file: 'cloud-6.png',
+244:        file: 'cloud-12.png',
+253:        file: 'cloud-4.png',
+262:        file: 'cloud-10.png',
+273:    id: 'mid',
+282:        file: 'cloud-7.png',
+291:        file: 'cloud-2.png',
+300:        file: 'cloud-9.png',
+309:        file: 'cloud-3.png',
+320:    id: 'near',
+350:        file: 'cloud-5.png',
+359:        file: 'cloud-8.png',
+368:        file: 'cloud-11.png',
+377:        file: 'cloud-1.png',
+$ sed -n '143,145p' src/components/HeroClouds.tsx
+ *     far   cloud-6, cloud-12, cloud-4,  cloud-10
+ *     mid   cloud-7, cloud-2,  cloud-9,  cloud-3
+ *     near  cloud-5, cloud-8,  cloud-11, cloud-1
+```
+
+### P6-8 · FIXED · 8 files, 15 sites
+
+Every "Phase N" label across the build's own source rewritten to describe the code in
+present tense rather than reference a plan that exists only in the git log. The one that was
+substantively stale (`motion.ts`'s "Phase 4 … and Phase 5 … are expected to consume them" —
+both had long since shipped) now reads as fact; the rest were cosmetic re-wordings of
+accurate but plan-referencing prose:
+
+- `src/components/ButtonLink.tsx:25` — "Phase 7 moved that CTA" → "That CTA now sits"
+- `src/components/Hero.tsx:23,93,139` — "Phase 7 moved" → "live in <IntroSection> instead";
+  "Phase 3 used" → "An earlier scheme used"; "everything Phase 4 adds" → "including
+  HeroClouds's parallax"
+- `src/components/HeroClouds.tsx:7,13,173,564` — "Phase 4 —" dropped from the file header;
+  "Phase 7 moved the hero copy out" → "the hero copy moved out to <IntroSection>"; "Phase 6
+  asked … answered no" → "was measured … and answered no"; "Phase 6 fixed that in the pan" →
+  "That was fixed in the pan"
+- `src/components/sections/IntroSection.tsx:11` — "Phase 7 moved it here" → "it lives here
+  instead"
+- `src/index.css:125,158` — "Phase 6 moved every eyebrow" → "Every eyebrow … uses"; "Type
+  scale (Phase 2)" → "Type scale"
+- `src/lib/images.ts:2` — "(Phase 6a)" dropped
+- `src/lib/motion.ts:21,146` — see P6-9's evidence below; "Phase 4's cloud layers" → "The
+  hero's cloud layers (`HeroClouds.tsx`)"
+- `ASSETS.md:78` — "## Derivatives (Phase 6)" → "## Derivatives"
+
+```
+$ grep -rn "Phase [0-9]" src index.html components.html README.md ASSETS.md scripts vercel.json ; echo "EXIT=$?"
+EXIT=1
+```
+
+### P6-9 · FIXED · `src/lib/motion.ts:44–49`
+
+"motion reads the media query once at mount and does not re-subscribe" named the wrong half
+of the mechanism — the underlying `matchMedia` listener *is* live (it updates a module-level
+ref motion keeps for its own purposes); what never updates is the hook's own `useState`,
+which is what actually causes the "no re-render on a mid-session change" behaviour the
+comment was trying to describe. Reworded to name both halves, so a future reader does not
+add a redundant second `matchMedia` listener while trying to "fix" a subscription that
+already exists.
+
+```
+$ sed -n '44,49p' src/lib/motion.ts
+ * Note: motion captures the value in `useState` at mount and never re-renders
+ * on a change — the underlying media query *is* subscribed to (it updates a
+ * module-level ref motion keeps for its own purposes), but nothing here reads
+ * that ref again, so a mid-session OS change takes effect only on the next
+ * page load.
+$ grep -c "addEventListener(\"change\"" node_modules/motion-dom/dist/es/render/utils/reduced-motion/index.mjs
+1
+```
+
+### P6-10 · FIXED · `ASSETS.md:78–84`, `scripts/generate-images.mjs:8–11`; `README.md` already correct
+
+"a deploy runs `vite build` and nothing else" (`ASSETS.md`) and "a deploy needs nothing but
+`vite build`" (`generate-images.mjs`) both under-described the build, which also lints and
+type-checks (`package.json`'s `"build": "npm run lint && tsc -b && vite build && node
+scripts/prerender.mjs"`). Both now name `npm run build` and its real steps.
+`README.md:107–108` was checked and was **already** accurate (an earlier phase's prerender
+work rewrote it) — "a build is lint, `tsc -b`, `vite build` and `node scripts/prerender.mjs`,
+nothing else" — so no README edit was needed for this finding; it is recorded here only to
+close the finding against all three sites the original evidence named.
+
+```
+$ grep -n "npm run build\|nothing else\|never this script" ASSETS.md scripts/generate-images.mjs README.md
+ASSETS.md:83:committed, so a deploy does not need to run `npm run images` — the build runs
+ASSETS.md:84:`npm run build` (`tsc -b && vite build`, plus the prerender step) and nothing else.
+scripts/generate-images.mjs:9: * deploy needs nothing but `npm run build` (`tsc -b && vite build`, plus the
+scripts/generate-images.mjs:10: * prerender step) — never this script. `sharp` is therefore a devDependency
+README.md:108:a build is lint, `tsc -b`, `vite build` and `node scripts/prerender.mjs`, nothing else. Run
+```
+
+### P3-2 · FIXED · `README.md:261`
+
+`pine`'s role cell gained "focus rings, the button hover fill and the toggle's
+border/hover fill" — the two interactive uses (`ButtonLink.tsx:30` `hover:bg-pine`;
+`ExternalLink.tsx:30`, `SiteHeader.tsx:51,77`, `App.tsx:30` for focus rings; `controls.ts:39`
+`TOGGLE_ON_CLOUD`'s `border-pine … hover:bg-pine`) the table previously omitted — matching
+`src/sheet/parts/TokensPart.tsx:89`'s "All text, all focus rings, and the button's hover
+fill," extended once more for the toggle Phase 2 added after that sheet copy was written.
+
+```
+$ grep -n "pine.*focus rings" README.md src/sheet/parts/TokensPart.tsx
+README.md:261:| `pine` | `#3C5C48` | body text, headings, focus rings, the button hover fill and the toggle's border/hover fill (never pure black) |
+src/sheet/parts/TokensPart.tsx:89:    role: 'All text, all focus rings, and the button’s hover fill.',
+```
+
+### P3-3 · FIXED · `README.md:262`, `src/index.css:122–130`
+
+`haze`'s role cell now reads "**currently unused**", the same phrasing already used for
+`horizon` one row above, in place of "scene colour only" — which implied a live role that
+`grep -rn haze src/` (outside the sheet) does not show. The `@theme` comment above
+`--color-haze` was reworded to match, since it made the same "scene colour, not text colour"
+claim without noting the token has no scene use either today.
+
+```
+$ grep -rn "haze" src/ README.md | grep -v "src/sheet/"
+src/components/Layout.tsx:55: * One treatment, defined once. The colour is `pine/90` rather than `haze`: haze
+src/index.css:122:   * haze was defined as a scene colour, not a text colour — but it is
+src/index.css:127:   * only token that clears AA on both.
+src/index.css:130:  --color-haze: #7c99b4;
+README.md:262:| `haze` | `#7C99B4` | **currently unused** — retired from text (2.72:1 on `cloud`, below AA) and not used as a scene colour either |
+```
+
+### P3-4 · DOCUMENTED (comment reworded) · `src/App.tsx:70–77`
+
+The audit's own assessment (`03-design-system.md` P3-4) called this a `note`, not a
+violation — the "no arbitrary hex" rule targets painted colour, and `#ccc3ad` in a comment
+paints nothing — and recommended no fix beyond an exemption if a colour lint is ever added.
+This phase's brief asked specifically for the hex to be replaced with a token name, so the
+raw hex is gone; the wording is honest that `#ccc3ad` is a **measured artwork colour**, close
+to but not equal to `stone` (`#c4b79e`), rather than claiming an equivalence that does not
+hold (204,195,173 vs 196,183,158 — a 8–15 point difference per channel).
+
+```
+$ grep -n "#[0-9a-fA-F]\{6\}" src/App.tsx ; echo "EXIT=$?"
+EXIT=1
+$ sed -n '70,77p' src/App.tsx
+          {/*
+           * A `drift-*` variant, not a sky-backed one. The divider is only ever
+           * *seen* after the stage unpins, i.e. after the pan has finished, and
+           * the finished frame ends on the snowy foreground plaza: the bottom 20
+           * rows of Campus.png average a warm sand-grey close to (but not the
+           * same as) the `stone` token — a measured artwork colour, not a
+           * design token, so it is not what the "no arbitrary hex" rule in
+           * README's Conventions section is aimed at. A saturated
+           * blue band under that would read as a stripe. (A `sky-to-cloud`
+```
+
+### P3-5 · FIXED · `README.md:274–276`, `README.md:321`
+
+"the only two link treatments on the page" → "the only two **text-link** treatments on the
+page", matching `src/components/ExternalLink.tsx:8`'s own correctly-scoped wording ("Every
+**text** link on the page uses one of the two strings below"). This resolves the apparent
+contradiction with `ButtonLink.tsx` (an `<a>` with its own `hover:bg-pine`) and the header
+logo link (`SiteHeader.tsx:50–52`, a focus ring only) — neither is a text link, so neither
+was ever a counterexample to the narrower claim. The Layout-tree line for `ExternalLink.tsx`
+was reworded the same way for consistency.
+
+```
+$ grep -n "text-link" README.md
+README.md:275:`LINK_ON_FROST` in `src/components/ExternalLink.tsx` are the only two **text-link**
+README.md:321:    ExternalLink.tsx         same-site vs new-tab routing + the two text-link treatments
+```
+
+### P5-9 · FIXED · `ASSETS.md:118`
+
+`brand-source/icon_discord.png`'s Alpha cell: "No (opaque)" → "Yes — channel present, fully
+opaque". The file has 4 channels and `hasAlpha: true`; it is fully opaque, but "no alpha
+channel" and "an alpha channel with no transparency" are different facts, and the cell
+stated the wrong one.
+
+```
+$ node -e "require('sharp')('brand-source/icon_discord.png').metadata().then(m=>console.log(JSON.stringify({channels:m.channels,hasAlpha:m.hasAlpha})))"
+{"channels":4,"hasAlpha":true}
+$ grep -n "icon_discord.png" ASSETS.md | grep Alpha
+118:| `brand-source/icon_discord.png` | 732 × 732 | n/a — opaque tile | `#97F5AC` tile, `#50B536` mark | Yes — channel present, fully opaque |
+```
+
+### P5-10 · FIXED · `ASSETS.md:138`
+
+"5.3 KB at 1x, 11.7 KB at 2x" (KB = 1000, truncated) → "5.2 KB at 1x, 11.5 KB at 2x" (÷1024,
+matching the rest of the document and `scripts/generate-images.mjs`'s own convention).
+
+```
+$ ls -l public/brand/bearcat-mask-64.png public/brand/wordmark-mask-192.png public/brand/bearcat-mask-128.png public/brand/wordmark-mask-384.png
+-rw-r--r-- 1 danz3 197609 6941 ... bearcat-mask-128.png
+-rw-r--r-- 1 danz3 197609 3164 ... bearcat-mask-64.png
+-rw-r--r-- 1 danz3 197609 2147 ... wordmark-mask-192.png
+-rw-r--r-- 1 danz3 197609 4850 ... wordmark-mask-384.png
+$ node -e "console.log((3164+2147)/1024, (6941+4850)/1024)"
+5.1865234375 11.5146484375
+```
+
+### P5-11 · FIXED · `index.html:26–31`
+
+"`imagesrcset`/`imagesizes` are byte-identical to the `<picture>` sources" is true of
+`dist/index.html` but not of the source, where `imagesrcset` is written across five indented
+lines and `campusSrcSet('avif')` joins with `', '`. Reworded to "are identical … after
+srcset whitespace normalisation (and byte-identical in the built HTML, which is what the
+browser parses)".
+
+```
+$ sed -n '26,31p' index.html
+      LCP preload for the campus illustration.
+
+      The hero <img> lives inside the React bundle, so without this the browser
+      cannot discover it until the module graph has parsed and the app has
+      mounted. `imagesrcset`/`imagesizes` are identical to the <picture>
+      sources in src/components/Hero.tsx (via src/lib/images.ts) after srcset
+```
+
+### P2-1 · FIXED · `src/lib/links.ts:10,12,19,21,26,28`
+
+Hoisted `SCHEDULE_URL` and `HACKATHONS_URL` alongside the existing `RESOURCES_URL`, and
+`NAV_LINKS` / `SITE_PAGES` now reference all three instead of re-typing the literal strings
+— the same pattern `SOCIAL_LINKS` already used for `DISCORD_URL`. The module's own docstring
+(`:5`, "reuse these constants rather than re-typing hrefs") is now followed throughout the
+file it sits in.
+
+```
+$ grep -c "hackbu.org/resources'" src/lib/links.ts
+1
+$ grep -c "hackbu.org/schedule'" src/lib/links.ts
+1
+$ grep -c "hackbu.org/hackathons'" src/lib/links.ts
+1
+```
+
+(Each of the three now appears exactly once, in its `const` definition; every other site
+references the constant.)
+
+### §1 rows changed
+
+| Row(s) | Claim | Before | After |
+|---|---|---|---|
+| 12 | README "a build is just `vite build`" | FALSE | already TRUE (fixed by an earlier phase's prerender work, before this phase started; re-verified, not re-edited) |
+| 18 | README "anything else → the catch-all rewrite to `/index.html`" | FALSE | already TRUE (fixed in fix-log Phase 3 — P5-4 — which replaced the whole routing table; re-verified, not re-edited) |
+| 27 | README "≈ 2.86" scale floor | FALSE | TRUE (P6-5) |
+| 36 | README `haze` "scene colour only" | STALE | TRUE (P3-3) |
+| 40 | README "only two link treatments" | FALSE | TRUE (P3-5) |
+| 57 | README Layout tree omits `main.tsx`/`landing.css`/`sheet/` | STALE | TRUE (P6-6) |
+| 58 | README header collapses "at 390px" | FALSE | TRUE (P6-4) |
+| 68 | ASSETS.md campus dir "only file" | STALE | TRUE (P6-1) |
+| 69 | ASSETS.md "twelve files" in clouds dir | STALE | TRUE (P6-1) |
+| 77 | ASSETS.md "deploy runs `vite build` and nothing else" | FALSE | TRUE (P6-10) |
+| 86 | ASSETS.md `icon_discord.png` alpha "No (opaque)" | FALSE | TRUE (P5-9) |
+| 88 | ASSETS.md "5.3 KB / 11.7 KB" | FALSE | TRUE (P5-10) |
+| 90 | ASSETS.md scroll-pan open question | STALE | TRUE (P6-3) |
+| 91 | ASSETS.md "88% of the artwork bytes" | STALE | TRUE (P6-2) |
+| 92 | ASSETS.md "obvious lever" open question | STALE | TRUE (P6-3) |
+| 99 | index.html "byte-identical" (source) | FALSE | TRUE (P5-11) |
+| 120 | motion.ts "Phase 4 … Phase 5 … are expected to" | STALE | TRUE (P6-8) |
+
+That is all 17 rows `audit/06-docs-hygiene.md` §1 previously marked FALSE (9) or STALE (8).
+Two (rows 12 and 18) were already fixed by earlier fix-log phases before this one started and
+were re-verified rather than re-edited; the other 15 were edited in this phase. Zero FALSE or
+STALE rows remain. No previously-TRUE row was found to have gone stale during this phase's
+re-derivation, apart from the `ASSETS.md` "Notes" bullet on hero motion mechanics, corrected
+in the same edit that resolved P6-3 (see that section above) before this log entry was
+written.
+
+### Phase-wide verification
+
+```
+$ npm run typecheck ; echo "EXIT=$?"
+> tsc -b --noEmit
+EXIT=0
+
+$ npm run lint ; echo "EXIT=$?"
+> oxlint --deny-warnings
+EXIT=0
+
+$ npm run build ; echo "EXIT=$?"
+> npm run lint && tsc -b && vite build && node scripts/prerender.mjs
+✓ 448 modules transformed.
+dist/components.html                                    1.52 kB
+dist/index.html                                         5.41 kB
+dist/assets/index-hUPakRjE.js                          16.01 kB
+dist/assets/components-WZ-vvrxD.js                     53.65 kB
+dist/assets/SiteFooter-ejBd3QIq.js                    282.94 kB
+✓ built in 348ms
+prerendered dist/index.html (42596 chars)
+prerendered dist/components.html (109247 chars)
+EXIT=0
+
+$ grep -rn "Phase [0-9]" src index.html components.html README.md ASSETS.md scripts vercel.json ; echo "EXIT=$?"
+EXIT=1
+
+$ grep -c '390px' README.md
+0
+$ grep -n '768\|md:' README.md
+317:    SiteHeader.tsx           fixed header, collapses to a menu below `md` (768px)
+
+$ grep -c "hackbu.org/resources'" src/lib/links.ts
+1
+
+$ git status --porcelain public/
+(no output)
+
+$ git status --porcelain
+ M ASSETS.md
+ M README.md
+ M index.html
+ M scripts/generate-images.mjs
+ M src/App.tsx
+ M src/components/ButtonLink.tsx
+ M src/components/Hero.tsx
+ M src/components/HeroClouds.tsx
+ M src/components/sections/IntroSection.tsx
+ M src/index.css
+ M src/lib/images.ts
+ M src/lib/links.ts
+ M src/lib/motion.ts
+
+$ git diff -- src/lib/images.ts scripts/generate-images.mjs src/index.css | grep -c '^\(+\|-\)--color-'
+0
+```
+
+Thirteen files touched, all documentation or doc comments plus the one code file
+(`src/lib/links.ts`) this phase's brief explicitly named as in-scope; `public/`,
+`src/lib/images.ts`'s srcset arrays, `scripts/generate-images.mjs`'s srcset array and every
+`@theme` value are byte-for-byte unchanged.

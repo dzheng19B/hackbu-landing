@@ -71,7 +71,10 @@ export default function App() {
            * A `drift-*` variant, not a sky-backed one. The divider is only ever
            * *seen* after the stage unpins, i.e. after the pan has finished, and
            * the finished frame ends on the snowy foreground plaza: the bottom 20
-           * rows of Campus.png average #ccc3ad, a warm sand-grey. A saturated
+           * rows of Campus.png average a warm sand-grey close to (but not the
+           * same as) the `stone` token — a measured artwork colour, not a
+           * design token, so it is not what the "no arbitrary hex" rule in
+           * README's Conventions section is aimed at. A saturated
            * blue band under that would read as a stripe. (A `sky-to-cloud`
            * variant did exist for the hero boundary, from when the hero's bottom
            * edge was open sky. Nothing rendered it after this moved, and it has
