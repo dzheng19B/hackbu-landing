@@ -305,7 +305,7 @@ matching ignore rule. **Resolved in `9a5a72d`.** The 13 PNGs (6 in `artwork/clou
 ## 8. Tailwind content-scanning bleed from `audit/*.md` — verified (see P1-5)
 
 The concern: Tailwind v4's automatic content detection (via `@tailwindcss/vite`, registered in
-`vite.config.ts:21`) scans every non-gitignored file in the project for utility-class candidates.
+`vite.config.ts:20`) scans every non-gitignored file in the project for utility-class candidates.
 `audit/` is not gitignored, so prose in `audit/*.md` can add rules to the shipped CSS. The first
 run of this phase (against `audit/02-code.md` only) could not isolate an audit-only token; the
 checker's rebuild at `1c4fa9f` (with `audit/01-baseline.md` on disk) and the orchestrator's
@@ -325,9 +325,9 @@ unescaped token:
 
 ```
 $ grep -o '\.isolate{[^}]*}\|\.table{[^}]*}\|\.grid-cols-5{[^}]*}' dist/assets/index-CePBE3nM.css
+.isolate{isolation:isolate}
 .table{display:table}
 .grid-cols-5{grid-template-columns:repeat(5,minmax(0,1fr))}
-.isolate{isolation:isolate}
 $ grep -rn "isolate" src/ index.html components.html
 (no output)
 $ grep -rn "grid-cols-5" src/ audit/
@@ -384,7 +384,7 @@ from the previous baseline are both **resolved** as of `9a5a72d` — see §7. No
 gains `.isolate`, `.table` and `.grid-cols-5` rules; `isolate` appears nowhere in `src/` or the
 HTML entries, and `grid-cols-5` exists only at `src/sheet/parts/PrimitivesPart.tsx:492` (excluded
 from the landing bundle by `src/landing.css:22`) and in prose at `audit/02-code.md:522`.
-Configuration: `vite.config.ts:21` registers `tailwindcss()` with no `@source` restriction;
+Configuration: `vite.config.ts:20` registers `tailwindcss()` with no `@source` restriction;
 `src/index.css:1` is a bare `@import 'tailwindcss';`.
 
 **Expected.** Tailwind v4 docs, "Detecting classes in source files": automatic detection scans
