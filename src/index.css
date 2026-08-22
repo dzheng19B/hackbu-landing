@@ -36,13 +36,6 @@
   --color-cloud: #f7f5ee;
   --color-frost: #dce3ea;
   --color-brick: #a2593a;
-  /*
-   * grove is Binghamton University’s brand green (PMS 342). Cloud labels on
-   * it measure ~7.7:1, so it can carry the button fill; it is also the hover
-   * colour for links on cloud. brick stays in the palette as a scene colour
-   * from the campus illustration and is no longer used on UI.
-   */
-  --color-grove: #005a43;
   --color-stone: #c4b79e;
   --color-pine: #3c5c48;
   /*
@@ -64,7 +57,7 @@
    * are rendered as `mask-image` shapes filled with this one token (see
    * `.brand-mark-*` below), which normalises them at paint time.
    *
-   * It is not an accent and never becomes one: `grove` is the page's
+   * It is not an accent and never becomes one: `brick` remains the page's only
    * interactive colour. fern must not appear on a link, a button, a border, a
    * background or any text — it measures 3.27:1 on cloud and 2.75:1 on frost,
    * which is below AA for text at any size. Logotypes are exempt from WCAG

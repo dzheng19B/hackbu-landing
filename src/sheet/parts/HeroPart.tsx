@@ -127,7 +127,7 @@ export function HeroPart() {
       >
         <Block title="See it live">
           <p className="text-body text-pine">
-            {/* On cloud, so the cloud treatment: grove hover. */}
+            {/* On cloud, so the cloud treatment: brick hover. */}
             <a href="/" className={`${LINK_ON_CLOUD} underline underline-offset-4`}>
               Open the landing page
             </a>{' '}

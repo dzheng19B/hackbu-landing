@@ -35,7 +35,7 @@ export function AboutSection() {
     <Section id="about" labelledBy="about-title" className="bg-cloud">
       <Reveal>
         <header className="max-w-2xl">
-          <Eyebrow>About us</Eyebrow>
+          <Eyebrow>About Us</Eyebrow>
           <h1
             id="about-title"
             className="font-display text-display-lg text-pine mt-4 font-semibold text-balance"

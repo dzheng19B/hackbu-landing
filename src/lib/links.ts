@@ -12,8 +12,12 @@ export const RESOURCES_URL = 'https://hackbu.org/resources'
 /** The mailing-list / interest-form signup. */
 export const MAILING_LIST_URL = 'https://hackbu.org/mailing-list'
 
-/** The three header nav destinations (the Discord CTA is separate). */
+/** In-site About us page. Clean URL; Vite and Vercel rewrite it to about.html. */
+export const ABOUT_PATH = '/about'
+
+/** Header nav destinations (the Discord CTA is separate). */
 export const NAV_LINKS = [
+  { label: 'About Us', href: ABOUT_PATH },
   { label: 'Schedule', href: 'https://hackbu.org/schedule' },
   { label: 'Resources', href: 'https://hackbu.org/resources' },
   { label: 'Hackathons', href: 'https://hackbu.org/hackathons' },

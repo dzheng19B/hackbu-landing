@@ -29,7 +29,7 @@ export default function App() {
         Skip to content
       </a>
 
-      <SiteHeader />
+      <SiteHeader homeHref="#top" />
 
       <main id="main">
         <Hero />

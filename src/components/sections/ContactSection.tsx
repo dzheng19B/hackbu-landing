@@ -3,7 +3,7 @@ import { ExternalLink, LINK_ON_CLOUD, MailLink } from '../ExternalLink'
 import { Reveal, RevealGroup, RevealItem } from '../Reveal'
 import { CONTACT_EMAIL, RESOURCES_URL } from '../../lib/links'
 
-/* This section is on cloud, so grove is the hover. */
+/* This section is on cloud, so brick is the hover. */
 const LINK_CLASSES =
   'font-display text-display-md font-semibold underline underline-offset-8 ' +
   LINK_ON_CLOUD

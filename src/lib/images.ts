@@ -92,3 +92,44 @@ export function cloudSources(file: string) {
     avif: `/artwork/clouds/${base}.avif`,
   }
 }
+
+/* -------------------------------------------------------------------------- */
+/* About us photos                                                            */
+/* -------------------------------------------------------------------------- */
+
+/**
+ * Event photos on the About us page. Sources live in `public/artwork/about/`;
+ * AVIF + WebP sit beside each JPEG and are rebuilt by `npm run images`.
+ */
+function aboutPhoto(file: string, width: number, height: number, alt: string) {
+  const base = `/artwork/about/${file}`
+  return {
+    jpg: `${base}.jpg`,
+    webp: `${base}.webp`,
+    avif: `${base}.avif`,
+    width,
+    height,
+    alt,
+  } as const
+}
+
+export const ABOUT_PHOTOS = {
+  collaborate: aboutPhoto(
+    'collaborate',
+    1024,
+    683,
+    'Three students huddled around a laptop at a HackBU event, smiling as they work through a problem together.',
+  ),
+  table: aboutPhoto(
+    'table',
+    1024,
+    768,
+    'Students around a workshop table with laptops, talking with a mentor, winter campus visible through the windows.',
+  ),
+  hall: aboutPhoto(
+    'hall',
+    1024,
+    683,
+    'A packed HackBU workshop seen from above: rows of students coding at long desks, with a HackBU tote bag in the foreground.',
+  ),
+} as const

@@ -57,7 +57,7 @@ const TOKENS: readonly Token[] = [
     name: 'cloud',
     hex: '#F7F5EE',
     swatch: 'bg-cloud',
-    role: 'The page ground, and the label colour on a grove button.',
+    role: 'The page ground, and the label colour on a brick button.',
     usage: 'Body background, header bar, every content section, the drift shapes.',
   },
   {
@@ -72,17 +72,7 @@ const TOKENS: readonly Token[] = [
     name: 'brick',
     hex: '#A2593A',
     swatch: 'bg-brick',
-    role: 'A scene colour sampled from the campus brick. Not used on UI.',
-    usage: 'No uses in src/. Interactive surfaces use grove instead.',
-    flag: 'unused',
-    flagNote:
-      'Kept because the palette was sampled from the illustration. Buttons and cloud-link hovers moved to grove (Binghamton PMS 342).',
-  },
-  {
-    name: 'grove',
-    hex: '#005A43',
-    swatch: 'bg-grove',
-    role: 'The only interactive accent: Binghamton University brand green (PMS 342).',
+    role: 'The only interactive accent. A brick surface means “join the Discord”.',
     usage: 'The button fill, and the hover colour for links on cloud. Nothing else.',
   },
   {
@@ -299,7 +289,7 @@ export function TokensPart() {
       <Entry
         name="Colour"
         path="src/index.css — @theme { --color-* }"
-        use="Ten tokens. Four of them carry a restriction that is not visible from the swatch, flagged below."
+        use="Nine tokens. Three of them carry a restriction that is not visible from the swatch, flagged below."
       >
         <Block title="Swatches">
           <ul className="border-frost border-t">
@@ -311,7 +301,7 @@ export function TokensPart() {
 
         <Block title="The rule that keeps this palette honest">
           <Rule>
-            grove is the page’s only interactive colour, and pine is its only
+            brick is the page’s only interactive colour, and pine is its only
             text colour. Every accessibility decision downstream — the two link
             treatments, the single focus-ring tone, the retirement of haze —
             follows from holding those two lines rather than from tuning

@@ -37,7 +37,7 @@ export function ComposedPart() {
       <Entry
         name="SiteHeader"
         path="src/components/SiteHeader.tsx"
-        use="The fixed page bar: the lockup, three destinations and the Discord CTA, collapsing behind a toggle below 768px."
+        use="The fixed page bar: the lockup, four destinations and the Discord CTA, collapsing behind a toggle below 768px."
       >
         <NoProps>
           It reads NAV_LINKS and DISCORD_URL from src/lib/links.ts and owns one
@@ -71,7 +71,7 @@ export function ComposedPart() {
             <b>scroll-mt-24</b>, the <b>scroll-padding-top</b> in{' '}
             <b>src/index.css</b> — is written against those two numbers. Both the
             bar and the compact panel are opaque cloud, so every link inside
-            takes <b>LINK_ON_CLOUD</b> and hovers to grove.
+            takes <b>LINK_ON_CLOUD</b> and hovers to brick.
           </Rule>
           <Caption>
             The compact panel stays mounted and is hidden with the{' '}
@@ -128,8 +128,8 @@ export function ComposedPart() {
         <Block title="Notes">
           <Rule>
             The card is frost, so the mailing-list link inside it uses{' '}
-            <b>LINK_ON_FROST</b> and underlines on hover — colour hovers stay
-            off frost. The section band around the card is cloud,
+            <b>LINK_ON_FROST</b> and underlines on hover — brick on frost is
+            4.03:1 and fails AA. The section band around the card is cloud,
             which is why the rule is “pick by the surface the link is painted
             on, not by the component it lives in”.
           </Rule>
@@ -183,7 +183,7 @@ export function ComposedPart() {
         <Block title="Notes">
           <Caption>
             On cloud, so both links take <b>LINK_ON_CLOUD</b> and hover to
-            grove.
+            brick.
           </Caption>
         </Block>
       </Entry>
