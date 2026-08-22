@@ -2,14 +2,17 @@ import type { ReactNode } from 'react'
 import { ExternalLink } from './ExternalLink'
 
 /**
- * The page's only button treatments.
- *   primary   solid brick — reserved for the Discord conversion action
- *   secondary outlined pine — supporting actions
+ * The page's only button treatment: solid brick, reserved for the Discord
+ * conversion action. Size is the only thing that varies.
  *
- * brick is the single accent in the palette, so a `primary` button on screen
- * should always mean "join the Discord".
+ * brick is the single accent in the palette, so a button on screen always means
+ * "join the Discord" — which is why there is one treatment and not a set. (A
+ * `secondary` outlined-pine variant was declared here for supporting actions.
+ * The finished page has none: every button is the Discord CTA, and the mailing
+ * list, the resources archive and the nav are all text links. It went unused
+ * through every phase and is gone; a second treatment can come back with the
+ * second kind of action that needs it.)
  */
-type Variant = 'primary' | 'secondary'
 type Size = 'sm' | 'md' | 'lg'
 
 /**
@@ -24,12 +27,8 @@ type Size = 'sm' | 'md' | 'lg'
  */
 const BASE =
   'inline-flex items-center justify-center gap-2 rounded-full font-medium ' +
+  'bg-brick text-cloud hover:bg-pine ' +
   'focus-visible:outline-pine focus-visible:outline-2 focus-visible:outline-offset-2'
-
-const VARIANTS: Record<Variant, string> = {
-  primary: 'bg-brick text-cloud hover:bg-pine',
-  secondary: 'border border-pine text-pine hover:bg-frost',
-}
 
 const SIZES: Record<Size, string> = {
   sm: 'px-4 py-2 text-caption',
@@ -40,14 +39,12 @@ const SIZES: Record<Size, string> = {
 export function ButtonLink({
   href,
   children,
-  variant = 'primary',
   size = 'md',
   className = '',
   ...rest
 }: {
   href: string
   children: ReactNode
-  variant?: Variant
   size?: Size
   className?: string
   onClick?: () => void
@@ -55,7 +52,7 @@ export function ButtonLink({
   return (
     <ExternalLink
       href={href}
-      className={`${BASE} ${VARIANTS[variant]} ${SIZES[size]} ${className}`}
+      className={`${BASE} ${SIZES[size]} ${className}`}
       {...rest}
     >
       {children}

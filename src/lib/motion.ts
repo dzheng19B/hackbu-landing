@@ -53,8 +53,11 @@ export function usePrefersReducedMotion(): boolean {
  */
 export const HERO_PAN_EASE = cubicBezier(0.4, 0, 0.35, 1)
 
-/** Clamp to the 0..1 range. Guards every progress-derived transform. */
-export function clamp01(value: number): number {
+/**
+ * Clamp to the 0..1 range. Module-private: `rangeProgress` is the only thing
+ * that needs it, and every consumer of this module wants a window, not a clamp.
+ */
+function clamp01(value: number): number {
   return value < 0 ? 0 : value > 1 ? 1 : value
 }
 
@@ -79,18 +82,21 @@ export type HeroScroll = {
    * Raw 0 -> 1 progress across the hero's scroll track. 0 is the top of the
    * page; 1 is the moment the sticky stage unpins and the hero starts
    * scrolling away.
+   *
+   * This is raw track progress, not the pan's own eased progress. <Hero>
+   * derives the latter for the campus scale and keeps it to itself: the only
+   * thing inside the stage is <HeroClouds>, which has to keep lifting and
+   * fading through the tail of the track *after* the pan has finished, so raw
+   * progress is the value it wants. Publishing an eased `pan` alongside it
+   * would be a second source of truth with no reader.
    */
   progress: MotionValue<number>
   /**
-   * Eased 0 -> 1 progress of the campus pan itself. Reaches 1 *before*
-   * `progress` does — the tail of the track is a hold on the finished frame.
-   * This is the value to drive artwork against; `progress` is the value to
-   * drive anything that should keep moving through the hold.
-   */
-  pan: MotionValue<number>
-  /**
-   * Mirrors `usePrefersReducedMotion()`. When true both values above are
-   * pinned to their resting state (1) and consumers must not animate.
+   * Mirrors `usePrefersReducedMotion()`. When true, consumers must render
+   * their resting frame and not animate at all — including against
+   * `progress`, which still tracks scroll either way. (<Hero> collapses its
+   * track to one viewport in that branch, so there is barely any left to
+   * track.)
    */
   reducedMotion: boolean
 }

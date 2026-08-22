@@ -4,9 +4,17 @@ A redesigned landing page for [HackBU](https://hackbu.org), the student tech clu
 Binghamton University. One job: get undergrads — most of them with no programming
 experience — into the Discord.
 
-The hero is a painterly illustration of campus under snow. On load only sky and clouds
-fill the screen; scrolling tilts the view down through drifting cloud layers to reveal
-the whole campus, holds for a beat, then scrolls away to the content below.
+The hero is a painterly illustration of campus under snow. On load the screen holds the
+top third of it — sky, drifting clouds, and the wooded ridgeline on the far side of
+campus, but **no buildings**; scrolling tilts the view down through the cloud layers to
+reveal the whole campus, holds for a beat, then scrolls away to the content below.
+
+(At `PAN_START_SCALE = 3` the opening frame is image rows 0–0.333, and the hill and
+treeline silhouette breaks the horizon at row 0.1934 — so about 42% of that frame is
+distant hills. The first rooftops are at 0.351 and stay off screen. Showing literally
+nothing but sky would need a start scale above `1 / 0.1934 ≈ 5.17`, which would upscale
+the 1672px source past 5x into mush, so the guarantee the hero actually keeps is
+*no buildings*, not *only sky*.)
 
 This replaces **only** the landing page. The blog, registration, photos, schedule,
 resources, organizers, hackathons and sponsors pages stay where they are and are linked
@@ -43,7 +51,7 @@ Then open the URL Vite prints (usually `http://localhost:5173`).
 | `npm run preview` | Serves the built `dist/` locally |
 | `npm run typecheck` | `tsc -b --noEmit` — types only, no output |
 | `npm run lint` | `oxlint` |
-| `npm run images` | Regenerates AVIF/WebP derivatives from `public/artwork/` |
+| `npm run images` | Regenerates the AVIF/WebP artwork derivatives and the `public/brand/` logo masks and app icons |
 
 > `npm run typecheck` uses `tsc -b`, not a bare `tsc --noEmit`. The root `tsconfig.json`
 > is a solution file (`"files": []` plus project references), so a bare `tsc --noEmit`
@@ -91,9 +99,9 @@ To replace the artwork:
 Two numbers in the hero are tied to the specific artwork and will need re-deriving:
 
 - **`PAN_START_SCALE`** in `src/components/Hero.tsx` (currently `3`). The hero shows the
-  top `1/scale` of the image at scroll 0, and nothing but sky may be visible there. In the
-  current illustration the first buildings appear at `0.351` of the image height, so the
-  start scale must stay above `1 / 0.351 ≈ 2.86`. Measure where buildings begin in the new
+  top `1/scale` of the image at scroll 0, and **no buildings** may be visible there. In
+  the current illustration the first buildings appear at `0.351` of the image height, so
+  the start scale must stay above `1 / 0.351 ≈ 2.86`. Measure where buildings begin in the new
   image and set the scale accordingly. Note this is a floor, not a preference — dropping
   below it puts rooftops on screen before the user has scrolled.
 - **`object-position`** on the campus `<img>` (currently `52% 0%`). The horizontal value
@@ -107,25 +115,70 @@ Cloud placement and the three depth layers are configured at the top of
 far clouds hang past the tile edge, so clouds can be repositioned freely without breaking
 the seamless wrap.
 
+## Swapping the branding
+
+The three brand files live in `brand-source/`, which is read-only reference exactly like
+`artwork/`. `npm run images` derives everything the site ships from them into
+`public/brand/`.
+
+```
+brand-source/                read-only originals
+  icon.png                   bearcat line-art mark, transparent
+  text.png                   the HACKBU wordmark, transparent
+  icon_discord.png           the bearcat on its app tile, opaque
+public/brand/
+  bearcat-mask-{64,128}.png  alpha-only mask derivatives, 1x and 2x
+  wordmark-mask-{192,384}.png
+  favicon-{32,64}.png        from icon.png
+  apple-touch-icon.png       180x180, from icon_discord.png
+  og-image.png               732x732, from icon_discord.png
+```
+
+**The marks are masks, not pictures.** `<Wordmark>` renders two empty elements painted in
+the `fern` token; each one's shape is cut from the alpha channel of a mask derivative via
+`mask-image` (`.brand-mark-*` in `src/index.css`). That is what lets the bearcat's
+`#339966` and the wordmark's `#42B872` come out as one colour without editing either file,
+and it keeps the logo's colour in the stylesheet with every other colour in the system.
+The derivatives carry no colour at all — their RGB is flattened to white before encoding,
+because `mask-image` reads only alpha.
+
+To replace the branding: drop new PNGs into `brand-source/` under the same names, run
+`npm run images`, and check the ink dimensions it prints against `BEARCAT_MARK` /
+`WORDMARK_MARK` in `src/lib/images.ts` — those are what give each mark its `aspect-ratio`.
+`icon_discord.png` is an app tile and stays one: it is the touch icon and the social card,
+and its pale green must not enter the stylesheet.
+
 ## Conventions worth knowing before editing
 
-**Colour.** Eight tokens, defined once in the `@theme` block of `src/index.css`, and
-nothing else — no arbitrary hex, no default Tailwind palette colours, no `#000000`.
+**Colour.** Eight palette tokens plus one logo-only token, defined once in the `@theme`
+block of `src/index.css`, and nothing else — no arbitrary hex, no default Tailwind
+palette colours, no `#000000`.
 
 | Token | Hex | Role |
 | --- | --- | --- |
 | `sky` | `#4A96D2` | hero sky |
-| `horizon` | `#A8D0EB` | sky gradient bottom, secondary fills |
+| `horizon` | `#A8D0EB` | **currently unused** — the sky is a single flat field, not a gradient |
 | `cloud` | `#F7F5EE` | page background below the fold |
 | `frost` | `#DCE3EA` | dividers, muted surfaces, card fills |
 | `brick` | `#A2593A` | the single accent — links, buttons, hover |
 | `stone` | `#C4B79E` | tertiary / decorative only |
 | `pine` | `#3C5C48` | body text and headings (never pure black) |
 | `haze` | `#7C99B4` | scene colour only |
+| `fern` | `#339966` | **logo only** — the two brand marks, and nothing else |
 
 `brick` is the **only** accent; adding a second one is a design regression. `haze` is
 retired from text use — it measures 2.72:1 on `cloud`, well below WCAG AA. Secondary text
 uses `pine/90`.
+
+`fern` is the brand green and is **not** an accent. It exists so the two logo marks —
+which ship in two different greens, neither of them a palette colour — can be normalised
+to one. It fills the marks and nothing else: no link, button, border, background or text.
+It measures 3.27:1 on `cloud`, which a logotype is exempt from and a word is not.
+
+Link hover is a per-surface rule, and it lives in one place. `LINK_ON_CLOUD` and
+`LINK_ON_FROST` in `src/components/ExternalLink.tsx` are the only two link treatments on
+the page: brick hover on `cloud` (4.78:1), underline hover on `frost`, because brick on
+frost measures 4.03:1 and fails AA. Pick by the surface the link is painted on.
 
 **Animation.** Only `transform` and `opacity` are ever animated — never `top`, `left`,
 `width`, `height`, `margin` or `background-position`. Every animation is gated behind
@@ -147,17 +200,22 @@ src/
   lib/
     links.ts                 every off-site URL, centralised
     motion.ts                usePrefersReducedMotion, hero scroll context
-    images.ts                <picture> source sets
+    images.ts                <picture> source sets + brand mark geometry
   components/
     Hero.tsx                 sticky stage + scroll-driven campus pan
     HeroClouds.tsx           three parallax cloud layers
     Reveal.tsx               whileInView reveals (enter-once, staggered)
-    Layout.tsx               Container / Section / SectionHeader
+    Layout.tsx               Container / Section / Eyebrow / SectionHeader
     SiteHeader.tsx           fixed header, collapses to a menu at 390px
     SiteFooter.tsx           all eight existing site pages, contact, socials
     SnowdriftDivider.tsx     inline SVG snowdrift dividers
-    ButtonLink.tsx, ExternalLink.tsx, Wordmark.tsx
+    ButtonLink.tsx           the page's one button treatment
+    ExternalLink.tsx         new-tab hardening + the two link treatments
+    Wordmark.tsx             the logo lockup, as masked fern marks
     sections/                Intro, About, GetInvolved, Questions, Contact
 scripts/
-  generate-images.mjs        AVIF/WebP derivative generator
+  generate-images.mjs        artwork derivatives + brand masks and app icons
+public/
+  artwork/                   campus + cloud PNGs and their derivatives
+  brand/                     logo masks, favicons, app tile
 ```

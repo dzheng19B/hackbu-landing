@@ -66,6 +66,23 @@ export const CAMPUS_ALT =
   'ridgeline above red brick academic buildings and dormitories, with the ' +
   'Library Tower standing at the centre and a pale winter sky overhead.'
 
+/* -------------------------------------------------------------------------- */
+/* Brand marks                                                                */
+/* -------------------------------------------------------------------------- */
+
+/**
+ * The ink boxes of the two logo marks — the trimmed bounds of the artwork in
+ * `brand-source/`, which is what the mask derivatives in `public/brand/` are
+ * cropped to. Only the ratio is used: `<Wordmark>` gives each mark an
+ * `aspect-ratio` built from these numbers so a height in `em` fixes the width.
+ *
+ * **Keep in sync with `npm run images`**, which prints both boxes at the end of
+ * a run for exactly this comparison. The mask URLs themselves live in
+ * `src/index.css`, with the rest of the mark's paint.
+ */
+export const BEARCAT_MARK = { width: 1741, height: 1828 } as const
+export const WORDMARK_MARK = { width: 7690, height: 1080 } as const
+
 /** Cloud cutouts are pure decoration; only their format sources vary. */
 export function cloudSources(file: string) {
   const base = file.replace(/\.png$/, '')

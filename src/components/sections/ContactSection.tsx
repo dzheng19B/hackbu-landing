@@ -1,12 +1,12 @@
-import { Section, SectionHeader } from '../Layout'
-import { ExternalLink, MailLink } from '../ExternalLink'
+import { Eyebrow, Section, SectionHeader } from '../Layout'
+import { ExternalLink, LINK_ON_CLOUD, MailLink } from '../ExternalLink'
 import { Reveal, RevealGroup, RevealItem } from '../Reveal'
 import { CONTACT_EMAIL, RESOURCES_URL } from '../../lib/links'
 
+/* This section is on cloud, so brick is the hover. */
 const LINK_CLASSES =
-  'font-display text-display-md text-pine font-semibold underline ' +
-  'underline-offset-8 hover:text-brick focus-visible:outline-2 ' +
-  'focus-visible:outline-offset-4 focus-visible:outline-pine'
+  'font-display text-display-md font-semibold underline underline-offset-8 ' +
+  LINK_ON_CLOUD
 
 /**
  * "Contact" — the quiet landing at the bottom of the page: one email address
@@ -26,9 +26,7 @@ export function ContactSection() {
 
       <RevealGroup className="mt-12 grid gap-10 sm:grid-cols-2">
         <RevealItem>
-          <p className="text-eyebrow text-pine/90 font-medium uppercase">
-            Email us
-          </p>
+          <Eyebrow>Email us</Eyebrow>
           <MailLink
             email={CONTACT_EMAIL}
             className={`${LINK_CLASSES} mt-4 inline-block`}
@@ -39,9 +37,7 @@ export function ContactSection() {
         </RevealItem>
 
         <RevealItem>
-          <p className="text-eyebrow text-pine/90 font-medium uppercase">
-            If you want a head start
-          </p>
+          <Eyebrow>If you want a head start</Eyebrow>
           <ExternalLink
             href={RESOURCES_URL}
             className={`${LINK_CLASSES} mt-4 inline-block`}

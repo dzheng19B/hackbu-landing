@@ -6,6 +6,7 @@ import type { ReactNode } from 'react'
  *
  *   Container      max-w-5xl (64rem), centred, 1.5rem/2rem gutters
  *   Section        vertical rhythm (py-20 / sm:py-28) + Container
+ *   Eyebrow        the small uppercase label above a headline
  *   SectionHeader  eyebrow + display headline + optional lede
  */
 
@@ -47,6 +48,35 @@ export function Section({
   )
 }
 
+/**
+ * The small uppercase label that sits above a headline — section eyebrows,
+ * card kickers, footer column titles.
+ *
+ * One treatment, defined once. The colour is `pine/90` rather than `haze`: haze
+ * is a scene colour and measures 2.72:1 on cloud, so it cannot legibly carry
+ * this text at 12px (see the token comment in src/index.css).
+ *
+ * `as` exists because an eyebrow is not always a paragraph. In the footer each
+ * one labels a list of links and is the column's heading, so it renders as an
+ * <h2>; everywhere else it is a caption above a heading that already exists,
+ * and a second heading there would put a phantom entry in the outline.
+ */
+export function Eyebrow({
+  children,
+  as: Tag = 'p',
+  className = '',
+}: {
+  children: ReactNode
+  as?: 'p' | 'h2'
+  className?: string
+}) {
+  return (
+    <Tag className={`text-eyebrow text-pine/90 font-medium uppercase ${className}`}>
+      {children}
+    </Tag>
+  )
+}
+
 /** Standard section masthead: small uppercase label, headline, optional lede. */
 export function SectionHeader({
   eyebrow,
@@ -63,7 +93,7 @@ export function SectionHeader({
 }) {
   return (
     <header className={`max-w-2xl ${className}`}>
-      <p className="text-eyebrow text-pine/90 font-medium uppercase">{eyebrow}</p>
+      <Eyebrow>{eyebrow}</Eyebrow>
       <h2
         id={titleId}
         className="font-display text-display-lg text-pine mt-4 font-semibold text-balance"

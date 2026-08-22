@@ -1,6 +1,6 @@
 import { Section, SectionHeader } from '../Layout'
 import { ButtonLink } from '../ButtonLink'
-import { ExternalLink } from '../ExternalLink'
+import { ExternalLink, LINK_ON_FROST } from '../ExternalLink'
 import { Reveal } from '../Reveal'
 import { DISCORD_URL, MAILING_LIST_URL } from '../../lib/links'
 
@@ -10,6 +10,9 @@ import { DISCORD_URL, MAILING_LIST_URL } from '../../lib/links'
  * The headline leads with the thing a hesitant first-year most needs to hear,
  * and the card below carries the page's largest brick button. The mailing list
  * is deliberately demoted to a text link so it never competes with it.
+ *
+ * The card is `bg-frost`, so that link takes the frost treatment — an underline
+ * on hover, never brick. See LINK_ON_FROST in ExternalLink.tsx.
  */
 export function GetInvolvedSection() {
   return (
@@ -54,7 +57,7 @@ export function GetInvolvedSection() {
             what to expect.{' '}
             <ExternalLink
               href={MAILING_LIST_URL}
-              className="text-pine hover:decoration-2 focus-visible:outline-pine underline underline-offset-4 focus-visible:outline-2 focus-visible:outline-offset-4"
+              className={`${LINK_ON_FROST} underline underline-offset-4`}
             >
               Sign up for the mailing list
             </ExternalLink>{' '}

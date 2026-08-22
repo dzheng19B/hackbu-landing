@@ -7,8 +7,10 @@ import { rangeProgress, useHeroScroll } from '../lib/motion'
  * Phase 4 — the hero's drifting cloud parallax.
  *
  * This component *is* the `data-hero-clouds` layer of the hero stage: it mounts
- * between the campus artwork and the legibility scrim (see Hero.tsx for the
- * layer contract) and renders three depth layers of cloud cutouts over the sky.
+ * over the campus artwork and is the topmost layer of it (see Hero.tsx for the
+ * layer contract), rendering three depth layers of cloud cutouts over the sky.
+ * There is nothing above it — the pine legibility scrim that used to sit there
+ * went when Phase 7 moved the hero copy out.
  *
  * Two independent motions compose here, and they are deliberately kept on
  * separate elements so they never fight over one transform:

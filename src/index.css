@@ -48,6 +48,24 @@
    */
   --color-haze: #7c99b4;
 
+  /*
+   * fern is the HackBU logo green, and it is **logo-only**.
+   *
+   * The two brand marks in `brand-source/` ship in two different greens —
+   * #339966 on the bearcat, #42B872 on the wordmark — and neither was in the
+   * palette. Rather than carry both, or bake either into the pixels, the marks
+   * are rendered as `mask-image` shapes filled with this one token (see
+   * `.brand-mark-*` below), which normalises them at paint time.
+   *
+   * It is not an accent and never becomes one: `brick` remains the page's only
+   * interactive colour. fern must not appear on a link, a button, a border, a
+   * background or any text — it measures 3.27:1 on cloud and 2.75:1 on frost,
+   * which is below AA for text at any size. Logotypes are exempt from WCAG
+   * 1.4.3 and 1.4.11; nothing else on this page is, which is the whole reason
+   * for the restriction.
+   */
+  --color-fern: #339966;
+
   /* Typography — Fraunces for display, Inter for body.
      Faces are self-hosted via @fontsource (imported in src/main.tsx). */
   --font-display: 'Fraunces', ui-serif, Georgia, 'Times New Roman', serif;
@@ -90,4 +108,71 @@
   --text-eyebrow: 0.75rem;
   --text-eyebrow--line-height: 1.1;
   --text-eyebrow--letter-spacing: 0.2em;
+}
+
+/*
+ * The two HackBU logo marks.
+ *
+ * A mark is an empty element with two halves to it: its **colour** is the
+ * `fern` token, applied as an ordinary `bg-fern` utility, and its **shape** is
+ * the alpha channel of a mask derivative from `public/brand/`. Everything
+ * outside the drawn strokes is masked away, so what paints is the mark in fern
+ * and nothing else.
+ *
+ * Why a mask instead of a coloured PNG:
+ *   - the two sources are two different greens; one token normalises them with
+ *     no pixel editing and no second copy of either file
+ *   - the colour stays in CSS, next to every other colour in the system, so
+ *     `fern` is grep-able as a token rather than hidden inside an image
+ *   - a mark can be recoloured per context (a mark on a dark band, say) by
+ *     changing one background utility
+ *
+ * `mask-size: contain` maps the mask onto the element box; the derivatives are
+ * trimmed to their ink and the element carries the matching `aspect-ratio`
+ * (see src/components/Wordmark.tsx), so "contain" is an exact fit rather than a
+ * letterbox.
+ *
+ * The 2x rungs are selected by a resolution media query rather than by
+ * `image-set()`, and that is deliberate. `image-set()` is the tidier spelling,
+ * but if a browser cannot parse it the whole `mask-image` declaration is
+ * invalid, the element has no mask, and the mark paints as a solid fern
+ * rectangle — a hard failure, and Firefox only shipped `image-set()` in 88.
+ * (Writing a plain `url()` fallback ahead of it does not help: the minifier
+ * drops it as overridden.) A media query cannot fail that way. The worst a
+ * browser without `min-resolution` can do is stay on the 1x rung, which is a
+ * slightly soft logo rather than a green block.
+ *
+ * Only one rung is ever fetched — an unmatched media query loads nothing.
+ */
+@layer components {
+  .brand-mark {
+    -webkit-mask-repeat: no-repeat;
+    mask-repeat: no-repeat;
+    -webkit-mask-position: center;
+    mask-position: center;
+    -webkit-mask-size: contain;
+    mask-size: contain;
+  }
+
+  .brand-mark-bearcat {
+    -webkit-mask-image: url('/brand/bearcat-mask-64.png');
+    mask-image: url('/brand/bearcat-mask-64.png');
+  }
+
+  .brand-mark-wordmark {
+    -webkit-mask-image: url('/brand/wordmark-mask-192.png');
+    mask-image: url('/brand/wordmark-mask-192.png');
+  }
+
+  @media (min-resolution: 1.5dppx) {
+    .brand-mark-bearcat {
+      -webkit-mask-image: url('/brand/bearcat-mask-128.png');
+      mask-image: url('/brand/bearcat-mask-128.png');
+    }
+
+    .brand-mark-wordmark {
+      -webkit-mask-image: url('/brand/wordmark-mask-384.png');
+      mask-image: url('/brand/wordmark-mask-384.png');
+    }
+  }
 }

@@ -157,8 +157,8 @@ export function Hero() {
   )
 
   const heroScroll = useMemo<HeroScroll>(
-    () => ({ progress, pan, reducedMotion }),
-    [progress, pan, reducedMotion],
+    () => ({ progress, reducedMotion }),
+    [progress, reducedMotion],
   )
 
   return (

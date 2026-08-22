@@ -11,7 +11,6 @@
  */
 
 type DriftVariant =
-  | 'sky-to-cloud'
   | 'drift-a'
   | 'drift-b'
   | 'drift-c'
@@ -24,27 +23,6 @@ type Shape = {
 }
 
 const SHAPES: Record<DriftVariant, Shape> = {
-  /*
-   * A sky-backed band settling into cloud. Currently unrendered: it was the
-   * divider under the hero until Phase 7, when the hero lost its copy and the
-   * boundary was re-read against the *finished* pan — whose bottom edge is the
-   * snowy plaza, not sky — and moved to `drift-c`. Kept as the one variant that
-   * fits a sky section above a cloud one, should the page grow one.
-   */
-  'sky-to-cloud': {
-    background: 'bg-sky',
-    paths: [
-      {
-        className: 'fill-frost',
-        d: 'M0,160 V96 C130,74 250,58 400,66 C560,74 640,110 810,108 C950,106 1050,72 1200,64 C1300,59 1370,72 1440,84 V160 Z',
-      },
-      {
-        className: 'fill-cloud',
-        d: 'M0,160 V126 C140,106 260,94 410,100 C570,106 660,136 830,132 C970,129 1060,104 1210,100 C1320,97 1380,110 1440,120 V160 Z',
-      },
-    ],
-  },
-
   // cloud -> cloud, with a frost drift banked between them.
   'drift-a': {
     background: 'bg-frost',

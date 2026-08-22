@@ -71,6 +71,41 @@ requests, **401,963 bytes (392.5 KB)** — the widest campus AVIF plus the six c
 AVIFs, each fetched exactly once. That is 12% of the 3.18 MB the PNGs would have cost
 and 26% of the 1.5 MB budget.
 
+## The brand marks
+
+`brand-source/` is a second read-only source directory, holding the three HackBU brand
+files. Unlike `artwork/`, nothing in it is copied verbatim into `public/` — everything the
+site ships is derived, by the same `npm run images` run.
+
+| File | Dimensions (px) | Ink box (trimmed) | Colour | Alpha |
+| --- | --- | --- | --- | --- |
+| `brand-source/icon.png` | 1920 × 2033 | 1741 × 1828 (0.95241) | `#339966`, one stroke colour | Yes |
+| `brand-source/text.png` | 7690 × 1080 | 7690 × 1080 (7.12037) — no padding | `#42B872`, one stroke colour | Yes |
+| `brand-source/icon_discord.png` | 732 × 732 | n/a — opaque tile | `#97F5AC` tile, `#50B536` mark | No (opaque) |
+
+The two greens are not the same, and neither is a palette colour. The page does not
+reconcile them in the pixels: the marks render as `mask-image` shapes filled with the
+`fern` token, so the derivatives below carry **alpha only** — their RGB is flattened to
+white before encoding, which `mask-image` never reads.
+
+| Output | Size | From | Bytes |
+| --- | --- | --- | --- |
+| `brand/bearcat-mask-64.png` | 64 × 67 | `icon.png`, trimmed | 3,164 |
+| `brand/bearcat-mask-128.png` | 128 × 134 | `icon.png`, trimmed | 6,941 |
+| `brand/wordmark-mask-192.png` | 192 × 27 | `text.png` | 2,147 |
+| `brand/wordmark-mask-384.png` | 384 × 54 | `text.png` | 4,850 |
+| `brand/favicon-32.png` | 32 × 32 | `icon.png`, trimmed and squared | 1,824 |
+| `brand/favicon-64.png` | 64 × 64 | `icon.png`, trimmed and squared | 4,601 |
+| `brand/apple-touch-icon.png` | 180 × 180 | `icon_discord.png` | 7,805 |
+| `brand/og-image.png` | 732 × 732 | `icon_discord.png` | 10,014 |
+
+The mask rungs are `[1x, 2x]` against the largest place each mark is drawn — the `sm`
+header lockup, where the bearcat is 35.7 CSS px wide and the wordmark 153.8. One rung of
+each loads per device: **5.3 KB at 1x, 11.7 KB at 2x**, on top of the artwork's 392.5 KB.
+
+`icon_discord.png` is 2,158,148 bytes as delivered, for a 14-colour 732 × 732 image;
+re-encoding it as a palette PNG is what turns it into the 10 KB social card above.
+
 ## Notes for later phases
 
 These are observations from the raw files, not design decisions:

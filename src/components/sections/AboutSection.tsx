@@ -1,4 +1,4 @@
-import { Section, SectionHeader } from '../Layout'
+import { Eyebrow, Section, SectionHeader } from '../Layout'
 import { Reveal, RevealGroup, RevealItem } from '../Reveal'
 
 /**
@@ -43,9 +43,7 @@ export function AboutSection() {
             key={pillar.title}
             className="border-frost bg-cloud flex flex-col rounded-2xl border p-7 sm:p-9"
           >
-            <p className="text-eyebrow text-pine/90 font-medium uppercase">
-              {pillar.kicker}
-            </p>
+            <Eyebrow>{pillar.kicker}</Eyebrow>
             <h3 className="font-display text-display-md text-pine mt-4 font-semibold">
               {pillar.title}
             </h3>

@@ -38,12 +38,14 @@ export default function App() {
         <Hero />
 
         {/*
-         * `drift-c`, not `sky-to-cloud`. That variant paints its band `bg-sky`
-         * because it was chosen when the hero's bottom edge was open sky. The
-         * divider is only ever *seen* after the stage unpins, i.e. after the pan
-         * has finished, and the finished frame ends on the snowy foreground
-         * plaza: the bottom 20 rows of Campus.png average #ccc3ad, a warm
-         * sand-grey. A saturated blue band under that reads as a stripe.
+         * A `drift-*` variant, not a sky-backed one. The divider is only ever
+         * *seen* after the stage unpins, i.e. after the pan has finished, and
+         * the finished frame ends on the snowy foreground plaza: the bottom 20
+         * rows of Campus.png average #ccc3ad, a warm sand-grey. A saturated
+         * blue band under that would read as a stripe. (A `sky-to-cloud`
+         * variant did exist for the hero boundary, from when the hero's bottom
+         * edge was open sky. Nothing rendered it after this moved, and it has
+         * since been removed.)
          *
          * The `drift-*` variants band `bg-frost` with cloud-coloured drifts top
          * and bottom, which under the plaza reads as a bank of settled snow

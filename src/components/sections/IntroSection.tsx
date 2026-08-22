@@ -1,4 +1,4 @@
-import { Section } from '../Layout'
+import { Eyebrow, Section } from '../Layout'
 import { ButtonLink } from '../ButtonLink'
 import { Reveal } from '../Reveal'
 import { DISCORD_URL } from '../../lib/links'
@@ -16,10 +16,10 @@ import { DISCORD_URL } from '../../lib/links'
  * why the markup below is written out rather than reusing <SectionHeader>,
  * which is hard-wired to <h2>.
  *
- * **CTA weight.** `size="lg"` with no width override measures 223x64px, the
- * same box the hero CTA had. The get-involved card's button adds
- * `sm:px-10 sm:py-5` and measures 239x72px, so it stays the single largest CTA
- * on the page — this one leads, that one converts.
+ * **CTA weight.** `size="lg"` with no width override measures 235x66px at
+ * 1440px, where `text-lede` is at the top of its clamp. The get-involved card's
+ * button adds `sm:px-10 sm:py-5` and measures 251x74px, so it stays the single
+ * largest CTA on the page — this one leads, that one converts.
  *
  * **Reveal.** Standard <Reveal>, same as every other section header. It is safe
  * here even though it is the first content block: the hero's track is 260dvh
@@ -34,9 +34,7 @@ export function IntroSection() {
     <Section id="intro" labelledBy="intro-title" className="bg-cloud">
       <Reveal>
         <div className="max-w-3xl">
-          <p className="text-eyebrow text-pine/90 font-medium uppercase">
-            Binghamton University
-          </p>
+          <Eyebrow>Binghamton University</Eyebrow>
           <h1
             id="intro-title"
             className="font-display text-display-xl text-pine mt-5 font-semibold text-balance"

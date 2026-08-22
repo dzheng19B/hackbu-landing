@@ -1,6 +1,6 @@
-import { Container } from './Layout'
+import { Container, Eyebrow } from './Layout'
 import { Wordmark } from './Wordmark'
-import { ExternalLink, MailLink } from './ExternalLink'
+import { ExternalLink, LINK_ON_FROST, MailLink } from './ExternalLink'
 import { CONTACT_EMAIL, SITE_PAGES, SOCIAL_LINKS } from '../lib/links'
 
 /**
@@ -9,10 +9,9 @@ import { CONTACT_EMAIL, SITE_PAGES, SOCIAL_LINKS } from '../lib/links'
  * dividers are made of.
  */
 
-const FOOTER_LINK_CLASSES =
-  'text-caption text-pine hover:underline hover:decoration-2 ' +
-  'hover:underline-offset-4 focus-visible:outline-2 ' +
-  'focus-visible:outline-offset-4 focus-visible:outline-pine'
+/* The footer band is frost, so its links underline on hover rather than
+   turning brick — see LINK_ON_FROST in ExternalLink.tsx. */
+const FOOTER_LINK_CLASSES = `text-caption ${LINK_ON_FROST}`
 
 const COLUMN_ONE = SITE_PAGES.slice(0, 4)
 const COLUMN_TWO = SITE_PAGES.slice(4)
@@ -58,7 +57,7 @@ function FooterColumn({
 }) {
   return (
     <div>
-      <h2 className="text-eyebrow text-pine/90 font-medium uppercase">{title}</h2>
+      <Eyebrow as="h2">{title}</Eyebrow>
       <ul className="mt-4 flex flex-col gap-3">
         {links.map((link) => (
           <li key={link.label}>

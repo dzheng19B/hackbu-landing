@@ -1,25 +1,30 @@
 import { useEffect, useRef, useState } from 'react'
 import { Container } from './Layout'
 import { Wordmark } from './Wordmark'
-import { ExternalLink } from './ExternalLink'
+import { ExternalLink, LINK_ON_CLOUD } from './ExternalLink'
 import { ButtonLink } from './ButtonLink'
 import { DISCORD_URL, NAV_LINKS } from '../lib/links'
 
 /**
- * Fixed page header: wordmark + three destinations + the Discord CTA.
+ * Fixed page header: the HackBU logo lockup + three destinations + the
+ * Discord CTA.
  *
  * The bar is `h-16` (4rem) below `sm` and `h-20` (5rem) from `sm` up; anything
  * that needs to clear it (the hero content, scroll anchors) uses those numbers.
  *
  * Below `md` (768px) the three links and the CTA collapse behind a toggle, so
- * the 390px layout is a wordmark plus a menu button. The toggle is a real
- * <button> — Enter/Space operate it, Escape closes it, and the panel it
- * controls stays in the DOM so `aria-controls` always resolves.
+ * the 390px layout is the lockup plus a menu button.
+ *
+ * The toggle is a real <button> — Enter/Space operate it, Escape closes it,
+ * and the panel it controls stays in the DOM so `aria-controls` always
+ * resolves.
+ *
+ * Both the bar and the compact panel are opaque `bg-cloud`, so every link in
+ * here takes the cloud treatment — brick hover. See LINK_ON_CLOUD in
+ * ExternalLink.tsx.
  */
 
-const NAV_LINK_CLASSES =
-  'text-body text-pine hover:text-brick focus-visible:outline-2 ' +
-  'focus-visible:outline-offset-4 focus-visible:outline-pine'
+const NAV_LINK_CLASSES = `text-body ${LINK_ON_CLOUD}`
 
 export function SiteHeader() {
   const [menuOpen, setMenuOpen] = useState(false)
