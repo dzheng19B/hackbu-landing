@@ -757,6 +757,12 @@ function CloudLayer({ layer }: { layer: CloudLayerSpec }) {
    * `prefers-reduced-motion` (below), which removes the drift entirely; this
    * bounds the animation so it stops on its own instead of running for the rest
    * of the session behind content the reader has already scrolled to.
+   *
+   * The same flag also gates this layer's `will-change` below (P5-7): past
+   * `fadeEnd` neither the drift nor the scroll-linked `y`/`opacity` moves, so
+   * the hint has nothing left to buy. `fadeEnd` is the right threshold for both
+   * for the same reason — the layer's opacity is exactly 0 there, so the
+   * de-promotion, like the pause, lands on a frame that paints nothing.
    */
   const [drifting, setDrifting] = useState(
     () => progress.get() <= layer.fadeEnd,
@@ -770,6 +776,13 @@ function CloudLayer({ layer }: { layer: CloudLayerSpec }) {
    * pan does not finish until 0.75, so the revealed campus is never sitting
    * under a cloud. The layers are staggered — near clears first, far last —
    * which is the same parallax cue the drift speeds give, read vertically.
+   *
+   * `opacity` and `y` are built above the `reducedMotion` early return because
+   * the Rules of Hooks require it, and the resting branch below reads neither
+   * (P2-7). That is the only legal shape for one component: the alternative is
+   * splitting `CloudLayer` in two so the moving branch is its own component,
+   * which trades a live subscription for a second component and an extra layer
+   * of indirection. Left as is deliberately.
    */
   const opacity = useTransform(
     progress,
@@ -800,7 +813,11 @@ function CloudLayer({ layer }: { layer: CloudLayerSpec }) {
   return (
     <m.div
       data-cloud-layer={layer.id}
-      className="absolute inset-0 will-change-transform"
+      // Promoted only while `y`/`opacity` are still moving — see `drifting`
+      // above (P5-7). The drift child below keeps its hint unconditionally:
+      // that one animates `x` with `repeat: Infinity` and is what actually
+      // moves, so its promotion never expires.
+      className={`absolute inset-0${drifting ? ' will-change-transform' : ''}`}
       style={{ opacity, y }}
     >
       <m.div
@@ -831,6 +848,12 @@ export function HeroClouds() {
       // animates — so the drift track and its tiles get their static widths
       // from the stylesheet and nothing but `transform` is ever written inline
       // on an animated element.
+      //
+      // The assertion is P2-6 and has no non-assertion spelling: React's
+      // `CSSProperties` has no index signature for `--*` keys. It is safe as
+      // written — react-dom routes custom properties through
+      // `style.setProperty()` verbatim, so the number lands as `4`, not `4px`,
+      // and the `calc()`s that read it stay valid.
       style={{ '--cloud-sets': SET_COUNT } as CSSProperties}
     >
       {CLOUD_LAYERS.map((layer) => (

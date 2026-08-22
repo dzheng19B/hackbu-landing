@@ -10,7 +10,12 @@ import { createRoot, hydrateRoot } from 'react-dom/client'
 import './landing.css'
 import App from './App.tsx'
 
-const mount = document.getElementById('root')!
+// `index.html` ships `<div id="root">`, and `scripts/prerender.mjs` writes the
+// server-rendered markup into it, so this cannot be null in a correct build.
+// Checked rather than asserted (P2-5) so that an HTML edit that drops the div
+// fails here, by name, instead of inside `hydrateRoot`.
+const mount = document.getElementById('root')
+if (!mount) throw new Error('#root is missing from index.html')
 
 const tree = (
   <StrictMode>

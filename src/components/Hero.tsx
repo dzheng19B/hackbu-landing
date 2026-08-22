@@ -1,5 +1,5 @@
-import { useMemo, useRef } from 'react'
-import { m, useScroll, useTransform } from 'motion/react'
+import { useMemo, useRef, useState } from 'react'
+import { m, useMotionValueEvent, useScroll, useTransform } from 'motion/react'
 import { HeroClouds } from './HeroClouds'
 import {
   CAMPUS_ALT,
@@ -156,6 +156,34 @@ export function Hero() {
     (p) => PAN_START_SCALE + (1 - PAN_START_SCALE) * p,
   )
 
+  /**
+   * Is the pan still running? (P5-7 / P2-8 — releasing `will-change`.)
+   *
+   * `scale` stops changing at `PAN_SCROLL_FRACTION` and never moves again for
+   * the remaining 0.25 of the track, but the compositor keeps whatever the hint
+   * bought for the life of the document. Measured with CDP `LayerTree` on
+   * GPU-backed Edge (`gpu_compositing=enabled`, ANGLE/D3D11): at track progress
+   * 0.8 the campus `<img>` is still its own layer, still `drawsContent`, still
+   * holding a full-viewport texture — 1425 × 900 × 4 = 5,130,000 B at 1440×900
+   * and 390 × 844 × 4 = 1,316,640 B at 390×844 — with `WillChangeTransform` as
+   * its only compositing reason. Dropping the hint past the pan lets that
+   * texture go; the illustration is then painted by the scrolling layer that
+   * already exists and already draws.
+   *
+   * Scrolling back up sets this true again, so the promotion returns before the
+   * pan resumes rather than being a one-way latch. The same shape as
+   * `drifting` in HeroClouds: motion's own `useMotionValueEvent` on the single
+   * `useScroll` value — still no `scroll` listener in `src/` — and the boolean
+   * changes at most twice per traversal, so React bails out of a re-render on
+   * every frame either side of the crossing.
+   */
+  const [panning, setPanning] = useState(
+    () => progress.get() <= PAN_SCROLL_FRACTION,
+  )
+  useMotionValueEvent(progress, 'change', (p) => {
+    setPanning(p <= PAN_SCROLL_FRACTION)
+  })
+
   const heroScroll = useMemo<HeroScroll>(
     () => ({ progress, reducedMotion }),
     [progress, reducedMotion],
@@ -176,7 +204,10 @@ export function Hero() {
       tabIndex={-1}
       // The hero carries no heading now, so it names itself. Short on purpose:
       // this is the landmark's label, and the full description of what is in
-      // the picture is the <img>'s alt (CAMPUS_ALT), one level down.
+      // the picture is the <img>'s alt (CAMPUS_ALT), one level down. Kept as
+      // is: the overlap with the alt is P4-7, which passes 1.1.1 and 1.3.1 on
+      // both counts — the label is what a landmark list shows, the alt is what
+      // the picture says, and dropping either loses one of the two.
       aria-label="Campus illustration"
       // No `overflow-hidden` here: an overflow-clipped ancestor becomes the
       // sticky element's scrollport and the stage would never pin. The stage
@@ -214,8 +245,11 @@ export function Hero() {
                 draggable={false}
                 decoding="async"
                 fetchPriority="high"
+                // `will-change` only while the scale is actually moving: never
+                // under reduced motion (where it is pinned to 1), and released
+                // past `PAN_SCROLL_FRACTION` — see `panning` above (P5-7).
                 className={`h-full w-full origin-top ${CAMPUS_OBJECT_POSITION} object-cover select-none ${
-                  reducedMotion ? '' : 'will-change-transform'
+                  reducedMotion || !panning ? '' : 'will-change-transform'
                 }`}
                 style={{ scale }}
               />

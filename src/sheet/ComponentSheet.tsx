@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { domAnimation, LazyMotion } from 'motion/react'
 import { Column } from './kit'
-import { LINK_ON_FROST } from '../components/ExternalLink'
+import { LINK_ON_CLOUD, LINK_ON_FROST } from '../components/ExternalLink'
 import { TOGGLE_ON_CLOUD } from '../components/controls'
 import { TokensPart } from './parts/TokensPart'
 import { PrimitivesPart } from './parts/PrimitivesPart'
@@ -84,9 +84,15 @@ export function ComponentSheet() {
             <ul className="-mx-2 flex min-w-0 items-center gap-1 overflow-x-auto px-2">
               {PARTS.map((part) => (
                 <li key={part.id}>
+                  {/*
+                   * The cloud link treatment comes from the constant, not from
+                   * a copy of its class string (P3-8). One consequence, taken
+                   * deliberately: the focus ring is now the page's own — pine,
+                   * offset 4 — where this pill had hand-rolled offset 2.
+                   */}
                   <a
                     href={`#${part.id}`}
-                    className="text-caption text-pine hover:text-brick focus-visible:outline-pine block rounded-full px-3 py-2 whitespace-nowrap focus-visible:outline-2 focus-visible:outline-offset-2"
+                    className={`${LINK_ON_CLOUD} text-caption block rounded-full px-3 py-2 whitespace-nowrap`}
                   >
                     {part.label}
                   </a>
@@ -158,14 +164,22 @@ function Masthead() {
         <ol className="border-frost mt-12 border-t">
           {PARTS.map((part, index) => (
             <li key={part.id} className="border-frost border-b">
+              {/*
+               * Same constant here (P3-8). The hover recolour used to be
+               * hand-rolled as `group-hover:text-brick` on the title span; it
+               * is now `LINK_ON_CLOUD`'s own `hover:text-brick`, inherited by
+               * the one span that does not set a colour of its own. The other
+               * two spans are `text-pine/90` and are unaffected, so the row
+               * looks and behaves exactly as before.
+               */}
               <a
                 href={`#${part.id}`}
-                className="focus-visible:outline-pine group flex flex-col gap-1 py-4 focus-visible:outline-2 focus-visible:outline-offset-4 sm:flex-row sm:items-baseline sm:gap-6"
+                className={`${LINK_ON_CLOUD} flex flex-col gap-1 py-4 sm:flex-row sm:items-baseline sm:gap-6`}
               >
                 <span className="text-eyebrow text-pine/90 font-medium uppercase sm:w-16 sm:shrink-0">
                   Part {index + 1}
                 </span>
-                <span className="text-body text-pine group-hover:text-brick font-medium sm:w-56 sm:shrink-0">
+                <span className="text-body font-medium sm:w-56 sm:shrink-0">
                   {part.title}
                 </span>
                 <span className="text-caption text-pine/90">{part.blurb}</span>

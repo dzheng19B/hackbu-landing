@@ -138,6 +138,46 @@ function fontPreload(): Plugin {
  * checking that nothing under `src/sheet/` appears in the landing page's
  * module graph after a build.
  */
+
+/**
+ * Names the two chunks both pages share, instead of letting Rollup name them
+ * after whichever module happens to be their facade (P1-1).
+ *
+ * Left alone, Rollup hoisted React, `motion` *and* every shared component into
+ * one 283 KB chunk and called it `SiteFooter-*.js`, after a 72-line footer.
+ * The behaviour was right and the name was a trap for anyone reading a build
+ * log or a performance trace. Two deliberate names instead:
+ *
+ *   vendor  everything from node_modules — react, react-dom, scheduler,
+ *           react/jsx-runtime, motion and its motion-dom / motion-utils
+ *           internals. Third-party code, versioned by package.json, changing
+ *           only when a dependency does.
+ *   shared  `src/components/**` and `src/lib/**` — the component tree and the
+ *           three lib modules. This is exactly the set both entries import:
+ *           the sheet renders the real components, sections included
+ *           (`src/sheet/parts/ComposedPart.tsx`), so nothing landing-only is
+ *           being pushed into the sheet's download by naming it this way.
+ *
+ * Nothing under `src/sheet/` matches either rule, so the sheet's own code stays
+ * in the `components` entry chunk and out of the landing page, exactly as
+ * before. CSS is left to Vite: `@fontsource` ships stylesheets, not modules,
+ * and assigning them a JS chunk would take Vite's stylesheet handling out of
+ * the loop for no gain.
+ */
+function manualChunks(id: string): string | undefined {
+  const path = id.replaceAll('\\', '/')
+  if (/\.(css|scss|sass|less)($|\?)/.test(path)) return undefined
+  // Vite's `modulepreload-polyfill` is a virtual module, so it has no
+  // `node_modules` path to match on, and both entries pull it in — without this
+  // it becomes a shared chunk of its own. Rolldown's own runtime shim is the
+  // one thing here that cannot be placed: the bundler emits
+  // `rolldown-runtime-*.js` itself and never offers it to this function. It is
+  // 589 B, it is named after what it is, and it is left alone.
+  if (path.includes('modulepreload-polyfill')) return 'vendor'
+  if (path.includes('/node_modules/')) return 'vendor'
+  if (/\/src\/(components|lib)\//.test(path)) return 'shared'
+  return undefined
+}
 // https://vite.dev/config/
 export default defineConfig({
   plugins: [react(), tailwindcss(), siteOrigin(), fontPreload()],
@@ -148,6 +188,7 @@ export default defineConfig({
         index: fileURLToPath(new URL('./index.html', import.meta.url)),
         components: fileURLToPath(new URL('./components.html', import.meta.url)),
       },
+      output: { manualChunks },
     },
   },
 })

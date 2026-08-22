@@ -115,6 +115,17 @@ const TOKENS: readonly Token[] = [
 function Swatch({ token }: { token: Token }) {
   return (
     <li className="border-frost flex gap-4 border-b py-4">
+      {/*
+       * `token.swatch` is a background utility, and for `fern` that is
+       * literally the one thing the logo-only rule forbids (P3-7). Kept, and
+       * this is the exemption: the rule exists because fern measures 3.27:1 on
+       * cloud and so must never carry text, a border or an interactive
+       * surface — none of which a 56px `aria-hidden` square in an internal,
+       * noindex catalogue is. Showing the token is this element's whole job,
+       * and the row's own `flagNote` below states the restriction it is the
+       * sole exception to. If the rule is ever machine-checked, exempt this
+       * file by name rather than working around it here.
+       */}
       <span
         aria-hidden="true"
         className={`${token.swatch} border-frost h-14 w-14 shrink-0 rounded-xl border sm:h-16 sm:w-16`}

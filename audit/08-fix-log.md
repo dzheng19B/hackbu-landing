@@ -1992,3 +1992,471 @@ Thirteen files touched, all documentation or doc comments plus the one code file
 (`src/lib/links.ts`) this phase's brief explicitly named as in-scope; `public/`,
 `src/lib/images.ts`'s srcset arrays, `scripts/generate-images.mjs`'s srcset array and every
 `@theme` value are byte-for-byte unchanged.
+
+## Phase 6 — optional code polish and the `will-change` measurement
+
+Nine findings: **P5-7** (with **P2-8**), **P1-1**, **P1-2**, **P2-5**, **P2-6**, **P2-7**,
+**P3-7**, **P3-8**, **P4-7**. Files touched: `src/components/Hero.tsx`,
+`src/components/HeroClouds.tsx`, `src/main.tsx`, `src/sheet/main.tsx`, `vite.config.ts`,
+`src/sheet/ComponentSheet.tsx`, `src/sheet/parts/TokensPart.tsx`. Nothing a reader of the landing
+page can see changes; the one visible change anywhere is a 2px focus-ring offset inside the
+internal component sheet, taken deliberately as part of P3-8.
+
+### The compositor measurement (P5-7 / P2-8) — how it was taken
+
+The open item both `05-performance.md` §4.4 and `07-live.md` §11 left behind was that no layer
+count and no layer memory had ever been read, because the Phase 7 browser ran with
+`--disable-gpu`. This phase read them.
+
+Microsoft Edge 151.0.4129.101, launched **`--headless=new` with the GPU path left on** — no
+`--disable-gpu` — driven over CDP with the `LayerTree` domain enabled. That mode does composite on
+real hardware here, which the browser confirms itself:
+
+```
+GPU featureStatus: 2d_canvas=enabled direct_rendering_display_compositor=disabled_off_ok
+  gpu_compositing=enabled multiple_raster_threads=enabled_on opengl=enabled_on
+  rasterization=enabled raw_draw=disabled_off_ok skia_graphite=disabled_off
+  trees_in_viz=disabled_off video_decode=enabled video_encode=enabled webgl=enabled
+  webgpu=enabled webnn=disabled_off
+GPU auxAttributes.glRenderer: ANGLE (NVIDIA, NVIDIA GeForce RTX 3070 (0x00002484)
+  Direct3D11 vs_5_0 ps_5_0, D3D11-32.0.15.9597)
+```
+
+`gpu_compositing=enabled` and a D3D11 renderer, so a headed run was not needed and was not used.
+
+**Formula.** Layer count is the number of entries in the `LayerTree.layerTreeDidChange` snapshot.
+"Total layer memory" is the sum of `round(width) x round(height) x 4` over those entries — layer
+*bounds* at 4 bytes per pixel, `deviceScaleFactor: 1`. It is reported twice: over every layer, and
+over only those with `drawsContent: true`, which is the subset that actually holds a raster.
+Compositing reasons come from `LayerTree.compositingReasons` per `layerId`; owning elements from
+`DOM.describeNode` on each layer's `backendNodeId`. Progress is read the way `07-live.md` §3 read
+it — `scrollTo(0, trackTop + p x (track.offsetHeight - innerHeight))`, then the actual
+`(scrollY - trackTop) / span` back out. One wrinkle worth recording: past the pan **nothing on the
+page is animating**, so the compositor never commits and no tree is pushed; each reading therefore
+disables and re-enables `LayerTree` and nudges the scroll by 1px, landing back on the exact target
+offset.
+
+### The four readings, before any code change
+
+| Viewport | Progress | Layers | Total layer memory (all) | …of it `drawsContent` | `will-change` |
+| --- | --- | --- | --- | --- | --- |
+| 1440 × 900 | 0 | **21** | **153,470,156 B** | 110,968,500 B | 7 |
+| 1440 × 900 | 0.8 | **23** | **155,828,432 B** | 48,555,300 B | 7 |
+| 390 × 844 | 0 | **23** | **42,893,504 B** | 30,518,480 B | 7 |
+| 390 × 844 | 0.8 | **25** | **43,697,092 B** | 14,380,976 B | 7 |
+
+Which layers carry `will-change: transform` as a compositing reason — all seven elements, at both
+scroll positions, at both viewports, `WillChangeTransform` being their **only** listed reason:
+
+```
+1440x900, progress 0.8, before:
+  id=11 1425x900   5130000B draws=true  node=img.h-full.w-full.origin-top.object-[52%_0%]  reasons=[WillChangeTransform]
+  id=13 1425x900   5130000B draws=false node=div[data-cloud-layer=far]                     reasons=[WillChangeTransform]
+  id=14 5700x900  20520000B draws=false node=div[data-cloud-drift=true]                    reasons=[WillChangeTransform]
+  id=15 1425x900   5130000B draws=false node=div[data-cloud-layer=mid]                     reasons=[WillChangeTransform]
+  id=16 5700x900  20520000B draws=false node=div[data-cloud-drift=true]                    reasons=[WillChangeTransform]
+  id=17 1425x900   5130000B draws=false node=div[data-cloud-layer=near]                    reasons=[WillChangeTransform]
+  id=18 5937x900  21373200B draws=false node=div[data-cloud-drift=true]                    reasons=[WillChangeTransform]
+```
+
+Three things the numbers settle that the static read could not:
+
+1. **The layers are not clipped to one viewport.** §4.4 hoped the `overflow-hidden` ancestor would
+   hold each drift track near one viewport width; it does not. Each `data-cloud-drift` layer is
+   its full four-sets width — 5700 × 900 and 5937 × 900 at 1440×900 — exactly as authored.
+2. **The cost past the pan is not nil.** All four elements that stop changing (the campus `<img>`
+   and the three `data-cloud-layer` wrappers) are still their own compositor layers at progress
+   0.8, with `WillChangeTransform` as their sole compositing reason, and the campus `<img>` is
+   still `drawsContent: true` holding a 1425 × 900 × 4 = 5,130,000 B raster (390 × 844 × 4 =
+   1,316,640 B on mobile). This meets the decision rule, so the hint was released.
+3. **The drift tracks stop drawing but keep their layers.** At progress 0.8 their `drawsContent`
+   is false — they are at opacity 0 — which is the whole 62,413,200 B gap between the two
+   `drawsContent` columns at 1440×900 (110,968,500 − 20,520,000 − 20,520,000 − 21,373,200 =
+   48,555,300, exactly the measured figure).
+
+### The four readings, after the change
+
+| Viewport | Progress | Layers | Total layer memory (all) | …of it `drawsContent` | `will-change` |
+| --- | --- | --- | --- | --- | --- |
+| 1440 × 900 | 0 | 21 | 153,470,156 B | 110,968,500 B | **7** |
+| 1440 × 900 | 0.8 | **21** (−2) | **145,568,432 B** (−10,260,000) | 48,555,300 B (=) | **3** |
+| 390 × 844 | 0 | 23 | 42,893,504 B | 30,518,480 B | **7** |
+| 390 × 844 | 0.8 | **23** (−2) | **41,063,812 B** (−2,633,280) | 14,380,976 B (=) | **3** |
+
+Scroll 0 is byte-identical to before, which is the point: the hint is unchanged while it is doing
+something. Past the pan, two composited layers go away — the campus `<img>`'s and the
+`data-hero-clouds` wrapper's — and the three `data-cloud-layer` wrappers survive only as
+`StickyPosition` layers, no longer as `WillChangeTransform` ones. **Raster memory is a wash**
+(`drawsContent` totals are identical to the byte): the campus content still has to be rasterised,
+and it moves onto the `data-hero-stage` layer that was already composited and previously drew
+nothing. So the honest result is −2 compositor layers and −6.6% / −6.0% of total layer bounds past
+the pan, not a texture saving. Recorded here rather than claimed as a frame-rate win, which was
+not measured.
+
+### P5-7 (with P2-8) · FIXED · `src/components/Hero.tsx:180,252` · `src/components/HeroClouds.tsx:820`
+
+`Hero.tsx:180` adds a `panning` boolean, `progress.get() <= PAN_SCROLL_FRACTION`, kept current by
+`useMotionValueEvent` on the hero's existing `useScroll` value — the same shape as `drifting` in
+`HeroClouds`, and still no `scroll` listener anywhere in `src/`. `Hero.tsx:252` reads it, so the
+campus `<img>` carries `will-change-transform` only while `reducedMotion` is false *and* the pan is
+still running. `HeroClouds.tsx:820` gates the `data-cloud-layer` wrapper's hint on the existing
+`drifting` flag, whose threshold is that layer's own `fadeEnd` — the exact progress at which the
+wrapper's `y` and `opacity` stop moving, and at which its opacity is exactly 0, so the
+de-promotion lands on a frame that paints nothing. The three `data-cloud-drift` tracks keep their
+hint unconditionally: they animate `x` with `repeat: Number.POSITIVE_INFINITY` and MDN's "remove it
+when the element stops changing" never triggers for them.
+
+Scrolling back up sets both flags true again, so this is a state of the page, not a one-way latch.
+
+```
+$ node p6-verify.mjs 9346          # dev server, headless Edge with GPU, LayerTree enabled
+===== 1440x900 — scroll 0
+  campus transform: matrix(3, 0, 0, 3, 0, 0)
+  will-change:transform count = 7  [img | div[data-cloud-layer] | div[data-cloud-drift] | div[data-cloud-layer] | div[data-cloud-drift] | div[data-cloud-layer] | div[data-cloud-drift]]
+  LAYER COUNT = 21   (drawsContent: 8)
+  TOTAL LAYER MEMORY (w*h*4, all layers)      = 153470156 B
+===== 1440x900 — hero progress 0.37 (mid-pan)
+  scrollY=533 progress=0.370139
+  campus transform: matrix(1.66528, 0, 0, 1.66528, 0, 0)
+  will-change:transform count = 4  [img | div[data-cloud-drift] | div[data-cloud-drift] | div[data-cloud-drift]]
+===== 1440x900 — hero progress 0.8
+  campus transform: none
+  will-change:transform count = 3  [div[data-cloud-drift] | div[data-cloud-drift] | div[data-cloud-drift]]
+  LAYER COUNT = 21   (drawsContent: 5)
+  TOTAL LAYER MEMORY (w*h*4, all layers)      = 145568432 B
+===== 390x844 — scroll 0
+  will-change:transform count = 7
+  LAYER COUNT = 23   TOTAL LAYER MEMORY = 42893504 B
+===== 390x844 — hero progress 0.8
+  will-change:transform count = 3
+  LAYER COUNT = 23   TOTAL LAYER MEMORY = 41063812 B
+===== 1440x900 — prefers-reduced-motion: reduce, scroll 0
+  campus transform: none
+  will-change:transform count = 0
+  data-cloud-drift nodes = 0
+  track height = 900 (viewport 900)
+===== 390x844 — prefers-reduced-motion: reduce, scroll 0
+  campus transform: none
+  will-change:transform count = 0
+  data-cloud-drift nodes = 0
+  track height = 844 (viewport 844)
+```
+
+Seven at scroll 0, four mid-pan (the three wrappers release at their `fadeEnd`, all ≤ 0.30, well
+before 0.37), three past the pan, zero under reduced motion. The hero itself is untouched: at
+`p = 0.370139` the computed transform is `matrix(1.66528, …)` — the same value `07-live.md` §3
+measured before any of this, there at `p = 0.370313` on a 1280×800 viewport. (The two `p` figures
+differ by 0.00017 because each viewport rounds `0.37 × span` to a whole pixel of scroll; the scale
+they produce is identical to five decimals.)
+
+The prerendered markup agrees with the client's first render, so hydration still matches — both
+render `panning` true and `drifting` true at progress 0:
+
+```
+$ grep -o 'will-change-transform' dist/index.html | wc -l
+7
+$ grep -o 'class="h-full w-full origin-top[^"]*"' dist/index.html
+class="h-full w-full origin-top object-[52%_0%] object-cover select-none will-change-transform"
+```
+
+### P1-1 · FIXED · `vite.config.ts:167,191`
+
+`build.rollupOptions.output.manualChunks` is now a function (`vite.config.ts:167`, wired in at
+`:191`) that names the two chunks both pages share instead of letting the bundler name them after a
+facade module. `vendor` takes everything from `node_modules` — react, react-dom, scheduler,
+`react/jsx-runtime`, `motion` and its `motion-dom` / `motion-utils` internals — plus Vite's virtual
+`modulepreload-polyfill`, which has no `node_modules` path to match on and would otherwise be a
+shared chunk of its own. `shared` takes `src/components/**` and `src/lib/**`, which is exactly the
+set both entries import: the sheet renders the real components, sections included
+(`src/sheet/parts/ComposedPart.tsx:5–9`), so naming it this way pushes nothing landing-only into
+the sheet's download. Stylesheets are returned unassigned so Vite keeps handling them.
+
+One chunk could not be named from here and is left alone: `rolldown-runtime-*.js`, 589 B, emitted
+by the bundler itself and never offered to `manualChunks`. It is named after what it is.
+
+Before, and after:
+
+```
+$ ls -l dist/assets/          # before
+-rw-r--r-- 1 danz3 197609 282949 SiteFooter-ejBd3QIq.js
+-rw-r--r-- 1 danz3 197609  53659 components-WZ-vvrxD.js
+-rw-r--r-- 1 danz3 197609  21331 components-xZOInl1b.css
+-rw-r--r-- 1 danz3 197609  18096 fraunces-latin-600-normal-BFCDtZfi.woff2
+-rw-r--r-- 1 danz3 197609  18052 index-JaSjmbl1.css
+-rw-r--r-- 1 danz3 197609  16013 index-hUPakRjE.js
+-rw-r--r-- 1 danz3 197609  23664 inter-latin-400-normal-C38fXH4l.woff2
+-rw-r--r-- 1 danz3 197609  24272 inter-latin-500-normal-Cerq10X2.woff2
+
+$ ls -l dist/assets/          # after
+-rw-r--r-- 1 danz3 197609  53570 components-CSF4NymR.js
+-rw-r--r-- 1 danz3 197609  21331 components-xZOInl1b.css
+-rw-r--r-- 1 danz3 197609  18096 fraunces-latin-600-normal-BFCDtZfi.woff2
+-rw-r--r-- 1 danz3 197609  18052 index-JaSjmbl1.css
+-rw-r--r-- 1 danz3 197609   1187 index-QlWtpqji.js
+-rw-r--r-- 1 danz3 197609  23664 inter-latin-400-normal-C38fXH4l.woff2
+-rw-r--r-- 1 danz3 197609  24272 inter-latin-500-normal-Cerq10X2.woff2
+-rw-r--r-- 1 danz3 197609    589 rolldown-runtime-CbXtAM7H.js
+-rw-r--r-- 1 danz3 197609  81597 shared-CpAifS0L.js
+-rw-r--r-- 1 danz3 197609 216956 vendor-Z-IfkQ_V.js
+```
+
+352,621 B of JS became 353,899 B — the 1,278 B is the per-chunk boilerplate of splitting one chunk
+into three. Both pages reference `vendor`, and the sheet's own code still reaches only
+`components.html`:
+
+```
+$ grep -o 'assets/[^"]*' dist/index.html | sort -u
+assets/fraunces-latin-600-normal-BFCDtZfi.woff2
+assets/index-JaSjmbl1.css
+assets/index-QlWtpqji.js
+assets/inter-latin-400-normal-C38fXH4l.woff2
+assets/inter-latin-500-normal-Cerq10X2.woff2
+assets/rolldown-runtime-CbXtAM7H.js
+assets/shared-CpAifS0L.js
+assets/vendor-Z-IfkQ_V.js
+
+$ grep -o 'assets/[^"]*' dist/components.html | sort -u
+assets/components-CSF4NymR.js
+assets/components-xZOInl1b.css
+assets/rolldown-runtime-CbXtAM7H.js
+assets/shared-CpAifS0L.js
+assets/vendor-Z-IfkQ_V.js
+
+$ for f in index-QlWtpqji shared-CpAifS0L vendor-Z-IfkQ_V rolldown-runtime-CbXtAM7H; do
+>   printf "%-30s " "$f"
+>   grep -c -e "Skip to the sheet" -e "Sheet sections" -e "component sheet" -e "RevealMode" "dist/assets/$f.js"
+> done
+index-QlWtpqji                 0
+shared-CpAifS0L                0
+vendor-Z-IfkQ_V                0
+rolldown-runtime-CbXtAM7H      0
+
+$ grep -c 'rel="preload" as="font"' dist/index.html
+3
+```
+
+The landing stylesheet is byte-identical across the change (`index-JaSjmbl1.css`, 18,052 B, same
+content hash), so `fontPreload()` still finds its three faces in `ctx.bundle` and the CSS split is
+untouched.
+
+### P1-2 · DOCUMENTED (no defect, no code) · `dist/assets/*.woff2`
+
+Gzip is larger than raw for every `.woff2` because WOFF2 is a Brotli-compressed container (W3C
+WOFF2 §1) — there is nothing left for gzip to find, and it adds its own framing. Vercel does not
+gzip `font/woff2` responses, so no byte of this reaches a user. `01-baseline.md` §4 recorded it
+only so its gzip column would not be misread. Nothing to fix and nothing to comment: the
+observation lives in the baseline report, which is where it belongs.
+
+```
+$ ls -l dist/assets/*.woff2 | awk '{print $5, $9}'
+18096 dist/assets/fraunces-latin-600-normal-BFCDtZfi.woff2
+23664 dist/assets/inter-latin-400-normal-C38fXH4l.woff2
+24272 dist/assets/inter-latin-500-normal-Cerq10X2.woff2
+```
+
+### P2-5 · FIXED · `src/main.tsx:17` · `src/sheet/main.tsx:14`
+
+Both entries had the stock Vite template's `document.getElementById('root')!`. Both now bind the
+node and check it, so an HTML edit that drops the div fails by name instead of inside
+`hydrateRoot`:
+
+```
+$ sed -n '17,18p' src/main.tsx
+const mount = document.getElementById('root')
+if (!mount) throw new Error('#root is missing from index.html')
+
+$ sed -n '14,15p' src/sheet/main.tsx
+const mount = document.getElementById('root')
+if (!mount) throw new Error('#root is missing from components.html')
+
+$ grep -c "getElementById('root')!" src/main.tsx ; grep -c "getElementById('root')!" src/sheet/main.tsx
+0
+0
+```
+
+`02-code.md` §"non-null `!`" counted exactly one in `src/`; there are now none.
+
+### P2-6 · DOCUMENTED (verified safe, comment only) · `src/components/HeroClouds.tsx:857`
+
+`style={{ '--cloud-sets': SET_COUNT } as CSSProperties}` stays. React's `CSSProperties` has no
+index signature for `--*` keys, so there is no non-assertion spelling; the alternative
+(`CSSProperties & Record<'--cloud-sets', number>`) trades one assertion for one type alias and
+hides nothing. The comment above the line now records why it is safe — react-dom routes custom
+properties through `style.setProperty()` verbatim, so the value lands as `4`, not `4px`, and the
+`calc()`s that read it stay valid.
+
+```
+$ sed -n '857p' src/components/HeroClouds.tsx
+      style={{ '--cloud-sets': SET_COUNT } as CSSProperties}
+
+$ grep -c 'var(--cloud-sets)' dist/assets/index-JaSjmbl1.css
+1
+```
+
+### P2-7 · DOCUMENTED (only legal shape, comment only) · `src/components/HeroClouds.tsx:782`
+
+`opacity` and `y` are built above `CloudLayer`'s `reducedMotion` early return because the Rules of
+Hooks require it, and the resting branch reads neither. The only way to stop building them is to
+split `CloudLayer` in two so the moving branch is its own component — a second component and a
+layer of indirection traded for one subscription that recomputes two numbers. Left as written, with
+the reasoning now in the doc comment above the two `useTransform` calls rather than only in the
+audit.
+
+```
+$ sed -n '780,785p' src/components/HeroClouds.tsx
+   * `opacity` and `y` are built above the `reducedMotion` early return because
+   * the Rules of Hooks require it, and the resting branch below reads neither
+   * (P2-7). That is the only legal shape for one component: the alternative is
+   * splitting `CloudLayer` in two so the moving branch is its own component,
+   * which trades a live subscription for a second component and an extra layer
+   * of indirection. Left as is deliberately.
+```
+
+### P3-7 · WONTFIX (sheet-only, exemption recorded in code) · `src/sheet/parts/TokensPart.tsx:119–131`
+
+`bg-fern` paints the fern row's 56/64px swatch, which is a background and so is outside
+README:201's "the marks and nothing else". Not changed. The rule exists because fern measures
+3.27:1 on cloud and 2.75:1 on frost, so it must never carry text, a border, a link or a button —
+none of which an `aria-hidden` square in an internal `noindex` catalogue is, and showing the token
+is that square's entire job. `03-design-system.md`'s own Fix line for this finding is "none needed;
+if the rule is ever machine-checked, exempt `src/sheet/parts/TokensPart.tsx` explicitly". Painting
+fern through a brand-mark mask instead, as `Wordmark.tsx` does, was considered and rejected: it
+needs a branch in the shared `Swatch` component plus a `BEARCAT_MARK` import, and it would leave
+one row of a ten-row colour table not showing a colour. The exemption is now written at the element
+itself so the next reader does not have to rediscover it.
+
+```
+$ grep -n 'bg-fern' src/sheet/parts/TokensPart.tsx src/components/Wordmark.tsx
+src/sheet/parts/TokensPart.tsx:7: * Colours are drawn with the token utilities (`bg-sky`, `bg-fern`, ...), so a
+src/sheet/parts/TokensPart.tsx:106:    swatch: 'bg-fern',
+src/components/Wordmark.tsx:62:        className="brand-mark brand-mark-bearcat bg-fern block"
+src/components/Wordmark.tsx:66:        className="brand-mark brand-mark-wordmark bg-fern block"
+```
+
+The landing-page half of the rule — fern on the two masked spans in `Wordmark.tsx` and nowhere
+else — is unchanged and still holds.
+
+### P3-8 · FIXED · `src/sheet/ComponentSheet.tsx:4,95,177`
+
+The sheet's two hand-rolled cloud-link treatments now compose the exported constant. `:95` (the
+sticky nav pill) and `:177` (the part-list row) both take `LINK_ON_CLOUD` from
+`src/components/ExternalLink.tsx`; the part-list row's `group-hover:text-brick`, which had been
+copied onto the title span, is gone — the span sets no colour of its own and inherits the
+constant's `hover:text-brick`, while the two spans either side keep their explicit `text-pine/90`
+and are unaffected. Verified live on the dev server with `CSS.forcePseudoState`:
+
+```
+===== /components.html — P3-8 cloud link treatment
+  sticky nav pill
+    className: text-pine hover:text-brick focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-pine text-caption block rounded-full px-3 py-2 whitespace-nowrap
+    colour resting: rgb(60, 92, 72)
+    colour :hover : rgb(162, 89, 58)
+  part-list row
+    className: text-pine hover:text-brick focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-pine flex flex-col gap-1 py-4 sm:flex-row sm:items-baseline sm:gap-6
+    colour resting: rgb(60, 92, 72)
+    colour :hover : rgb(162, 89, 58)
+```
+
+`rgb(60, 92, 72)` is `pine` `#3C5C48`; `rgb(162, 89, 58)` is `brick` `#A2593A`. Both rows behave
+exactly as they did. One deliberate change came with it and is noted in the code: the nav pill's
+focus ring was hand-rolled at `outline-offset-2` and is now the page's own `outline-offset-4`,
+which is what the constant carries and what every other link on both pages uses.
+
+No file under `src/components/` was modified for this — only imported from:
+
+```
+$ git diff --stat -- src/components/ExternalLink.tsx
+(no output)
+
+$ grep -rn 'LINK_ON_CLOUD' src/sheet/ComponentSheet.tsx
+4:import { LINK_ON_CLOUD, LINK_ON_FROST } from '../components/ExternalLink'
+95:                    className={`${LINK_ON_CLOUD} text-caption block rounded-full px-3 py-2 whitespace-nowrap`}
+170:               * is now `LINK_ON_CLOUD`'s own `hover:text-brick`, inherited by
+177:                className={`${LINK_ON_CLOUD} flex flex-col gap-1 py-4 sm:flex-row sm:items-baseline sm:gap-6`}
+```
+
+### P4-7 · DOCUMENTED (no defect, comment only) · `src/components/Hero.tsx:211`
+
+The hero region keeps `aria-label="Campus illustration"` and the `<img>` keeps its 34-word
+`CAMPUS_ALT`. The overlap is real and is mild: a screen reader entering the region announces the
+short label, then the long alt. Both are load-bearing and neither substitutes for the other — the
+label is what a landmark list shows, where a 34-word alt would be unreadable, and the alt is what
+the picture says, which a landmark list is not the place for. **1.1.1 (A)** is satisfied by the alt
+and **1.3.1 (A)** by the region either way, and `04-accessibility.md` records no failure. The
+comment above the attribute now says the redundancy was weighed and kept.
+
+```
+$ sed -n '205,211p' src/components/Hero.tsx
+      // The hero carries no heading now, so it names itself. Short on purpose:
+      // this is the landmark's label, and the full description of what is in
+      // the picture is the <img>'s alt (CAMPUS_ALT), one level down. Kept as
+      // is: the overlap with the alt is P4-7, which passes 1.1.1 and 1.3.1 on
+      // both counts — the label is what a landmark list shows, the alt is what
+      // the picture says, and dropping either loses one of the two.
+      aria-label="Campus illustration"
+```
+
+### Phase-wide verification
+
+```
+$ npm run typecheck ; echo "EXIT=$?"
+> tsc -b --noEmit
+EXIT=0
+
+$ npm run lint ; echo "EXIT=$?"
+> oxlint --deny-warnings
+EXIT=0
+
+$ npm run build ; echo "EXIT=$?"
+> npm run lint && tsc -b && vite build && node scripts/prerender.mjs
+✓ 448 modules transformed.
+dist/components.html                                    1.68 kB │ gzip:  0.79 kB
+dist/index.html                                         5.57 kB │ gzip:  2.38 kB
+dist/assets/index-JaSjmbl1.css                         18.05 kB │ gzip:  4.61 kB
+dist/assets/components-xZOInl1b.css                    21.33 kB │ gzip:  5.25 kB
+dist/assets/rolldown-runtime-CbXtAM7H.js                0.58 kB │ gzip:  0.36 kB
+dist/assets/index-QlWtpqji.js                           1.18 kB │ gzip:  0.57 kB
+dist/assets/components-CSF4NymR.js                     53.57 kB │ gzip: 16.45 kB
+dist/assets/shared-CpAifS0L.js                         81.59 kB │ gzip: 28.71 kB
+dist/assets/vendor-Z-IfkQ_V.js                        216.95 kB │ gzip: 70.06 kB
+✓ built in 400ms
+prerendered dist/index.html (42596 chars)
+prerendered dist/components.html (109199 chars)
+EXIT=0
+
+$ ls dist/assets/ | grep -c 'vendor-.*\.js' ; ls dist/assets/ | grep -c 'SiteFooter'
+1
+0
+
+$ node -e 'const h=require("fs").readFileSync("dist/index.html","utf8");console.log(h.includes("<div id=\"root\"></div>")?"EMPTY":"non-empty")'
+non-empty
+
+$ sed -n '74p' src/components/Hero.tsx
+const PAN_START_SCALE = 3
+
+$ grep -n "CAMPUS_OBJECT_POSITION = \|origin-top" src/components/Hero.tsx | head -2
+131:const CAMPUS_OBJECT_POSITION = 'object-[52%_0%]'
+248:                className={`h-full w-full origin-top ${CAMPUS_OBJECT_POSITION} object-cover select-none ${
+
+$ grep -rn "addEventListener('scroll'\|addEventListener(\"scroll\"\|onscroll" src/
+src/components/Hero.tsx:138:  // hand-rolled `addEventListener('scroll', ...)` anywhere in src/. Everything
+
+$ grep -rn "Phase [0-9]" src index.html components.html README.md ASSETS.md scripts vercel.json ; echo "EXIT=$?"
+EXIT=1
+
+$ git status --porcelain public/
+(no output)
+
+$ git status --porcelain
+ M src/components/Hero.tsx
+ M src/components/HeroClouds.tsx
+ M src/main.tsx
+ M src/sheet/ComponentSheet.tsx
+ M src/sheet/main.tsx
+ M src/sheet/parts/TokensPart.tsx
+ M vite.config.ts
+```
+
+The only `scroll` hit in `src/` is the sentence in the comment that says there is none. Seven files
+touched, `public/` untouched, and the sheet-only findings (P3-7, P3-8) changed nothing under
+`src/components/`.

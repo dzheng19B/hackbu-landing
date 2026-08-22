@@ -10,7 +10,9 @@ import '../index.css'
 import './sheet.css'
 import { ComponentSheet } from './ComponentSheet'
 
-const mount = document.getElementById('root')!
+// Checked, not asserted, for the reason written out in src/main.tsx (P2-5).
+const mount = document.getElementById('root')
+if (!mount) throw new Error('#root is missing from components.html')
 
 const tree = (
   <StrictMode>
