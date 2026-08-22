@@ -2536,15 +2536,15 @@ file** at which the closure entry's `###` heading sits.
 | P5-11 | note | **FIXED** | Phase 5 | `08-fix-log.md:1866` — `### P5-11 · FIXED · index.html:26–31` |
 | P2-1 | low | **FIXED** | Phase 5 | `08-fix-log.md:1884` — `### P2-1 · FIXED · src/lib/links.ts:10,12,19,21,26,28` |
 | P5-7 | note | **FIXED** | Phase 6 | `08-fix-log.md:2098` — `### P5-7 (with P2-8) · FIXED · Hero.tsx:180,252 · HeroClouds.tsx:820` |
-| P2-8 | note | **FIXED** | Phase 6 | `08-fix-log.md:2098` — same entry |
-| P1-1 | note | **FIXED** | Phase 6 | `08-fix-log.md:2164` — `### P1-1 · FIXED · vite.config.ts:167,191` |
-| P1-2 | note | **DOCUMENTED** (no defect, no code) | Phase 6 | `08-fix-log.md:2244` — `### P1-2 · DOCUMENTED · dist/assets/*.woff2` |
-| P2-5 | note | **FIXED** | Phase 6 | `08-fix-log.md:2259` — `### P2-5 · FIXED · src/main.tsx:17 · src/sheet/main.tsx:14` |
-| P2-6 | note | **DOCUMENTED** (verified safe, comment only) | Phase 6 | `08-fix-log.md:2281` — `### P2-6 · DOCUMENTED · src/components/HeroClouds.tsx:857` |
-| P2-7 | note | **DOCUMENTED** (only legal shape, comment only) | Phase 6 | `08-fix-log.md:2298` — `### P2-7 · DOCUMENTED · src/components/HeroClouds.tsx:782` |
-| P3-7 | note | **WONTFIX** (sheet-only; exemption recorded in code) | Phase 6 | `08-fix-log.md:2317` — `### P3-7 · WONTFIX · src/sheet/parts/TokensPart.tsx:119–131` |
-| P3-8 | note | **FIXED** | Phase 6 | `08-fix-log.md:2341` — `### P3-8 · FIXED · src/sheet/ComponentSheet.tsx:4,95,177` |
-| P4-7 | note | **DOCUMENTED** (no defect, comment only) | Phase 6 | `08-fix-log.md:2380` — `### P4-7 · DOCUMENTED · src/components/Hero.tsx:211` |
+| P2-8 | note | **FIXED** | Phase 6 | `08-fix-log.md:2005` — same entry |
+| P1-1 | note | **FIXED** | Phase 6 | `08-fix-log.md:2174` — `### P1-1 · FIXED · vite.config.ts:167,191` |
+| P1-2 | note | **DOCUMENTED** (no defect, no code) | Phase 6 | `08-fix-log.md:2254` — `### P1-2 · DOCUMENTED · dist/assets/*.woff2` |
+| P2-5 | note | **FIXED** | Phase 6 | `08-fix-log.md:2269` — `### P2-5 · FIXED · src/main.tsx:17 · src/sheet/main.tsx:14` |
+| P2-6 | note | **DOCUMENTED** (verified safe, comment only) | Phase 6 | `08-fix-log.md:2291` — `### P2-6 · DOCUMENTED · src/components/HeroClouds.tsx:857` |
+| P2-7 | note | **DOCUMENTED** (only legal shape, comment only) | Phase 6 | `08-fix-log.md:2308` — `### P2-7 · DOCUMENTED · src/components/HeroClouds.tsx:782` |
+| P3-7 | note | **WONTFIX** (sheet-only; exemption recorded in code) | Phase 6 | `08-fix-log.md:2327` — `### P3-7 · WONTFIX · src/sheet/parts/TokensPart.tsx:119–131` |
+| P3-8 | note | **FIXED** | Phase 6 | `08-fix-log.md:2351` — `### P3-8 · FIXED · src/sheet/ComponentSheet.tsx:4,95,177` |
+| P4-7 | note | **DOCUMENTED** (no defect, comment only) | Phase 6 | `08-fix-log.md:2390` — `### P4-7 · DOCUMENTED · src/components/Hero.tsx:211` |
 | P1-3 | low | **RESOLVED** (by the project, before the plan) | pre-plan | no fix-log entry — `AUDIT.md` §3, resolved by commit `9a5a72d` |
 | P1-4 | note | **RESOLVED** (by the project, before the plan) | pre-plan | no fix-log entry — `AUDIT.md` §3, resolved by commit `9a5a72d` |
 | P2-9 | note | **WITHDRAWN** (on better evidence) | pre-plan | no fix-log entry — `AUDIT.md` §4 dedup note "P6-11 ← P2-9 (withdrawn)"; the real gap it pointed at is P6-15, FIXED in Phase 1 |
