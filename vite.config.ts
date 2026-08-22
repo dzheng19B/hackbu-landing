@@ -52,7 +52,7 @@ function siteOrigin(): Plugin {
  *
  * All three, not just the two above the fold. Fraunces is display-only and the
  * hero carries no type, so the earlier reading was that preloading it would
- * compete with the LCP image for bandwidth; against that, `<IntroSection>`'s
+ * compete with the LCP image for bandwidth; against that, `<AboutSection>`'s
  * <h1> is the first thing under the hero and is set in it, `font-display: swap`
  * means a late face is a reflow rather than a delay, and 18 KB is small next to
  * the 495 KB of imagery the same connection is already carrying. Preloading the
@@ -127,9 +127,46 @@ function fontPreload(): Plugin {
 }
 
 /**
- * Two entry points, two pages:
+ * Serve `/about`, `/schedule`, `/sponsors`, `/hackathons` and `/components`
+ * without the `.html` suffix in `vite dev`, matching the Vercel rewrites in
+ * vercel.json.
+ */
+function cleanHtmlUrls(): Plugin {
+  const rewrites: Record<string, string> = {
+    '/about': '/about.html',
+    '/about/': '/about.html',
+    '/schedule': '/schedule.html',
+    '/schedule/': '/schedule.html',
+    '/sponsors': '/sponsors.html',
+    '/sponsors/': '/sponsors.html',
+    '/hackathons': '/hackathons.html',
+    '/hackathons/': '/hackathons.html',
+    '/components': '/components.html',
+    '/components/': '/components.html',
+  }
+
+  return {
+    name: 'clean-html-urls',
+    configureServer(server) {
+      server.middlewares.use((req, _res, next) => {
+        const path = req.url?.split('?')[0]
+        if (path && rewrites[path]) {
+          req.url = (req.url ?? '').replace(path, rewrites[path])
+        }
+        next()
+      })
+    },
+  }
+}
+
+/**
+ * Six entry points, six pages:
  *
  *   index.html       the landing page          -> dist/index.html
+ *   about.html       the About us page         -> dist/about.html
+ *   schedule.html    the schedule page         -> dist/schedule.html
+ *   sponsors.html    the sponsors page         -> dist/sponsors.html
+ *   hackathons.html  the hackathons page       -> dist/hackathons.html
  *   components.html  the component sheet       -> dist/components.html
  *
  * They share the component tree, so Rollup hoists what both import into a
@@ -180,12 +217,16 @@ function manualChunks(id: string): string | undefined {
 }
 // https://vite.dev/config/
 export default defineConfig({
-  plugins: [react(), tailwindcss(), siteOrigin(), fontPreload()],
+  plugins: [react(), tailwindcss(), cleanHtmlUrls(), siteOrigin(), fontPreload()],
   build: {
     outDir: 'dist',
     rollupOptions: {
       input: {
         index: fileURLToPath(new URL('./index.html', import.meta.url)),
+        about: fileURLToPath(new URL('./about.html', import.meta.url)),
+        schedule: fileURLToPath(new URL('./schedule.html', import.meta.url)),
+        sponsors: fileURLToPath(new URL('./sponsors.html', import.meta.url)),
+        hackathons: fileURLToPath(new URL('./hackathons.html', import.meta.url)),
         components: fileURLToPath(new URL('./components.html', import.meta.url)),
       },
       output: { manualChunks },

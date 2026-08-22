@@ -4,8 +4,46 @@
   "buildCommand": "npm run build",
   "outputDirectory": "dist",
   "rewrites": [
-    { "source": "/components", "destination": "/components.html" },
-    { "source": "/components/", "destination": "/components.html" }
+    {
+      "source": "/about",
+      "destination": "/about.html"
+    },
+    {
+      "source": "/about/",
+      "destination": "/about.html"
+    },
+    {
+      "source": "/schedule",
+      "destination": "/schedule.html"
+    },
+    {
+      "source": "/schedule/",
+      "destination": "/schedule.html"
+    },
+    {
+      "source": "/sponsors",
+      "destination": "/sponsors.html"
+    },
+    {
+      "source": "/sponsors/",
+      "destination": "/sponsors.html"
+    },
+    {
+      "source": "/hackathons",
+      "destination": "/hackathons.html"
+    },
+    {
+      "source": "/hackathons/",
+      "destination": "/hackathons.html"
+    },
+    {
+      "source": "/components",
+      "destination": "/components.html"
+    },
+    {
+      "source": "/components/",
+      "destination": "/components.html"
+    }
   ],
   "headers": [
     {
@@ -20,13 +58,19 @@
     {
       "source": "/artwork/(.*)",
       "headers": [
-        { "key": "Cache-Control", "value": "public, max-age=86400, must-revalidate" }
+        {
+          "key": "Cache-Control",
+          "value": "public, max-age=86400, must-revalidate"
+        }
       ]
     },
     {
       "source": "/brand/(.*)",
       "headers": [
-        { "key": "Cache-Control", "value": "public, max-age=86400, must-revalidate" }
+        {
+          "key": "Cache-Control",
+          "value": "public, max-age=86400, must-revalidate"
+        }
       ]
     }
   ]

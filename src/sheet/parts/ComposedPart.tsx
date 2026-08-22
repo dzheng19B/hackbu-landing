@@ -2,7 +2,6 @@ import type { ReactNode } from 'react'
 import { Block, Caption, Entry, Rule, SheetSection, Stage } from '../kit'
 import { SiteHeader } from '../../components/SiteHeader'
 import { SiteFooter } from '../../components/SiteFooter'
-import { IntroSection } from '../../components/sections/IntroSection'
 import { AboutSection } from '../../components/sections/AboutSection'
 import { GetInvolvedSection } from '../../components/sections/GetInvolvedSection'
 import { QuestionsSection } from '../../components/sections/QuestionsSection'
@@ -33,12 +32,12 @@ export function ComposedPart() {
       id="composed"
       number="3"
       title="Composed, as used"
-      intro="The header, the five content sections and the footer — imported from src/components/ and rendered here unmodified. Page order is: header, hero, drift-c, Intro, About, drift-a, Get involved, drift-b, Questions, drift-c, Contact, cloud-to-frost, footer."
+      intro="The header, the four content sections and the footer — imported from src/components/ and rendered here unmodified. Page order is: header, hero, drift-c, About, drift-a, Get involved, drift-b, Questions, drift-c, Contact, cloud-to-frost, footer."
     >
       <Entry
         name="SiteHeader"
         path="src/components/SiteHeader.tsx"
-        use="The fixed page bar: the lockup, three destinations and the Discord CTA, collapsing behind a toggle below 768px."
+        use="The fixed page bar: the lockup, five destinations and the Discord CTA, collapsing behind a toggle below 768px."
       >
         <NoProps>
           It reads NAV_LINKS and DISCORD_URL from src/lib/links.ts and owns one
@@ -86,17 +85,17 @@ export function ComposedPart() {
       </Entry>
 
       <Entry
-        name="IntroSection"
-        path="src/components/sections/IntroSection.tsx"
-        use="The page’s masthead. It sits directly under the hero and carries the only <h1>."
+        name="AboutSection"
+        path="src/components/sections/AboutSection.tsx"
+        use="The page’s masthead. It sits directly under the hero and carries the only <h1>: mission, Discord and mailing-list CTAs."
       >
         <NoProps>Copy is written into the component.</NoProps>
         <Block title="As rendered">
           <Stage
-            label="IntroSection — on cloud"
+            label="AboutSection — on cloud"
             note="On this sheet it means a second <h1> on the page. That is a property of the sheet, not of the section."
           >
-            <IntroSection />
+            <AboutSection />
           </Stage>
         </Block>
         <Block title="Notes">
@@ -107,28 +106,6 @@ export function ComposedPart() {
             headline, lede and CTA down here retired that trade rather than
             tuning it — no text sits over the artwork at any scroll position.
           </Rule>
-        </Block>
-      </Entry>
-
-      <Entry
-        name="AboutSection"
-        path="src/components/sections/AboutSection.tsx"
-        use="What the club is, plus the two pillars — the weekly workshops and the annual hackathon."
-      >
-        <NoProps>The two pillars are a const array inside the file.</NoProps>
-        <Block title="As rendered">
-          <Stage
-            label="AboutSection — on cloud"
-            note="A Reveal around the header, then a RevealGroup as='ul' of two RevealItem as='li' cards, staggered 0.12s apart."
-          >
-            <AboutSection />
-          </Stage>
-        </Block>
-        <Block title="Notes">
-          <Caption>
-            Intro and About are one uninterrupted stretch of cloud — there is no
-            divider between them, because a drift there would separate nothing.
-          </Caption>
         </Block>
       </Entry>
 

@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useRef, useState, type ReactNode } from 'react'
 import { Container } from './Layout'
 import { Wordmark } from './Wordmark'
 import { ExternalLink, LINK_ON_CLOUD } from './ExternalLink'
@@ -7,13 +7,13 @@ import { ButtonLink } from './ButtonLink'
 import { DISCORD_URL, NAV_LINKS } from '../lib/links'
 
 /**
- * Fixed page header: the HackBU logo lockup + three destinations + the
+ * Fixed page header: the HackBU logo lockup + five destinations + the
  * Discord CTA.
  *
  * The bar is `h-16` (4rem) below `sm` and `h-20` (5rem) from `sm` up; anything
  * that needs to clear it (the hero content, scroll anchors) uses those numbers.
  *
- * Below `md` (768px) the three links and the CTA collapse behind a toggle, so
+ * Below `md` (768px) the five links and the CTA collapse behind a toggle, so
  * the 390px layout is the lockup plus a menu button.
  *
  * The toggle is a real <button> — Enter/Space operate it, Escape closes it,
@@ -23,11 +23,26 @@ import { DISCORD_URL, NAV_LINKS } from '../lib/links'
  * Both the bar and the compact panel are opaque `bg-cloud`, so every link in
  * here takes the cloud treatment — brick hover. See LINK_ON_CLOUD in
  * ExternalLink.tsx.
+ *
+ * Off-site destinations go through <ExternalLink> (new tab). In-site ones
+ * (About us, Schedule, Sponsors) are ordinary same-tab anchors.
  */
 
 const NAV_LINK_CLASSES = `text-body ${LINK_ON_CLOUD}`
 
-export function SiteHeader() {
+function isExternalHref(href: string) {
+  return href.startsWith('http://') || href.startsWith('https://')
+}
+
+export function SiteHeader({
+  homeHref = '/',
+  currentHref,
+}: {
+  /** Lockup destination. Landing uses `#top`; other pages use `/`. */
+  homeHref?: string
+  /** Marks the matching nav item as the current page. */
+  currentHref?: string
+}) {
   const [menuOpen, setMenuOpen] = useState(false)
   const toggleRef = useRef<HTMLButtonElement>(null)
 
@@ -48,7 +63,7 @@ export function SiteHeader() {
     <header className="border-frost bg-cloud fixed inset-x-0 top-0 z-50 border-b">
       <Container className="flex h-16 items-center justify-between sm:h-20">
         <a
-          href="#top"
+          href={homeHref}
           className="focus-visible:outline-pine rounded-sm focus-visible:outline-2 focus-visible:outline-offset-4"
         >
           <Wordmark className="text-2xl sm:text-3xl" />
@@ -56,13 +71,14 @@ export function SiteHeader() {
 
         <nav aria-label="Primary" className="hidden items-center gap-8 md:flex">
           {NAV_LINKS.map((link) => (
-            <ExternalLink
+            <NavItem
               key={link.label}
               href={link.href}
+              current={link.href === currentHref}
               className={NAV_LINK_CLASSES}
             >
               {link.label}
-            </ExternalLink>
+            </NavItem>
           ))}
           <ButtonLink href={DISCORD_URL} size="sm">
             Discord
@@ -93,14 +109,15 @@ export function SiteHeader() {
         <Container className="py-4">
           <nav aria-label="Primary — compact" className="flex flex-col gap-1">
             {NAV_LINKS.map((link) => (
-              <ExternalLink
+              <NavItem
                 key={link.label}
                 href={link.href}
+                current={link.href === currentHref}
                 className={`${NAV_LINK_CLASSES} rounded-lg px-2 py-3`}
                 onClick={() => setMenuOpen(false)}
               >
                 {link.label}
-              </ExternalLink>
+              </NavItem>
             ))}
             <ButtonLink
               href={DISCORD_URL}
@@ -114,6 +131,39 @@ export function SiteHeader() {
         </Container>
       </div>
     </header>
+  )
+}
+
+function NavItem({
+  href,
+  current,
+  className,
+  onClick,
+  children,
+}: {
+  href: string
+  current?: boolean
+  className: string
+  onClick?: () => void
+  children: ReactNode
+}) {
+  if (isExternalHref(href)) {
+    return (
+      <ExternalLink href={href} className={className} onClick={onClick}>
+        {children}
+      </ExternalLink>
+    )
+  }
+
+  return (
+    <a
+      href={href}
+      className={className}
+      aria-current={current ? 'page' : undefined}
+      onClick={onClick}
+    >
+      {children}
+    </a>
   )
 }
 

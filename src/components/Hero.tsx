@@ -21,7 +21,7 @@ import {
  * The hero: a scroll-driven pan down the campus illustration.
  *
  * It is illustration and nothing else. The headline, lede and Discord CTA live
- * in <IntroSection> instead, on the cloud background below — cloud text over
+ * in <AboutSection> instead, on the cloud background below — cloud text over
  * the painted sky measures 1.43:1, and the only wash that lifts it past 4.5:1
  * is a near-opaque pine field covering most of the frame. Keeping the copy off
  * the hero avoids that trade rather than tuning it: no text sits over the

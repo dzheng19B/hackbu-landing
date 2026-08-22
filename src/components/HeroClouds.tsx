@@ -10,7 +10,7 @@ import { rangeProgress, useHeroScroll } from '../lib/motion'
  * over the campus artwork and is the topmost layer of it (see Hero.tsx for the
  * layer contract), rendering three depth layers of cloud cutouts over the sky.
  * There is nothing above it — the pine legibility scrim that used to sit there
- * went when the hero copy moved out to <IntroSection>.
+ * went when the hero copy moved out to <AboutSection>.
  *
  * Two independent motions compose here, and they are deliberately kept on
  * separate elements so they never fight over one transform:

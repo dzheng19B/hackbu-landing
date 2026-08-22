@@ -7,30 +7,50 @@
 
 export const DISCORD_URL = 'https://discord.gg/Xka5uUh'
 export const CONTACT_EMAIL = 'hello@hackbu.org'
-export const SCHEDULE_URL = 'https://hackbu.org/schedule'
 export const RESOURCES_URL = 'https://hackbu.org/resources'
-export const HACKATHONS_URL = 'https://hackbu.org/hackathons'
+
+/** The redesigned schedule page on this deployment. */
+export const SCHEDULE_URL = '/schedule'
+
+/** Google Calendar subscription for HackBU events (from hackbu.org/schedule). */
+export const GOOGLE_CALENDAR_URL =
+  'https://calendar.google.com/calendar/u/0?cid=Y19tanExdmltam8yb2ZvZm1vZWZwZnJpMDNlNEBncm91cC5jYWxlbmRhci5nb29nbGUuY29t'
+
+/** iCalendar feed for other calendar apps (from hackbu.org/schedule). */
+export const ICAL_URL =
+  'https://calendar.google.com/calendar/ical/c_mjq1vimjo2ofofmoefpfri03e4%40group.calendar.google.com/public/basic.ics'
 
 /** The mailing-list / interest-form signup. */
 export const MAILING_LIST_URL = 'https://hackbu.org/mailing-list'
 
-/** The three header nav destinations (the Discord CTA is separate). */
+/** In-site About us page. Clean URL; Vite and Vercel rewrite it to about.html. */
+export const ABOUT_PATH = '/about'
+
+/** In-site Sponsors page. Clean URL; Vite and Vercel rewrite it to sponsors.html. */
+export const SPONSORS_PATH = '/sponsors'
+
+/** In-site hackathons and registration page. */
+export const HACKATHONS_PATH = '/hackathons'
+
+/** Header nav destinations (the Discord CTA is separate). */
 export const NAV_LINKS = [
+  { label: 'About Us', href: ABOUT_PATH },
   { label: 'Schedule', href: SCHEDULE_URL },
+  { label: 'Sponsors', href: SPONSORS_PATH },
   { label: 'Resources', href: RESOURCES_URL },
-  { label: 'Hackathons', href: HACKATHONS_URL },
+  { label: 'Hackathons', href: HACKATHONS_PATH },
 ] as const
 
 /** All eight existing hackbu.org pages, split into two footer columns. */
 export const SITE_PAGES = [
   { label: 'Schedule', href: SCHEDULE_URL },
   { label: 'Resources', href: RESOURCES_URL },
-  { label: 'Hackathons', href: HACKATHONS_URL },
-  { label: 'Registration', href: 'https://hackbu.org/registration' },
+  { label: 'Hackathons', href: HACKATHONS_PATH },
+  { label: 'Registration', href: `${HACKATHONS_PATH}#register` },
   { label: 'Blog', href: 'https://hackbu.org/blog' },
   { label: 'Photos', href: 'https://hackbu.org/photos' },
   { label: 'Organizers', href: 'https://hackbu.org/organizers' },
-  { label: 'Sponsors', href: 'https://hackbu.org/sponsors' },
+  { label: 'Sponsors', href: SPONSORS_PATH },
 ] as const
 
 export const SOCIAL_LINKS = [

@@ -92,3 +92,67 @@ export function cloudSources(file: string) {
     avif: `/artwork/clouds/${base}.avif`,
   }
 }
+
+/* -------------------------------------------------------------------------- */
+/* About us photos                                                            */
+/* -------------------------------------------------------------------------- */
+
+/**
+ * Event photos on the About us page. Sources live in `public/artwork/about/`;
+ * AVIF + WebP sit beside each JPEG and are rebuilt by `npm run images`.
+ */
+function aboutPhoto(file: string, width: number, height: number, alt: string) {
+  const base = `/artwork/about/${file}`
+  return {
+    jpg: `${base}.jpg`,
+    webp: `${base}.webp`,
+    avif: `${base}.avif`,
+    width,
+    height,
+    alt,
+  } as const
+}
+
+export const ABOUT_PHOTOS = {
+  collaborate: aboutPhoto(
+    'collaborate',
+    1024,
+    683,
+    'Three students huddled around a laptop at a HackBU event, smiling as they work through a problem together.',
+  ),
+  table: aboutPhoto(
+    'table',
+    1024,
+    768,
+    'Students collaborating at workshop tables with laptops in a bright room with floor-to-ceiling windows at a HackBU event.',
+  ),
+  hackathon: aboutPhoto(
+    'hackathon',
+    1024,
+    683,
+    'Students coding at a HackBU hackathon, with a HackBU tote bag on a chair and Binghamton gear in the room.',
+  ),
+} as const
+
+/* -------------------------------------------------------------------------- */
+/* Sponsors photo                                                             */
+/* -------------------------------------------------------------------------- */
+
+function sponsorsPhoto(file: string, width: number, height: number, alt: string) {
+  const base = `/artwork/sponsors/${file}`
+  return {
+    jpg: `${base}.jpg`,
+    webp: `${base}.webp`,
+    avif: `${base}.avif`,
+    width,
+    height,
+    alt,
+  } as const
+}
+
+export const SPONSORS_PHOTO = sponsorsPhoto(
+  'workshop',
+  1024,
+  768,
+  'Students around a workshop table with laptops, talking with a mentor, winter campus visible through the windows.',
+)
