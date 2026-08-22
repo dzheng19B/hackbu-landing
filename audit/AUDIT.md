@@ -8,41 +8,17 @@ utility strings wherever that costs nothing, for the reason P1-5 gives.
 
 No blockers and no high findings. **1 medium, 23 low, 38 note — 62 in total**; two were resolved by
 the project mid-audit (P1-3, P1-4), one withdrawn on better evidence (P2-9), one closed as
-verified-not-an-issue (P4-6). Worth fixing first: **P5-1** (the page is fully client-rendered, so
-first paint and LCP wait on ~110 KB gzip of JS and the LCP image is absent from the HTML — decide:
-prerender, or accept and document it); **P5-4** (unknown URLs return a soft-200 home page while
-`/components*` typos 404, and the README documents neither); **P6-15 + P6-13** (no lint diagnostic
-can fail a build, and `jsx-a11y` is switched off on a page whose main risk surface is
-accessibility); **P1-5** (Tailwind scans `audit/*.md` into the shipped CSS, partly defeating the
-landing/sheet split). Verified solid: every README invariant holds (§5), typecheck/lint/build are
-clean, the live page has zero console errors and zero failed requests across five routes, every
-text pair clears 4.5:1, all 27 hrefs match `links.ts`, and no sheet code reaches the landing bundle.
+verified-not-an-issue (P4-6). Worth fixing first: **P5-1** (fully client-rendered: first paint and
+LCP wait on ~110 KB gzip of JS and the LCP image is absent from the HTML — prerender, or accept and
+document it); **P5-4** (unknown URLs return a soft-200 home page while `/components*` typos 404,
+and the README documents neither); **P6-15 + P6-13** (no lint diagnostic can fail a build, and
+`jsx-a11y` is off on a page whose main risk surface is accessibility); **P1-5** (Tailwind scans
+`audit/*.md` into the shipped CSS, partly defeating the landing/sheet split). Verified solid: every
+README invariant holds (§5), typecheck/lint/build are clean, the live page has zero console errors
+and zero failed requests on five routes, every text pair clears 4.5:1, all 27 hrefs match `links.ts`.
 
-## 2. Method & scope
-
-Baseline commit **`9a5a72d`**. The audit opened at `b7d66f0`; the project moved to `9a5a72d`
-mid-audit (6→12 clouds, `.gitignore` tidy, and a collateral deletion of the first Phase 1 report),
-after which **Phase 1 was re-baselined** and **Phase 2 re-verified every cited line** against the
-post-move tree; Phases 3–7 ran at or after that commit.
-Phases: **1** baseline (typecheck/lint/build, chunk reachability, sheet isolation, git state) ·
-**2** source (`src/` minus `src/sheet/`, plus `index.html` and `vite.config.ts`) · **3** colour and
-design system · **4** WCAG 2.2 AA, static · **5** performance and delivery · **6** doc accuracy,
-repo hygiene and tooling config · **7** live behaviour.
-Verification: the three npm scripts; `grep`/`sed` confirmation of every citation; `dist/` byte and
-gzip inventory; read-only `sharp().metadata()`; `tsc --showConfig` plus scratchpad probes for TS
-defaults; `oxlint --print-config`; headless Edge 151 over CDP against the running Vite dev server.
-Limits: **no Vercel-side observation** (routing, cache headers and the production domain are
-derived from `vercel.json`, never measured), no Lighthouse and no paint/LCP timings, no GPU-backed
-compositing (so no Layers-panel reading), and no network access.
-
-## 3. Findings
-
-Severity-ranked, monotonic (medium → low → note). `file:line` is the primary evidence pointer as
-cited by the owning phase.
-
-| ID | Sev | Title | `file:line` | Ph | Status / also |
-|---|---|---|---|---|---|
-| P5-1 | medium | Landing page is fully client-rendered; FCP and LCP wait on ~110 KB gzip of JS, and the LCP `<img>` is not in the HTML | `index.html:77` | 5 | open |
+---|---|---|---|---|---|
+| P5-1 | medium | Landing page is fully client-rendered; FCP and LCP wait on ~110 KB gzip of JS, and the LCP `<img>` is not in the HTML | `dist/index.html:75–77` (source `index.html:77`) | 5 | open |
 | P5-4 | low | Catch-all rewrite: unknown URLs return a soft 200 home page, but `/components*` typos 404 — and `README.md:90` documents neither | `vercel.json:9` | 5 | open · **also: P7-1** |
 | P2-4 | low | Skip-link target `<main id="main">` is not focusable, so activating it moves the viewport but not focus | `src/App.tsx:37` | 2 | confirmed live (07 §7) · **also: P7-2** |
 | P4-2 | low | Menu toggle's border and hover fill are both frost-on-cloud (1.19:1) — invisible; the same inline treatment is copy-pasted in three files | `src/components/SiteHeader.tsx:77` | 4 | open · **also: P3-1** |
