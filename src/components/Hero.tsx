@@ -166,6 +166,14 @@ export function Hero() {
       id="top"
       data-hero
       ref={trackRef}
+      // The header's logo link points here. Without a tab index the anchor
+      // scrolls the page and leaves focus on <body>, so a keyboard user who
+      // activates it is returned to the top visually and left where they were
+      // in the tab order — the same shape as the skip link's target (P7-2, and
+      // P2-4 in src/App.tsx, where the reasoning is written out). -1 keeps it
+      // out of the tab order; `focus:outline-none` keeps the programmatic
+      // focus from drawing the UA ring around the whole 260dvh track.
+      tabIndex={-1}
       // The hero carries no heading now, so it names itself. Short on purpose:
       // this is the landmark's label, and the full description of what is in
       // the picture is the <img>'s alt (CAMPUS_ALT), one level down.
@@ -173,7 +181,7 @@ export function Hero() {
       // No `overflow-hidden` here: an overflow-clipped ancestor becomes the
       // sticky element's scrollport and the stage would never pin. The stage
       // clips the scaled artwork itself.
-      className={`bg-sky relative w-full ${reducedMotion ? 'h-dvh' : TRACK_HEIGHT}`}
+      className={`bg-sky relative w-full focus:outline-none ${reducedMotion ? 'h-dvh' : TRACK_HEIGHT}`}
     >
       <HeroScrollContext value={heroScroll}>
         <div

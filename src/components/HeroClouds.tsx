@@ -1,5 +1,5 @@
-import type { CSSProperties } from 'react'
-import { motion, useTransform } from 'motion/react'
+import { useState, type CSSProperties } from 'react'
+import { motion, useMotionValueEvent, useTransform } from 'motion/react'
 import { cloudSources } from '../lib/images'
 import { rangeProgress, useHeroScroll } from '../lib/motion'
 
@@ -19,8 +19,10 @@ import { rangeProgress, useHeroScroll } from '../lib/motion'
  *                        hero's scroll progress. This is the layer that lifts
  *                        the clouds out of frame and fades them before the pan
  *                        uncovers the campus.
- *     [data-cloud-drift] time-linked. translateX only, linear and infinite.
- *                        This is the endless horizontal drift.
+ *     [data-cloud-drift] time-linked. translateX only, linear, and looping for
+ *                        as long as the layer above it is visible — it stops
+ *                        once that layer's fade has reached zero and starts
+ *                        again if the reader scrolls back. See `CloudLayer`.
  *       [CloudSet] xN    the repeated tiles that make the drift seamless.
  *
  * Only `transform` and `opacity` are ever animated. There is no scroll event
@@ -687,8 +689,21 @@ function RestingCloudSet({ layer }: { layer: CloudLayerSpec }) {
  * key reads to it exactly like the prop did, and it emits a dead `.transition`
  * rule either way. That is dealt with by `@source not inline("transition")` in
  * src/index.css.
+ *
+ * `drifting` is the pause switch (P4-4). When it is false the track is animated
+ * to the single value `LOOP_START` over zero seconds — the animation is gone,
+ * not merely invisible: no keyframes, no `repeat`, nothing left running. The
+ * snap costs nothing to look at because of *where* it is allowed to happen; see
+ * `CloudLayer` below.
  */
-function driftLoop(driftSeconds: number) {
+function driftLoop(driftSeconds: number, drifting: boolean) {
+  if (!drifting) {
+    return {
+      initial: { x: LOOP_START },
+      animate: { x: LOOP_START },
+      transition: { duration: 0 },
+    }
+  }
   return {
     initial: { x: LOOP_START },
     animate: { x: [LOOP_START, LOOP_END] },
@@ -710,6 +725,45 @@ function driftLoop(driftSeconds: number) {
  */
 function CloudLayer({ layer }: { layer: CloudLayerSpec }) {
   const { progress, reducedMotion } = useHeroScroll()
+
+  /**
+   * Does this layer's drift run? (P4-4 — WCAG 2.2.2 Pause, Stop, Hide.)
+   *
+   * The drift is time-linked and infinite, so left alone it keeps animating
+   * forever — including long after the scroll-linked fade below has taken the
+   * layer to `opacity: 0`, i.e. after it has stopped being anything a reader
+   * could see. Past `layer.fadeEnd` the animation is pure cost: frames, battery
+   * and a compositor layer, for nothing on screen.
+   *
+   * So the threshold is exactly this layer's own `fadeEnd`, and that choice is
+   * what makes the switch invisible. At `fadeEnd` the layer's opacity is
+   * *exactly* zero by the same arithmetic that drives the fade, so both the
+   * stop and the restart — which snaps the track back to `LOOP_START` — happen
+   * on a frame that paints nothing. A single shared threshold would have paused
+   * the near layer while it was still faintly visible; per-layer, it cannot.
+   *
+   * Scrolling back up past `fadeEnd` sets this true again and the drift
+   * resumes, so the pause is a state of the page rather than a one-way latch.
+   *
+   * The subscription is motion's own `useMotionValueEvent` on the hero's single
+   * `useScroll` progress value — there is still no `scroll` listener in `src/`.
+   * The handler runs per frame while scrolling but calls `setDrifting` with a
+   * boolean that changes at most twice per traversal, and React bails out of a
+   * re-render when the state is identical, so a scroll costs one render at the
+   * crossing and none either side of it.
+   *
+   * What this does *not* claim: it is not an in-page pause control, and 2.2.2's
+   * strictest reading wants one. The page's answer to that is
+   * `prefers-reduced-motion` (below), which removes the drift entirely; this
+   * bounds the animation so it stops on its own instead of running for the rest
+   * of the session behind content the reader has already scrolled to.
+   */
+  const [drifting, setDrifting] = useState(
+    () => progress.get() <= layer.fadeEnd,
+  )
+  useMotionValueEvent(progress, 'change', (p) => {
+    setDrifting(p <= layer.fadeEnd)
+  })
 
   /**
    * Scroll-linked fade. Every layer is at zero by 0.30 of the track, and the
@@ -752,7 +806,7 @@ function CloudLayer({ layer }: { layer: CloudLayerSpec }) {
       <motion.div
         data-cloud-drift
         className="absolute inset-y-0 left-0 w-[calc(100%*var(--cloud-sets))] will-change-transform"
-        {...driftLoop(layer.driftSeconds)}
+        {...driftLoop(layer.driftSeconds, drifting)}
       >
         {Array.from({ length: SET_COUNT }, (_, index) => (
           <CloudSet key={index} layer={layer} index={index} />

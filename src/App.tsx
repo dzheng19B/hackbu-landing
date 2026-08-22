@@ -34,7 +34,24 @@ export default function App() {
 
       <SiteHeader />
 
-      <main id="main">
+      {/*
+       * `tabIndex={-1}` so the skip link above actually moves focus.
+       *
+       * Activating a fragment link whose target is not focusable moves only the
+       * *sequential focus navigation starting point*: Chrome, Edge and Firefox
+       * implement it, so the next Tab lands inside <main>, but Safari does not
+       * unless Full Keyboard Access is on — where the skip link would silently
+       * do nothing. -1 keeps the element out of the tab order and makes it a
+       * real focus target (technique H69/G1). See P2-4.
+       *
+       * `focus:outline-none` is scoped to this element and to the hero's #top
+       * for the same reason: both are only ever focused programmatically, by an
+       * in-page anchor, and Chromium's :focus-visible heuristic *does* match
+       * that — which would paint the UA's default ring around the entire page
+       * content. Nothing else on the page suppresses an outline, and the two
+       * elements this appears on carry no other focus treatment to lose.
+       */}
+      <main id="main" tabIndex={-1} className="focus:outline-none">
         <Hero />
 
         {/*

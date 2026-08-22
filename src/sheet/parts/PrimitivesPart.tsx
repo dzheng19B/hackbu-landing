@@ -8,6 +8,7 @@ import {
   LINK_ON_FROST,
   MailLink,
 } from '../../components/ExternalLink'
+import { TOGGLE_ON_CLOUD } from '../../components/controls'
 import { Wordmark } from '../../components/Wordmark'
 import { SnowdriftDivider } from '../../components/SnowdriftDivider'
 import { Reveal, RevealGroup, RevealItem } from '../../components/Reveal'
@@ -506,7 +507,7 @@ function RevealEntry({ animate }: { animate: boolean }) {
             <button
               type="button"
               onClick={() => setRun((count) => count + 1)}
-              className="border-frost text-caption text-pine hover:bg-frost focus-visible:outline-pine rounded-full border px-4 py-2 focus-visible:outline-2 focus-visible:outline-offset-2"
+              className={`${TOGGLE_ON_CLOUD} text-caption rounded-full px-4 py-2`}
             >
               Replay
             </button>

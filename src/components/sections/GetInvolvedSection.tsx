@@ -31,7 +31,13 @@ export function GetInvolvedSection() {
       </Reveal>
 
       <Reveal delay={0.1}>
-        <div className="border-frost bg-frost mt-12 rounded-3xl border p-8 sm:p-12">
+        {/*
+         * `border-stone/60`, not a frost edge: frost on a frost fill
+         * measures 1.00:1 — a declaration that cannot render (P4-3). The
+         * hairline inside the same card already uses `stone/60` (below), so the
+         * card's edge and its internal rule are now one treatment.
+         */}
+        <div className="border-stone/60 bg-frost mt-12 rounded-3xl border p-8 sm:p-12">
           <div className="flex flex-col items-start gap-8 sm:flex-row sm:items-center sm:justify-between">
             <div className="max-w-md">
               <p className="font-display text-display-md text-pine font-semibold">

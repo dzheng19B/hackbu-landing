@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react'
 import { Container } from './Layout'
 import { Wordmark } from './Wordmark'
 import { ExternalLink, LINK_ON_CLOUD } from './ExternalLink'
+import { TOGGLE_ON_CLOUD } from './controls'
 import { ButtonLink } from './ButtonLink'
 import { DISCORD_URL, NAV_LINKS } from '../lib/links'
 
@@ -74,7 +75,7 @@ export function SiteHeader() {
           aria-expanded={menuOpen}
           aria-controls="primary-menu"
           onClick={() => setMenuOpen((open) => !open)}
-          className="border-frost text-pine hover:bg-frost focus-visible:outline-pine -mr-2 inline-flex items-center justify-center rounded-full border p-2 focus-visible:outline-2 focus-visible:outline-offset-2 md:hidden"
+          className={`${TOGGLE_ON_CLOUD} -mr-2 inline-flex items-center justify-center rounded-full p-2 md:hidden`}
         >
           <span className="sr-only">
             {menuOpen ? 'Close menu' : 'Open menu'}

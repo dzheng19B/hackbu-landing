@@ -243,6 +243,15 @@ Link hover is a per-surface rule, and it lives in one place. `LINK_ON_CLOUD` and
 the page: brick hover on `cloud` (4.78:1), underline hover on `frost`, because brick on
 frost measures 4.03:1 and fails AA. Pick by the surface the link is painted on.
 
+There is a third named treatment, and it is not for links: `TOGGLE_ON_CLOUD` in
+`src/components/controls.ts` — the small outlined pill `<button>` (the header's menu
+toggle, and two controls on the component sheet). Border `pine` on `cloud` at **6.83:1**,
+clearing the 3:1 of WCAG 1.4.11, and a `pine` hover fill with the label flipping to
+`cloud`. It replaces a `frost` border and `frost` hover fill that measured 1.19:1 — a
+boundary and a hover state that could not be seen. `pine` rather than `brick`, because
+`brick` still means "join the Discord" and nothing else. Three treatments, then: two for
+links, one for the outlined button, and no fourth without a line here.
+
 **Animation.** Only `transform` and `opacity` are ever animated — never `top`, `left`,
 `width`, `height`, `margin` or `background-position`. Every animation is gated behind
 `usePrefersReducedMotion()` from `src/lib/motion.ts`; under
@@ -273,7 +282,8 @@ src/
     SiteFooter.tsx           all eight existing site pages, contact, socials
     SnowdriftDivider.tsx     inline SVG snowdrift dividers
     ButtonLink.tsx           the page's one button treatment
-    ExternalLink.tsx         new-tab hardening + the two link treatments
+    ExternalLink.tsx         same-site vs new-tab routing + the two link treatments
+    controls.ts              TOGGLE_ON_CLOUD — the outlined pill button
     Wordmark.tsx             the logo lockup, as masked fern marks
     sections/                Intro, About, GetInvolved, Questions, Contact
 scripts/

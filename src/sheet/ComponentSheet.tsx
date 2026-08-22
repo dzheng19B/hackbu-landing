@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { Column } from './kit'
 import { LINK_ON_FROST } from '../components/ExternalLink'
+import { TOGGLE_ON_CLOUD } from '../components/controls'
 import { TokensPart } from './parts/TokensPart'
 import { PrimitivesPart } from './parts/PrimitivesPart'
 import { ComposedPart } from './parts/ComposedPart'
@@ -92,7 +93,7 @@ export function ComponentSheet() {
             onClick={() =>
               setReveals((mode) => (mode === 'resting' ? 'scroll' : 'resting'))
             }
-            className="border-frost text-caption text-pine hover:bg-frost focus-visible:outline-pine shrink-0 rounded-full border px-3 py-1.5 focus-visible:outline-2 focus-visible:outline-offset-2"
+            className={`${TOGGLE_ON_CLOUD} text-caption shrink-0 rounded-full px-3 py-1.5`}
           >
             Reveals:{' '}
             <span className="font-medium">
