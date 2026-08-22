@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { Container } from './Layout'
 import { Wordmark } from './Wordmark'
 import { ExternalLink } from './ExternalLink'
@@ -23,11 +23,16 @@ const NAV_LINK_CLASSES =
 
 export function SiteHeader() {
   const [menuOpen, setMenuOpen] = useState(false)
+  const toggleRef = useRef<HTMLButtonElement>(null)
 
   useEffect(() => {
     if (!menuOpen) return
     function handleKeyDown(event: KeyboardEvent) {
-      if (event.key === 'Escape') setMenuOpen(false)
+      if (event.key !== 'Escape') return
+      setMenuOpen(false)
+      // Focus would otherwise be stranded on a link inside the hidden panel,
+      // restarting Tab from the top of the page.
+      toggleRef.current?.focus()
     }
     window.addEventListener('keydown', handleKeyDown)
     return () => window.removeEventListener('keydown', handleKeyDown)
@@ -59,6 +64,7 @@ export function SiteHeader() {
         </nav>
 
         <button
+          ref={toggleRef}
           type="button"
           aria-expanded={menuOpen}
           aria-controls="primary-menu"

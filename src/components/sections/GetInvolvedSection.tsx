@@ -54,7 +54,7 @@ export function GetInvolvedSection() {
             what to expect.{' '}
             <ExternalLink
               href={MAILING_LIST_URL}
-              className="text-pine hover:text-brick focus-visible:outline-pine underline underline-offset-4 focus-visible:outline-2 focus-visible:outline-offset-4"
+              className="text-pine hover:decoration-2 focus-visible:outline-pine underline underline-offset-4 focus-visible:outline-2 focus-visible:outline-offset-4"
             >
               Sign up for the mailing list
             </ExternalLink>{' '}

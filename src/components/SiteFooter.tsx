@@ -10,7 +10,8 @@ import { CONTACT_EMAIL, SITE_PAGES, SOCIAL_LINKS } from '../lib/links'
  */
 
 const FOOTER_LINK_CLASSES =
-  'text-caption text-pine hover:text-brick focus-visible:outline-2 ' +
+  'text-caption text-pine hover:underline hover:decoration-2 ' +
+  'hover:underline-offset-4 focus-visible:outline-2 ' +
   'focus-visible:outline-offset-4 focus-visible:outline-pine'
 
 const COLUMN_ONE = SITE_PAGES.slice(0, 4)
