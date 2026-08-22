@@ -1573,7 +1573,7 @@ $ node -e "console.log(2942406/3780900*100)"
 
 2,942,406 / 3,780,900 = 77.8%, rounded to 78% — matching `ASSETS.md:57`'s stated total.
 
-### P6-3 · FIXED · `ASSETS.md:144–157`
+### P6-3 · FIXED · `ASSETS.md:144–158`
 
 The "Notes for later phases" heading and its two resolved bullets are gone. The section is
 now "## Notes" and states both facts in the present tense: the hero is a vertical scale-pan
@@ -1584,7 +1584,7 @@ Derivatives section that already ships them. The third bullet (cloud heights) is
 ```
 $ grep -n "Notes for later phases\|Worth confirming against the intended motion\|is the obvious lever" ASSETS.md ; echo "EXIT=$?"
 EXIT=1
-$ sed -n '144,157p' ASSETS.md
+$ sed -n '144,158p' ASSETS.md
 ## Notes
 
 Observations from the raw files. The two questions this section used to raise are both
@@ -1633,12 +1633,17 @@ every file Phases 1–4 added that the tree had never listed.
 
 ```
 $ grep -n "main.tsx\|entry-server.tsx\|landing.css\|^  sheet/\|prerender.mjs\|404.html" README.md
-303:  main.tsx                   landing entry: hydrateRoot in prod, createRoot in dev
-304:  entry-server.tsx           build-time SSR render, read by scripts/prerender.mjs
-307:  landing.css                index.css plus one `@source not` line, excluding the sheet
-325:  sheet/                     the component sheet at /components — see above
-331:  prerender.mjs              build-time prerender, run after `vite build`
-335:  404.html                   the static 404 body (see "The component sheet" above)
+108:a build is lint, `tsc -b`, `vite build` and `node scripts/prerender.mjs`, nothing else. Run
+139:stylesheet by `src/landing.css`, which is `src/index.css` plus one `@source not` line.
+150:| **anything else** — `/nonexistent`, `/componentsfoo`, `/favicon.ico` | nothing. No file, no matching rewrite → **404**, with `public/404.html` (shipped as `dist/404.html`) as the body. |
+159:200 under `npm run dev` and `npm run preview` alike, and `dist/404.html` is never reached — 404 behaviour can only be
+304:  main.tsx                   landing entry: hydrateRoot in prod, createRoot in dev
+305:  entry-server.tsx           build-time SSR render, read by scripts/prerender.mjs
+308:  landing.css                index.css plus one `@source not` line, excluding the sheet
+326:  sheet/                     the component sheet at /components — see above
+327:    main.tsx                 sheet entry: hydrateRoot in prod, createRoot in dev
+332:  prerender.mjs              build-time prerender, run after `vite build`
+336:  404.html                   the static 404 body (see "The component sheet" above)
 $ ls -R src/sheet
 ComponentSheet.tsx  kit.tsx  main.tsx  parts  sheet.css
 parts:
@@ -1773,7 +1778,6 @@ fill," extended once more for the toggle Phase 2 added after that sheet copy was
 ```
 $ grep -n "pine.*focus rings" README.md src/sheet/parts/TokensPart.tsx
 README.md:261:| `pine` | `#3C5C48` | body text, headings, focus rings, the button hover fill and the toggle's border/hover fill (never pure black) |
-src/sheet/parts/TokensPart.tsx:89:    role: 'All text, all focus rings, and the button’s hover fill.',
 ```
 
 ### P3-3 · FIXED · `README.md:262`, `src/index.css:122–130`
@@ -1788,9 +1792,9 @@ claim without noting the token has no scene use either today.
 $ grep -rn "haze" src/ README.md | grep -v "src/sheet/"
 src/components/Layout.tsx:55: * One treatment, defined once. The colour is `pine/90` rather than `haze`: haze
 src/index.css:122:   * haze was defined as a scene colour, not a text colour — but it is
-src/index.css:127:   * only token that clears AA on both.
-src/index.css:130:  --color-haze: #7c99b4;
+src/index.css:131:  --color-haze: #7c99b4;
 README.md:262:| `haze` | `#7C99B4` | **currently unused** — retired from text (2.72:1 on `cloud`, below AA) and not used as a scene colour either |
+README.md:265:`brick` is the **only** accent; adding a second one is a design regression. `haze` is
 ```
 
 ### P3-4 · DOCUMENTED (comment reworded) · `src/App.tsx:70–77`
@@ -1815,7 +1819,6 @@ $ sed -n '70,77p' src/App.tsx
            * same as) the `stone` token — a measured artwork colour, not a
            * design token, so it is not what the "no arbitrary hex" rule in
            * README's Conventions section is aimed at. A saturated
-           * blue band under that would read as a stripe. (A `sky-to-cloud`
 ```
 
 ### P3-5 · FIXED · `README.md:274–276`, `README.md:322`
@@ -1830,8 +1833,8 @@ was reworded the same way for consistency.
 
 ```
 $ grep -n "text-link" README.md
-README.md:275:`LINK_ON_FROST` in `src/components/ExternalLink.tsx` are the only two **text-link**
-README.md:322:    ExternalLink.tsx         same-site vs new-tab routing + the two text-link treatments
+275:`LINK_ON_FROST` in `src/components/ExternalLink.tsx` are the only two **text-link**
+322:    ExternalLink.tsx         same-site vs new-tab routing + the two text-link treatments
 ```
 
 ### P5-9 · FIXED · `ASSETS.md:118`
@@ -1844,8 +1847,11 @@ stated the wrong one.
 ```
 $ node -e "require('sharp')('brand-source/icon_discord.png').metadata().then(m=>console.log(JSON.stringify({channels:m.channels,hasAlpha:m.hasAlpha})))"
 {"channels":4,"hasAlpha":true}
-$ grep -n "icon_discord.png" ASSETS.md | grep Alpha
-118:| `brand-source/icon_discord.png` | 732 × 732 | n/a — opaque tile | `#97F5AC` tile, `#50B536` mark | Yes — channel present, fully opaque |
+$ grep -n "icon_discord.png" ASSETS.md
+119:| `brand-source/icon_discord.png` | 732 × 732 | n/a — opaque tile | `#97F5AC` tile, `#50B536` mark | Yes — channel present, fully opaque |
+134:| `brand/apple-touch-icon.png` | 180 × 180 | `icon_discord.png` | 7,805 |
+135:| `brand/og-image.png` | 732 × 732 | `icon_discord.png` | 10,014 |
+141:`icon_discord.png` is 2,158,148 bytes as delivered, for a 14-colour 732 × 732 image;
 ```
 
 ### P5-10 · FIXED · `ASSETS.md:138`
@@ -1863,7 +1869,7 @@ $ node -e "console.log((3164+2147)/1024, (6941+4850)/1024)"
 5.1865234375 11.5146484375
 ```
 
-### P5-11 · FIXED · `index.html:26–31`
+### P5-11 · FIXED · `index.html:24–29`
 
 "`imagesrcset`/`imagesizes` are byte-identical to the `<picture>` sources" is true of
 `dist/index.html` but not of the source, where `imagesrcset` is written across five indented
@@ -1872,7 +1878,7 @@ srcset whitespace normalisation (and byte-identical in the built HTML, which is 
 browser parses)".
 
 ```
-$ sed -n '26,31p' index.html
+$ sed -n '24,29p' index.html
       LCP preload for the campus illustration.
 
       The hero <img> lives inside the React bundle, so without this the browser
@@ -1957,7 +1963,6 @@ EXIT=0
 
 $ grep -rn "Phase [0-9]" src index.html components.html README.md ASSETS.md scripts vercel.json ; echo "EXIT=$?"
 EXIT=1
-
 $ grep -c '390px' README.md
 0
 $ grep -n '768\|md:' README.md
@@ -2519,7 +2524,7 @@ file** at which the closure entry's `###` heading sits.
 | P5-3 | low | **FIXED** | Phase 4 | `08-fix-log.md:1356` — `### P5-3 · FIXED · vercel.json:10-32, README.md:111-115` |
 | P6-1 | low | **FIXED** | Phase 5 | `08-fix-log.md:1544` — `### P6-1 · FIXED · ASSETS.md:29, :34` |
 | P6-2 | low | **FIXED** | Phase 5 | `08-fix-log.md:1560` — `### P6-2 · FIXED · ASSETS.md:154` |
-| P6-3 | note | **FIXED** | Phase 5 | `08-fix-log.md:1576` — `### P6-3 · FIXED · ASSETS.md:144–157` |
+| P6-3 | note | **FIXED** | Phase 5 | `08-fix-log.md:1576` — `### P6-3 · FIXED · ASSETS.md:144–158` |
 | P6-4 | low | **FIXED** | Phase 5 | `08-fix-log.md:1605` — `### P6-4 · FIXED · README.md:318` |
 | P6-5 | note | **FIXED** | Phase 5 | `08-fix-log.md:1617` — `### P6-5 · FIXED · README.md:195` |
 | P6-6 | note | **FIXED** | Phase 5 | `08-fix-log.md:1628` — `### P6-6 · FIXED · README.md:302–337` |
@@ -2533,7 +2538,7 @@ file** at which the closure entry's `###` heading sits.
 | P3-5 | note | **FIXED** | Phase 5 | `08-fix-log.md:1821` — `### P3-5 · FIXED · README.md:274–276, :322` |
 | P5-9 | note | **FIXED** | Phase 5 | `08-fix-log.md:1837` — `### P5-9 · FIXED · ASSETS.md:118` |
 | P5-10 | note | **FIXED** | Phase 5 | `08-fix-log.md:1851` — `### P5-10 · FIXED · ASSETS.md:138` |
-| P5-11 | note | **FIXED** | Phase 5 | `08-fix-log.md:1866` — `### P5-11 · FIXED · index.html:26–31` |
+| P5-11 | note | **FIXED** | Phase 5 | `08-fix-log.md:1866` — `### P5-11 · FIXED · index.html:24–29` |
 | P2-1 | low | **FIXED** | Phase 5 | `08-fix-log.md:1884` — `### P2-1 · FIXED · src/lib/links.ts:10,12,19,21,26,28` |
 | P5-7 | note | **FIXED** | Phase 6 | `08-fix-log.md:2098` — `### P5-7 (with P2-8) · FIXED · Hero.tsx:180,252 · HeroClouds.tsx:823` |
 | P2-8 | note | **FIXED** | Phase 6 | `08-fix-log.md:2098` — same entry |
