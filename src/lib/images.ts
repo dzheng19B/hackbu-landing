@@ -124,12 +124,35 @@ export const ABOUT_PHOTOS = {
     'table',
     1024,
     768,
-    'Students around a workshop table with laptops, talking with a mentor, winter campus visible through the windows.',
+    'Students collaborating at workshop tables with laptops in a bright room with floor-to-ceiling windows at a HackBU event.',
   ),
-  hall: aboutPhoto(
-    'hall',
+  hackathon: aboutPhoto(
+    'hackathon',
     1024,
     683,
-    'A packed HackBU workshop seen from above: rows of students coding at long desks, with a HackBU tote bag in the foreground.',
+    'Students coding at a HackBU hackathon, with a HackBU tote bag on a chair and Binghamton gear in the room.',
   ),
 } as const
+
+/* -------------------------------------------------------------------------- */
+/* Sponsors photo                                                             */
+/* -------------------------------------------------------------------------- */
+
+function sponsorsPhoto(file: string, width: number, height: number, alt: string) {
+  const base = `/artwork/sponsors/${file}`
+  return {
+    jpg: `${base}.jpg`,
+    webp: `${base}.webp`,
+    avif: `${base}.avif`,
+    width,
+    height,
+    alt,
+  } as const
+}
+
+export const SPONSORS_PHOTO = sponsorsPhoto(
+  'workshop',
+  1024,
+  768,
+  'Students around a workshop table with laptops, talking with a mentor, winter campus visible through the windows.',
+)

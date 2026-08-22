@@ -37,7 +37,7 @@ export function ComposedPart() {
       <Entry
         name="SiteHeader"
         path="src/components/SiteHeader.tsx"
-        use="The fixed page bar: the lockup, four destinations and the Discord CTA, collapsing behind a toggle below 768px."
+        use="The fixed page bar: the lockup, five destinations and the Discord CTA, collapsing behind a toggle below 768px."
       >
         <NoProps>
           It reads NAV_LINKS and DISCORD_URL from src/lib/links.ts and owns one

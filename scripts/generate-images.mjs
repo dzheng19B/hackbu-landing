@@ -161,6 +161,17 @@ async function generateAboutPhotos() {
   }
 }
 
+async function generateSponsorsPhotos() {
+  const dir = join(ARTWORK, 'sponsors')
+  const files = (await readdir(dir)).filter((name) => name.endsWith('.jpg'))
+  for (const file of files.sort()) {
+    const src = join(dir, file)
+    const base = file.replace(/\.jpg$/, '')
+    await emit(sharp(src).avif(AVIF), join(dir, `${base}.avif`))
+    await emit(sharp(src).webp(CAMPUS_WEBP), join(dir, `${base}.webp`))
+  }
+}
+
 /**
  * One mask rung: trim to ink, resize, throw the colour away, encode.
  *
@@ -240,6 +251,7 @@ function kb(bytes) {
 await generateCampus()
 await generateClouds()
 await generateAboutPhotos()
+await generateSponsorsPhotos()
 const brandInk = await generateBrandMasks()
 await generateAppIcons()
 

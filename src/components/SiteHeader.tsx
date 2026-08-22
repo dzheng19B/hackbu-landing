@@ -6,13 +6,13 @@ import { ButtonLink } from './ButtonLink'
 import { DISCORD_URL, NAV_LINKS } from '../lib/links'
 
 /**
- * Fixed page header: the HackBU logo lockup + four destinations + the
+ * Fixed page header: the HackBU logo lockup + five destinations + the
  * Discord CTA.
  *
  * The bar is `h-16` (4rem) below `sm` and `h-20` (5rem) from `sm` up; anything
  * that needs to clear it (the hero content, scroll anchors) uses those numbers.
  *
- * Below `md` (768px) the four links and the CTA collapse behind a toggle, so
+ * Below `md` (768px) the five links and the CTA collapse behind a toggle, so
  * the 390px layout is the lockup plus a menu button.
  *
  * The toggle is a real <button> — Enter/Space operate it, Escape closes it,
@@ -24,7 +24,7 @@ import { DISCORD_URL, NAV_LINKS } from '../lib/links'
  * ExternalLink.tsx.
  *
  * Off-site destinations go through <ExternalLink> (new tab). In-site ones
- * (About us, Schedule) are ordinary same-tab anchors.
+ * (About us, Schedule, Sponsors) are ordinary same-tab anchors.
  */
 
 const NAV_LINK_CLASSES = `text-body ${LINK_ON_CLOUD}`

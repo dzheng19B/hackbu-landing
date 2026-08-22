@@ -98,7 +98,7 @@ export function AboutPage() {
 
             <Reveal delay={0.1}>
               <AboutPhoto
-                photo={ABOUT_PHOTOS.hall}
+                photo={ABOUT_PHOTOS.hackathon}
                 lazy
                 className={PHOTO}
               />

@@ -8,8 +8,10 @@
     { "source": "/about/", "destination": "/about.html" },
     { "source": "/schedule", "destination": "/schedule.html" },
     { "source": "/schedule/", "destination": "/schedule.html" },
+    { "source": "/sponsors", "destination": "/sponsors.html" },
+    { "source": "/sponsors/", "destination": "/sponsors.html" },
     { "source": "/components", "destination": "/components.html" },
     { "source": "/components/", "destination": "/components.html" },
-    { "source": "/((?!components|about|schedule).*)", "destination": "/index.html" }
+    { "source": "/((?!components|about|schedule|sponsors).*)", "destination": "/index.html" }
   ]
 }

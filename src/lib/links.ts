@@ -26,10 +26,14 @@ export const MAILING_LIST_URL = 'https://hackbu.org/mailing-list'
 /** In-site About us page. Clean URL; Vite and Vercel rewrite it to about.html. */
 export const ABOUT_PATH = '/about'
 
+/** In-site Sponsors page. Clean URL; Vite and Vercel rewrite it to sponsors.html. */
+export const SPONSORS_PATH = '/sponsors'
+
 /** Header nav destinations (the Discord CTA is separate). */
 export const NAV_LINKS = [
   { label: 'About Us', href: ABOUT_PATH },
   { label: 'Schedule', href: SCHEDULE_URL },
+  { label: 'Sponsors', href: SPONSORS_PATH },
   { label: 'Resources', href: RESOURCES_URL },
   { label: 'Hackathons', href: 'https://hackbu.org/hackathons' },
 ] as const
@@ -43,7 +47,7 @@ export const SITE_PAGES = [
   { label: 'Blog', href: 'https://hackbu.org/blog' },
   { label: 'Photos', href: 'https://hackbu.org/photos' },
   { label: 'Organizers', href: 'https://hackbu.org/organizers' },
-  { label: 'Sponsors', href: 'https://hackbu.org/sponsors' },
+  { label: 'Sponsors', href: SPONSORS_PATH },
 ] as const
 
 export const SOCIAL_LINKS = [
