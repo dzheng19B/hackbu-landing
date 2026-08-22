@@ -29,21 +29,24 @@ export const ABOUT_PATH = '/about'
 /** In-site Sponsors page. Clean URL; Vite and Vercel rewrite it to sponsors.html. */
 export const SPONSORS_PATH = '/sponsors'
 
+/** In-site hackathons and registration page. */
+export const HACKATHONS_PATH = '/hackathons'
+
 /** Header nav destinations (the Discord CTA is separate). */
 export const NAV_LINKS = [
   { label: 'About Us', href: ABOUT_PATH },
   { label: 'Schedule', href: SCHEDULE_URL },
   { label: 'Sponsors', href: SPONSORS_PATH },
   { label: 'Resources', href: RESOURCES_URL },
-  { label: 'Hackathons', href: 'https://hackbu.org/hackathons' },
+  { label: 'Hackathons', href: HACKATHONS_PATH },
 ] as const
 
 /** All eight existing hackbu.org pages, split into two footer columns. */
 export const SITE_PAGES = [
   { label: 'Schedule', href: SCHEDULE_URL },
   { label: 'Resources', href: RESOURCES_URL },
-  { label: 'Hackathons', href: 'https://hackbu.org/hackathons' },
-  { label: 'Registration', href: 'https://hackbu.org/registration' },
+  { label: 'Hackathons', href: HACKATHONS_PATH },
+  { label: 'Registration', href: `${HACKATHONS_PATH}#register` },
   { label: 'Blog', href: 'https://hackbu.org/blog' },
   { label: 'Photos', href: 'https://hackbu.org/photos' },
   { label: 'Organizers', href: 'https://hackbu.org/organizers' },

@@ -4,8 +4,9 @@ import tailwindcss from '@tailwindcss/vite'
 import { fileURLToPath } from 'node:url'
 
 /**
- * Serve `/about`, `/schedule`, `/sponsors` and `/components` without the
- * `.html` suffix in `vite dev`, matching the Vercel rewrites in vercel.json.
+ * Serve `/about`, `/schedule`, `/sponsors`, `/hackathons` and `/components`
+ * without the `.html` suffix in `vite dev`, matching the Vercel rewrites in
+ * vercel.json.
  */
 function cleanHtmlUrls(): Plugin {
   const rewrites: Record<string, string> = {
@@ -15,6 +16,8 @@ function cleanHtmlUrls(): Plugin {
     '/schedule/': '/schedule.html',
     '/sponsors': '/sponsors.html',
     '/sponsors/': '/sponsors.html',
+    '/hackathons': '/hackathons.html',
+    '/hackathons/': '/hackathons.html',
     '/components': '/components.html',
     '/components/': '/components.html',
   }
@@ -34,12 +37,13 @@ function cleanHtmlUrls(): Plugin {
 }
 
 /**
- * Five entry points, five pages:
+ * Six entry points, six pages:
  *
  *   index.html       the landing page          -> dist/index.html
  *   about.html       the About us page         -> dist/about.html
  *   schedule.html    the schedule page         -> dist/schedule.html
  *   sponsors.html    the sponsors page         -> dist/sponsors.html
+ *   hackathons.html  the hackathons page       -> dist/hackathons.html
  *   components.html  the component sheet       -> dist/components.html
  *
  * They share the component tree, so Rollup hoists what both import into a
@@ -60,6 +64,7 @@ export default defineConfig({
         components: fileURLToPath(new URL('./components.html', import.meta.url)),
         schedule: fileURLToPath(new URL('./schedule.html', import.meta.url)),
         sponsors: fileURLToPath(new URL('./sponsors.html', import.meta.url)),
+        hackathons: fileURLToPath(new URL('./hackathons.html', import.meta.url)),
       },
     },
   },
