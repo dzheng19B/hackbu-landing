@@ -2462,3 +2462,156 @@ $ git status --porcelain
 The only `scroll` hit in `src/` is the sentence in the comment that says there is none. Seven files
 touched, `public/` untouched, and the sheet-only findings (P3-7, P3-8) changed nothing under
 `src/components/`.
+
+---
+
+## Reconciliation
+
+Written at the end of Phase 8, after the live re-verification in `audit/08-fix-verification.md`.
+One row per finding ID in `audit/AUDIT.md` §3 — **62 rows**, because five of its 57 rows carry two
+IDs each (§4: P5-4+P7-1, P2-4+P7-2, P4-2+P3-1, P5-7+P2-8, P6-11+P2-9) and each ID gets its own row
+here. Every status is taken from the fix-log entry above it, not re-derived; where an entry's status
+is compound the primary is given and the remainder noted. The anchor column is the line in **this
+file** at which the closure entry's `###` heading sits.
+
+### Findings
+
+| ID | Sev | Status | Closed by | Fix-log anchor |
+|---|---|---|---|---|
+| P1-5 | low | **FIXED** | Phase 1 | `08-fix-log.md:19` — `### P1-5 · FIXED · src/index.css:19` |
+| P6-12 | low | **FIXED** | Phase 1 | `08-fix-log.md:51` — `### P6-12 · FIXED · .oxlintrc.json:3` |
+| P6-13 | low | **FIXED** | Phase 1 | `08-fix-log.md:65` — `### P6-13 · FIXED · .oxlintrc.json:3` |
+| P6-15 | low | **FIXED** | Phase 1 | `08-fix-log.md:105` — `### P6-15 · FIXED · package.json:11,13` |
+| P2-3 | low | **FIXED** | Phase 1 | `08-fix-log.md:122` — `### P2-3 · FIXED · tsconfig.app.json:37` |
+| P6-16 | note | **FIXED** *(one flag; the other **DOCUMENTED**, rationale at `tsconfig.app.json:19–36`)* | Phase 1 | `08-fix-log.md:137` — `### P6-16 · FIXED (one flag) + DOCUMENTED (the other)` |
+| P6-17 | note | **FIXED** | Phase 1 | `08-fix-log.md:165` — `### P6-17 · FIXED · package.json:6–8` |
+| P6-14 | note | **FIXED** | Phase 1 | `08-fix-log.md:179` — `### P6-14 · FIXED · .gitignore:9` |
+| P2-4 | low | **FIXED** | Phase 2 | `08-fix-log.md:219` — `### P2-4 · FIXED · src/App.tsx:54` |
+| P7-2 | note | **FIXED** | Phase 2 | `08-fix-log.md:219` — same entry, "and **P7-2** · FIXED · `src/components/Hero.tsx:176,184`" |
+| P4-1 | low | **FIXED** | Phase 2 | `08-fix-log.md:261` — `### P4-1 · FIXED · src/components/ExternalLink.tsx:55,68–78,104–118` |
+| P4-2 | low | **FIXED** | Phase 2 | `08-fix-log.md:299` — `### P4-2 · FIXED · src/components/controls.ts:39–41` |
+| P3-1 | low | **FIXED** | Phase 2 | `08-fix-log.md:299` — same entry, "and **P3-1** · FIXED, same change" |
+| P4-3 | low | **FIXED** | Phase 2 | `08-fix-log.md:355` — `### P4-3 · FIXED · sections/GetInvolvedSection.tsx:40` |
+| P4-4 | low | **FIXED** | Phase 2 | `08-fix-log.md:371` — `### P4-4 · FIXED · HeroClouds.tsx:699–718, :761–765, :809` |
+| P4-5 | note | **DOCUMENTED** (no code change needed) | Phase 2 | `08-fix-log.md:431` — `### P4-5 · DOCUMENTED · src/index.css:40 vs SiteHeader.tsx:48` |
+| P4-8 | note | **DOCUMENTED** (no code change needed) | Phase 2 | `08-fix-log.md:459` — `### P4-8 · DOCUMENTED · src/index.css:106,110,114 measured live` |
+| P5-4 | low | **FIXED** | Phase 3 | `08-fix-log.md:581` — `### P5-4 · FIXED · vercel.json:6–9, public/404.html (new), README.md:134–153` |
+| P7-1 | note | **DOCUMENTED** (same change; the dev-vs-Vercel split recorded at `README.md:150–153`) | Phase 3 | `08-fix-log.md:581` — same entry |
+| P2-2 | low | **FIXED** | Phase 3 | `08-fix-log.md:700` — `### P2-2 · FIXED · index.html:81–84` |
+| P5-12 | note | **FIXED** | Phase 3 | `08-fix-log.md:723` — `### P5-12 · FIXED · vite.config.ts:6–45,61` |
+| P3-6 | note | **FIXED** | Phase 3 | `08-fix-log.md:804` — `### P3-6 · FIXED · index.html:96, components.html:30` |
+| P5-1 | **medium** | **FIXED** (prerender) | Phase 4 | `08-fix-log.md:1011` — `### P5-1 · FIXED · scripts/prerender.mjs (new), src/entry-server.tsx (new)` |
+| P5-8 | note | **FIXED** (by P5-1) | Phase 4 | `08-fix-log.md:1098` — `### P5-8 · FIXED (by P5-1) · dist/index.html body` |
+| P5-5 | low | **FIXED** | Phase 4 | `08-fix-log.md:1124` — `### P5-5 · FIXED · vite.config.ts:62-127, :143` |
+| P5-13 | note | **FIXED** | Phase 4 | `08-fix-log.md:1225` — `### P5-13 · FIXED · src/index.css:31-90` |
+| P5-6 | note | **FIXED** | Phase 4 | `08-fix-log.md:1285` — `### P5-6 · FIXED · same change as P5-13` |
+| P5-2 | low | **FIXED** | Phase 4 | `08-fix-log.md:1305` — `### P5-2 · FIXED · src/App.tsx:1,39,104 and four more sites` |
+| P5-3 | low | **FIXED** | Phase 4 | `08-fix-log.md:1356` — `### P5-3 · FIXED · vercel.json:10-32, README.md:111-115` |
+| P6-1 | low | **FIXED** | Phase 5 | `08-fix-log.md:1544` — `### P6-1 · FIXED · ASSETS.md:29, :34` |
+| P6-2 | low | **FIXED** | Phase 5 | `08-fix-log.md:1560` — `### P6-2 · FIXED · ASSETS.md:154` |
+| P6-3 | note | **FIXED** | Phase 5 | `08-fix-log.md:1576` — `### P6-3 · FIXED · ASSETS.md:143–156` |
+| P6-4 | low | **FIXED** | Phase 5 | `08-fix-log.md:1605` — `### P6-4 · FIXED · README.md:317` |
+| P6-5 | note | **FIXED** | Phase 5 | `08-fix-log.md:1617` — `### P6-5 · FIXED · README.md:195` |
+| P6-6 | note | **FIXED** | Phase 5 | `08-fix-log.md:1628` — `### P6-6 · FIXED · README.md:301–336` |
+| P6-7 | note | **FIXED** | Phase 5 | `08-fix-log.md:1648` — `### P6-7 · FIXED · src/components/HeroClouds.tsx:145` |
+| P6-8 | note | **FIXED** | Phase 5 | `08-fix-log.md:1678` — `### P6-8 · FIXED · 8 files, 15 sites` |
+| P6-9 | note | **FIXED** | Phase 5 | `08-fix-log.md:1708` — `### P6-9 · FIXED · src/lib/motion.ts:44–49` |
+| P6-10 | note | **FIXED** | Phase 5 | `08-fix-log.md:1729` — `### P6-10 · FIXED · ASSETS.md:78–84, generate-images.mjs:8–11` |
+| P3-2 | low | **FIXED** | Phase 5 | `08-fix-log.md:1764` — `### P3-2 · FIXED · README.md:261` |
+| P3-3 | low | **FIXED** | Phase 5 | `08-fix-log.md:1779` — `### P3-3 · FIXED · README.md:262, src/index.css:122–130` |
+| P3-4 | note | **DOCUMENTED** (comment reworded) | Phase 5 | `08-fix-log.md:1796` — `### P3-4 · DOCUMENTED · src/App.tsx:70–77` |
+| P3-5 | note | **FIXED** | Phase 5 | `08-fix-log.md:1821` — `### P3-5 · FIXED · README.md:274–276, :321` |
+| P5-9 | note | **FIXED** | Phase 5 | `08-fix-log.md:1837` — `### P5-9 · FIXED · ASSETS.md:118` |
+| P5-10 | note | **FIXED** | Phase 5 | `08-fix-log.md:1851` — `### P5-10 · FIXED · ASSETS.md:138` |
+| P5-11 | note | **FIXED** | Phase 5 | `08-fix-log.md:1866` — `### P5-11 · FIXED · index.html:26–31` |
+| P2-1 | low | **FIXED** | Phase 5 | `08-fix-log.md:1884` — `### P2-1 · FIXED · src/lib/links.ts:10,12,19,21,26,28` |
+| P5-7 | note | **FIXED** | Phase 6 | `08-fix-log.md:2098` — `### P5-7 (with P2-8) · FIXED · Hero.tsx:180,252 · HeroClouds.tsx:820` |
+| P2-8 | note | **FIXED** | Phase 6 | `08-fix-log.md:2098` — same entry |
+| P1-1 | note | **FIXED** | Phase 6 | `08-fix-log.md:2164` — `### P1-1 · FIXED · vite.config.ts:167,191` |
+| P1-2 | note | **DOCUMENTED** (no defect, no code) | Phase 6 | `08-fix-log.md:2244` — `### P1-2 · DOCUMENTED · dist/assets/*.woff2` |
+| P2-5 | note | **FIXED** | Phase 6 | `08-fix-log.md:2259` — `### P2-5 · FIXED · src/main.tsx:17 · src/sheet/main.tsx:14` |
+| P2-6 | note | **DOCUMENTED** (verified safe, comment only) | Phase 6 | `08-fix-log.md:2281` — `### P2-6 · DOCUMENTED · src/components/HeroClouds.tsx:857` |
+| P2-7 | note | **DOCUMENTED** (only legal shape, comment only) | Phase 6 | `08-fix-log.md:2298` — `### P2-7 · DOCUMENTED · src/components/HeroClouds.tsx:782` |
+| P3-7 | note | **WONTFIX** (sheet-only; exemption recorded in code) | Phase 6 | `08-fix-log.md:2317` — `### P3-7 · WONTFIX · src/sheet/parts/TokensPart.tsx:119–131` |
+| P3-8 | note | **FIXED** | Phase 6 | `08-fix-log.md:2341` — `### P3-8 · FIXED · src/sheet/ComponentSheet.tsx:4,95,177` |
+| P4-7 | note | **DOCUMENTED** (no defect, comment only) | Phase 6 | `08-fix-log.md:2380` — `### P4-7 · DOCUMENTED · src/components/Hero.tsx:211` |
+| P1-3 | low | **RESOLVED** (by the project, before the plan) | pre-plan | no fix-log entry — `AUDIT.md` §3, resolved by commit `9a5a72d` |
+| P1-4 | note | **RESOLVED** (by the project, before the plan) | pre-plan | no fix-log entry — `AUDIT.md` §3, resolved by commit `9a5a72d` |
+| P2-9 | note | **WITHDRAWN** (on better evidence) | pre-plan | no fix-log entry — `AUDIT.md` §4 dedup note "P6-11 ← P2-9 (withdrawn)"; the real gap it pointed at is P6-15, FIXED in Phase 1 |
+| P4-6 | note | **CLOSED** (verified, not an issue) | pre-plan | no fix-log entry — `AUDIT.md` §3 on `07-live.md` §10; re-measured unchanged in `08-fix-verification.md` §10 |
+| P6-11 | note | **CORRECTION-NO-ACTION** | pre-plan | no fix-log entry — `AUDIT.md` §3 row marked "correction"; `react/exhaustive-deps` **is** on at `warn`, and Phase 1's P6-15 fix is what makes it bite |
+
+### README invariants (`audit/AUDIT.md` §5), restated post-fix
+
+| # | Invariant | Result | Post-fix evidence |
+|---|---|---|---|
+| a | No-buildings hero floor (`PAN_START_SCALE = 3` ≥ 2.86) | **PASS** | `src/components/Hero.tsx:74`; live `matrix(3, 0, 0, 3, 0, 0)` at 1280×800 **and** 375×812, on the dev server **and** on the built output (`08-fix-verification.md` §2, §13); band 0–0.3333 vs roofline 0.351 (`Hero.tsx:60–64`); `screenshots-after/hero-scroll0.png` shows no roof, wall or window |
+| b | `object-position: 52% 0%` / `transform-origin: top` | **PASS** | `Hero.tsx:131`, `:251`; live `52% 0%` and `632.5px 0px` (187.5px at 375 px), matrix `e = f = 0` — zero translate (§2) |
+| c | Brick is the only accent | **PASS** | two utility occurrences in the landing source, both interactive: `src/components/ButtonLink.tsx:30` (`bg-brick text-cloud hover:bg-pine`) and `src/components/ExternalLink.tsx:33` (`hover:text-brick`) |
+| d | Fern is logo-only | **PASS** (landing) | `src/components/Wordmark.tsx:62,66` (`bg-fern`) and nowhere else under `src/` outside `src/sheet/`; the sheet swatch is P3-7, WONTFIX with the exemption written into `src/sheet/parts/TokensPart.tsx:119–131` |
+| e | Haze is never applied to text | **PASS** (vacuously) | zero `*-haze` utilities in the landing source; the single repo-wide hit is `bg-haze` on the sheet's token swatch (`src/sheet/parts/TokensPart.tsx:96`), which is the token being displayed, not text |
+| f | Horizon unused, intentionally | **PASS** | declared at `src/index.css:115`, zero `*-horizon` utilities in the landing source (only the sheet swatch, `TokensPart.tsx:49`); P3-3 rewrote `README.md:262` and `src/index.css:122–130` so the docs now name both unused tokens |
+| g | No off-palette colours | **PASS** | `grep -rnE '#[0-9a-fA-F]{6}' src/` outside `src/sheet/` returns two hits, both inside the doc comment at `src/components/ExternalLink.tsx:12,14`; P3-4's stray hex in `App.tsx` is gone, reworded at `src/App.tsx:70–77` |
+| h | Link hover only in `LINK_ON_CLOUD` / `LINK_ON_FROST` | **PASS** — the P3-1 caveat is closed | every text link still composes one of the two (`ExternalLink.tsx:33`, `:36`); the menu toggle is a `<button>`, outside the link rule, and now has its own documented named constant `TOGGLE_ON_CLOUD` (`src/components/controls.ts:39`) applied at all three former inline sites |
+| i | No scroll event listeners | **PASS** | `grep -rn "addEventListener('scroll'" src/` → **1 hit**, and it is the comment at `src/components/Hero.tsx:138` asserting there are none. Both switches the plan added (`drifting` in `HeroClouds`, `panning` in `Hero`) use `useMotionValueEvent` on the existing `useScroll` value |
+| j | Sheet excluded from the landing bundle | **PASS** | `dist/index.html` loads `index-*.js`, `shared-*.js`, `vendor-*.js`, `rolldown-runtime-*.js`; the sheet-only literals `"component sheet"` and `"Skip to the sheet"` return **0 hits** across all four and **1 hit** each in `components-*.js` |
+| j′ | Sheet utilities kept out of the landing *stylesheet* (README:80–81) | **PASS** *(was PARTIAL FAIL)* | `grep -c 'grid-cols-5' dist/assets/index-*.css` → **0** (sheet CSS: **1**); `grep -c 'transition' dist/assets/index-*.css` → **0**. P1-5 scoped Tailwind to `src/` with `@import 'tailwindcss' source('.')` (`src/index.css:19`) and blocklisted the phantom `transition` candidate (`src/index.css:28`) |
+| k | Srcset triple agreement | **PASS** | `src/lib/images.ts:25` and `scripts/generate-images.mjs:91` both `[640, 960, 1280, 1672]`; `index.html`'s `imagesrcset` carries the same four rungs; the built HTML's only artwork `sizes` is `(min-aspect-ratio: 1672/941) 100vw, 177.68vh`, byte-identical between the preload and the `<picture>` |
+| l | Every image URL resolves; shipped assets match `ASSETS.md` | **PASS** | bijection scan of `dist/`: **56** image/font files, **56** referenced, **56** distinct referenced URLs, **0 missing, 0 unreferenced**; the two wrong doc cells are fixed — P5-9 at `ASSETS.md:118`, P5-10 at `ASSETS.md:138` |
+| m | Contrast: every text pair ≥ 4.5:1 | **PASS** | `08-fix-verification.md` §14 — all 41 rows recomputed from the live `@theme` hexes; **20 text pairs, 0 below 4.5:1**, worst 4.62:1 (pine/90 on frost); **0 non-text pairs below their 3:1 threshold**, and the two that used to be invisible (the toggle border and its hover fill, P4-2/P3-1) now read **6.83:1** |
+| n | Typecheck / lint / build clean | **PASS** | `npm run typecheck` exit 0; `npm run lint` exit 0 and now `oxlint --deny-warnings` (P6-15) with `unicorn` and `jsx-a11y` restored (P6-12, P6-13); `npm run build` exit 0 — lint, `tsc -b`, `vite build` (448 modules, 350 ms), `node scripts/prerender.mjs` |
+| o | Zero console and network errors live | **PASS** | `08-fix-verification.md` §1 — 0 errors / 0 warnings / 0 failed-or-≥400 on five dev-server routes after a 3 s settle; §13 — the same on the **built** `/`, `/components.html` and `/404.html`, each a first load in a brand-new profile sampled 3.5 s after `Page.loadEventFired` |
+| p | No horizontal overflow | **PASS** | §9 — `scrollWidth === clientWidth` at 1280×800 (1265 = 1265) and 375×812 (375 = 375), dev and built; still equal with the 1.4.12 text-spacing override applied (§12 N6/N7) |
+| q | All 27 hrefs match `links.ts` | **PASS** | §6 — 27/27 MATCH, 0 MISMATCH. The `target` rule changed by design (P4-1): the **16** same-site `hackbu.org` anchors now carry no `target`/`rel`; the **9** genuinely off-site anchors keep `target="_blank"` + `rel="noopener noreferrer"` and each carries an `sr-only` "(opens in a new tab)"; both `mailto:` anchors and both in-page anchors carry neither |
+| r | Reduced motion handled per component | **PASS** | §5 — campus `transform: none` and `will-change: auto`, track 2080 → 800 px, **zero** `[data-cloud-drift]` nodes rendered, cloud transforms byte-identical across 3.2 s, page-wide `will-change: transform` count **0**. Both new switches short-circuit before the reduced-motion branch, so it is untouched |
+
+**All 19 invariants PASS**, including `j′`, which was the one PARTIAL FAIL in `AUDIT.md` §5.
+
+### Counts
+
+**By status** — 62 total:
+
+| Status | Count | IDs |
+|---|---|---|
+| FIXED | **48** | P1-1, P1-5, P2-1, P2-2, P2-3, P2-4, P2-5, P2-8, P3-1, P3-2, P3-3, P3-5, P3-6, P3-8, P4-1, P4-2, P4-3, P4-4, P5-1, P5-2, P5-3, P5-4, P5-5, P5-6, P5-7, P5-8, P5-9, P5-10, P5-11, P5-12, P5-13, P6-1, P6-2, P6-3, P6-4, P6-5, P6-6, P6-7, P6-8, P6-9, P6-10, P6-12, P6-13, P6-14, P6-15, P6-16, P6-17, P7-2 |
+| DOCUMENTED | **8** | P1-2, P2-6, P2-7, P3-4, P4-5, P4-7, P4-8, P7-1 |
+| WONTFIX | **1** | P3-7 |
+| RESOLVED (pre-plan) | **2** | P1-3, P1-4 |
+| WITHDRAWN (pre-plan) | **1** | P2-9 |
+| CLOSED (pre-plan) | **1** | P4-6 |
+| CORRECTION-NO-ACTION (pre-plan) | **1** | P6-11 |
+| **Total** | **62** | |
+
+48 + 8 + 1 + 2 + 1 + 1 + 1 = **62**, and the seven ID lists together name each of the 62 IDs
+exactly once. **P6-16 is counted once, under FIXED** — its compound entry fixed one strictness flag
+and documented the decision on the other, so its `DOCUMENTED` half is noted in its row above rather
+than counted as a second closure.
+
+**By phase that closed it** — 62 total:
+
+| Phase | Count | IDs |
+|---|---|---|
+| Phase 1 — tooling and build hygiene | **8** | P1-5, P6-12, P6-13, P6-15, P2-3, P6-16, P6-17, P6-14 |
+| Phase 2 — accessibility and interaction | **9** | P2-4, P7-2, P4-1, P4-2, P3-1, P4-3, P4-4, P4-5, P4-8 |
+| Phase 3 — routing and metadata | **5** | P5-4, P7-1, P2-2, P5-12, P3-6 |
+| Phase 4 — delivery and performance | **7** | P5-1, P5-8, P5-5, P5-13, P5-6, P5-2, P5-3 |
+| Phase 5 — documentation accuracy | **18** | P6-1, P6-2, P6-3, P6-4, P6-5, P6-6, P6-7, P6-8, P6-9, P6-10, P3-2, P3-3, P3-4, P3-5, P5-9, P5-10, P5-11, P2-1 |
+| Phase 6 — optional code polish | **10** | P5-7, P2-8, P1-1, P1-2, P2-5, P2-6, P2-7, P3-7, P3-8, P4-7 |
+| pre-plan (closed before this plan began) | **5** | P1-3, P1-4, P2-9, P4-6, P6-11 |
+| **Total** | **62** | |
+
+**By severity**, cross-checked against `AUDIT.md` §3's "1 medium · 23 low · 38 note = 62 findings in
+57 rows":
+
+| Severity | Count | Notes |
+|---|---|---|
+| medium | **1** | P5-1 — FIXED (Phase 4) |
+| low | **23** | the 22 `low` rows in §3 plus P3-1, which §3 carries merged into the P4-2 row — **22 FIXED**, 1 RESOLVED pre-plan (P1-3) |
+| note | **38** | the 34 `note` rows in §3 plus P7-1, P7-2, P2-8, P2-9 — **25 FIXED** (P6-16 among them), 8 DOCUMENTED, 1 WONTFIX, 1 RESOLVED (P1-4), 1 WITHDRAWN (P2-9), 1 CLOSED (P4-6), 1 CORRECTION-NO-ACTION (P6-11) |
+| **Total** | **62** | |
+
+**Nothing is left open.** The only work `AUDIT.md` §7 named that this plan did not do is work no
+phase could do from here: Vercel-side observation of routing and cache headers, paint/LCP timings,
+Safari's skip-link behaviour, and the smaller unmeasured items listed at `08-fix-verification.md`
+§16. The one §7 item that *was* still doable — the compositor Layers reading P5-7 asked for — was
+taken in Phase 6 above, at `08-fix-log.md:2039–2096`.
