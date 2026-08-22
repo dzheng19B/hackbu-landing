@@ -368,7 +368,7 @@ $ grep -n 'border-stone/60 bg-frost' src/components/sections/GetInvolvedSection.
 Live: `{"borderColor":"oklab(0.783604 0.00410199 0.0371398 / 0.6)","background":"rgb(220, 227, 234)"}`
 — `stone` at 60% over `frost` (1.28:1, a deliberate hairline) rather than frost on frost.
 
-### P4-4 · FIXED · `src/components/HeroClouds.tsx:699–717` (`driftLoop`), `:767–772` (the switch), `:826`
+### P4-4 · FIXED · `src/components/HeroClouds.tsx:699–717` (`driftLoop`), `:767–772` (the switch), `:829`
 
 Each cloud layer's drift now stops at that layer's own `fadeEnd` and starts again if the reader
 scrolls back. The switch is a `useState` boolean driven by
@@ -1302,7 +1302,7 @@ the readout at the end of this section.
 
 ---
 
-### P5-2 · FIXED · `src/App.tsx:1,39,107`, `src/sheet/ComponentSheet.tsx:2,68,144`, `src/components/Hero.tsx:2,240`, `src/components/HeroClouds.tsx:2,814,823`, `src/components/Reveal.tsx:2,77,109,117,124,151,158`
+### P5-2 · FIXED · `src/App.tsx:1,39,107`, `src/sheet/ComponentSheet.tsx:2,68,144`, `src/components/Hero.tsx:2,240`, `src/components/HeroClouds.tsx:2,814,826`, `src/components/Reveal.tsx:2,77,109,117,124,151,158`
 
 Nine `motion.*` component sites became `m.*`, and both roots are wrapped in one
 `<LazyMotion features={domAnimation} strict>`. `useScroll`, `useTransform`, `useReducedMotion`,
@@ -2095,13 +2095,13 @@ nothing. So the honest result is −2 compositor layers and −6.6% / −6.0% of
 the pan, not a texture saving. Recorded here rather than claimed as a frame-rate win, which was
 not measured.
 
-### P5-7 (with P2-8) · FIXED · `src/components/Hero.tsx:180,252` · `src/components/HeroClouds.tsx:820`
+### P5-7 (with P2-8) · FIXED · `src/components/Hero.tsx:180,252` · `src/components/HeroClouds.tsx:823`
 
 `Hero.tsx:180` adds a `panning` boolean, `progress.get() <= PAN_SCROLL_FRACTION`, kept current by
 `useMotionValueEvent` on the hero's existing `useScroll` value — the same shape as `drifting` in
 `HeroClouds`, and still no `scroll` listener anywhere in `src/`. `Hero.tsx:252` reads it, so the
 campus `<img>` carries `will-change-transform` only while `reducedMotion` is false *and* the pan is
-still running. `HeroClouds.tsx:820` gates the `data-cloud-layer` wrapper's hint on the existing
+still running. `HeroClouds.tsx:823` gates the `data-cloud-layer` wrapper's hint on the existing
 `drifting` flag, whose threshold is that layer's own `fadeEnd` — the exact progress at which the
 wrapper's `y` and `opacity` stop moving, and at which its opacity is exactly 0, so the
 de-promotion lands on a frame that paints nothing. The three `data-cloud-drift` tracks keep their
@@ -2288,7 +2288,7 @@ $ grep -c "getElementById('root')!" src/main.tsx ; grep -c "getElementById('root
 
 `02-code.md` §"non-null `!`" counted exactly one in `src/`; there are now none.
 
-### P2-6 · DOCUMENTED (verified safe, comment only) · `src/components/HeroClouds.tsx:857`
+### P2-6 · DOCUMENTED (verified safe, comment only) · `src/components/HeroClouds.tsx:860`
 
 `style={{ '--cloud-sets': SET_COUNT } as CSSProperties}` stays. React's `CSSProperties` has no
 index signature for `--*` keys, so there is no non-assertion spelling; the alternative
@@ -2502,7 +2502,7 @@ file** at which the closure entry's `###` heading sits.
 | P4-2 | low | **FIXED** | Phase 2 | `08-fix-log.md:299` — `### P4-2 · FIXED · src/components/controls.ts:39–41` |
 | P3-1 | low | **FIXED** | Phase 2 | `08-fix-log.md:299` — same entry, "and **P3-1** · FIXED, same change" |
 | P4-3 | low | **FIXED** | Phase 2 | `08-fix-log.md:355` — `### P4-3 · FIXED · sections/GetInvolvedSection.tsx:40` |
-| P4-4 | low | **FIXED** | Phase 2 | `08-fix-log.md:371` — `### P4-4 · FIXED · HeroClouds.tsx:699–717, :767–772, :826` |
+| P4-4 | low | **FIXED** | Phase 2 | `08-fix-log.md:371` — `### P4-4 · FIXED · HeroClouds.tsx:699–717, :767–772, :829` |
 | P4-5 | note | **DOCUMENTED** (no code change needed) | Phase 2 | `08-fix-log.md:431` — `### P4-5 · DOCUMENTED · src/index.css:102 vs SiteHeader.tsx:49` |
 | P4-8 | note | **DOCUMENTED** (no code change needed) | Phase 2 | `08-fix-log.md:459` — `### P4-8 · DOCUMENTED · src/index.css:170,174,178 measured live` |
 | P5-4 | low | **FIXED** | Phase 3 | `08-fix-log.md:581` — `### P5-4 · FIXED · vercel.json:6–9, public/404.html (new), README.md:134–153` |
@@ -2535,12 +2535,12 @@ file** at which the closure entry's `###` heading sits.
 | P5-10 | note | **FIXED** | Phase 5 | `08-fix-log.md:1851` — `### P5-10 · FIXED · ASSETS.md:138` |
 | P5-11 | note | **FIXED** | Phase 5 | `08-fix-log.md:1866` — `### P5-11 · FIXED · index.html:26–31` |
 | P2-1 | low | **FIXED** | Phase 5 | `08-fix-log.md:1884` — `### P2-1 · FIXED · src/lib/links.ts:10,12,19,21,26,28` |
-| P5-7 | note | **FIXED** | Phase 6 | `08-fix-log.md:2098` — `### P5-7 (with P2-8) · FIXED · Hero.tsx:180,252 · HeroClouds.tsx:820` |
+| P5-7 | note | **FIXED** | Phase 6 | `08-fix-log.md:2098` — `### P5-7 (with P2-8) · FIXED · Hero.tsx:180,252 · HeroClouds.tsx:823` |
 | P2-8 | note | **FIXED** | Phase 6 | `08-fix-log.md:2098` — same entry |
 | P1-1 | note | **FIXED** | Phase 6 | `08-fix-log.md:2174` — `### P1-1 · FIXED · vite.config.ts:167,191` |
 | P1-2 | note | **DOCUMENTED** (no defect, no code) | Phase 6 | `08-fix-log.md:2254` — `### P1-2 · DOCUMENTED · dist/assets/*.woff2` |
 | P2-5 | note | **FIXED** | Phase 6 | `08-fix-log.md:2269` — `### P2-5 · FIXED · src/main.tsx:17 · src/sheet/main.tsx:14` |
-| P2-6 | note | **DOCUMENTED** (verified safe, comment only) | Phase 6 | `08-fix-log.md:2291` — `### P2-6 · DOCUMENTED · src/components/HeroClouds.tsx:857` |
+| P2-6 | note | **DOCUMENTED** (verified safe, comment only) | Phase 6 | `08-fix-log.md:2291` — `### P2-6 · DOCUMENTED · src/components/HeroClouds.tsx:860` |
 | P2-7 | note | **DOCUMENTED** (only legal shape, comment only) | Phase 6 | `08-fix-log.md:2308` — `### P2-7 · DOCUMENTED · src/components/HeroClouds.tsx:782` |
 | P3-7 | note | **WONTFIX** (sheet-only; exemption recorded in code) | Phase 6 | `08-fix-log.md:2327` — `### P3-7 · WONTFIX · src/sheet/parts/TokensPart.tsx:119–131` |
 | P3-8 | note | **FIXED** | Phase 6 | `08-fix-log.md:2351` — `### P3-8 · FIXED · src/sheet/ComponentSheet.tsx:4,95,177` |
