@@ -2528,28 +2528,28 @@ file** at which the closure entry's `###` heading sits.
 | P6-4 | low | **FIXED** | Phase 5 | `08-fix-log.md:1605` — `### P6-4 · FIXED · README.md:318` |
 | P6-5 | note | **FIXED** | Phase 5 | `08-fix-log.md:1617` — `### P6-5 · FIXED · README.md:195` |
 | P6-6 | note | **FIXED** | Phase 5 | `08-fix-log.md:1628` — `### P6-6 · FIXED · README.md:302–337` |
-| P6-7 | note | **FIXED** | Phase 5 | `08-fix-log.md:1648` — `### P6-7 · FIXED · src/components/HeroClouds.tsx:145` |
-| P6-8 | note | **FIXED** | Phase 5 | `08-fix-log.md:1678` — `### P6-8 · FIXED · 8 files, 15 sites` |
-| P6-9 | note | **FIXED** | Phase 5 | `08-fix-log.md:1708` — `### P6-9 · FIXED · src/lib/motion.ts:45–49` |
-| P6-10 | note | **FIXED** | Phase 5 | `08-fix-log.md:1729` — `### P6-10 · FIXED · ASSETS.md:78–84, generate-images.mjs:8–11` |
-| P3-2 | low | **FIXED** | Phase 5 | `08-fix-log.md:1764` — `### P3-2 · FIXED · README.md:261` |
-| P3-3 | low | **FIXED** | Phase 5 | `08-fix-log.md:1779` — `### P3-3 · FIXED · README.md:262, src/index.css:122–130` |
-| P3-4 | note | **DOCUMENTED** (comment reworded) | Phase 5 | `08-fix-log.md:1796` — `### P3-4 · DOCUMENTED · src/App.tsx:70–77` |
-| P3-5 | note | **FIXED** | Phase 5 | `08-fix-log.md:1821` — `### P3-5 · FIXED · README.md:274–276, :322` |
-| P5-9 | note | **FIXED** | Phase 5 | `08-fix-log.md:1837` — `### P5-9 · FIXED · ASSETS.md:118` |
-| P5-10 | note | **FIXED** | Phase 5 | `08-fix-log.md:1851` — `### P5-10 · FIXED · ASSETS.md:138` |
-| P5-11 | note | **FIXED** | Phase 5 | `08-fix-log.md:1866` — `### P5-11 · FIXED · index.html:24–29` |
-| P2-1 | low | **FIXED** | Phase 5 | `08-fix-log.md:1884` — `### P2-1 · FIXED · src/lib/links.ts:10,12,19,21,26,28` |
-| P5-7 | note | **FIXED** | Phase 6 | `08-fix-log.md:2098` — `### P5-7 (with P2-8) · FIXED · Hero.tsx:180,252 · HeroClouds.tsx:823` |
-| P2-8 | note | **FIXED** | Phase 6 | `08-fix-log.md:2098` — same entry |
-| P1-1 | note | **FIXED** | Phase 6 | `08-fix-log.md:2174` — `### P1-1 · FIXED · vite.config.ts:167,191` |
-| P1-2 | note | **DOCUMENTED** (no defect, no code) | Phase 6 | `08-fix-log.md:2254` — `### P1-2 · DOCUMENTED · dist/assets/*.woff2` |
-| P2-5 | note | **FIXED** | Phase 6 | `08-fix-log.md:2269` — `### P2-5 · FIXED · src/main.tsx:17 · src/sheet/main.tsx:14` |
-| P2-6 | note | **DOCUMENTED** (verified safe, comment only) | Phase 6 | `08-fix-log.md:2291` — `### P2-6 · DOCUMENTED · src/components/HeroClouds.tsx:860` |
-| P2-7 | note | **DOCUMENTED** (only legal shape, comment only) | Phase 6 | `08-fix-log.md:2308` — `### P2-7 · DOCUMENTED · src/components/HeroClouds.tsx:782` |
-| P3-7 | note | **WONTFIX** (sheet-only; exemption recorded in code) | Phase 6 | `08-fix-log.md:2327` — `### P3-7 · WONTFIX · src/sheet/parts/TokensPart.tsx:119–131` |
-| P3-8 | note | **FIXED** | Phase 6 | `08-fix-log.md:2351` — `### P3-8 · FIXED · src/sheet/ComponentSheet.tsx:4,95,177` |
-| P4-7 | note | **DOCUMENTED** (no defect, comment only) | Phase 6 | `08-fix-log.md:2390` — `### P4-7 · DOCUMENTED · src/components/Hero.tsx:211` |
+| P6-7 | note | **FIXED** | Phase 5 | `08-fix-log.md:1653` — `### P6-7 · FIXED · src/components/HeroClouds.tsx:145` |
+| P6-8 | note | **FIXED** | Phase 5 | `08-fix-log.md:1683` — `### P6-8 · FIXED · 8 files, 15 sites` |
+| P6-9 | note | **FIXED** | Phase 5 | `08-fix-log.md:1713` — `### P6-9 · FIXED · src/lib/motion.ts:45–49` |
+| P6-10 | note | **FIXED** | Phase 5 | `08-fix-log.md:1734` — `### P6-10 · FIXED · ASSETS.md:78–84, generate-images.mjs:8–11` |
+| P3-2 | low | **FIXED** | Phase 5 | `08-fix-log.md:1769` — `### P3-2 · FIXED · README.md:261` |
+| P3-3 | low | **FIXED** | Phase 5 | `08-fix-log.md:1783` — `### P3-3 · FIXED · README.md:262, src/index.css:122–130` |
+| P3-4 | note | **DOCUMENTED** (comment reworded) | Phase 5 | `08-fix-log.md:1800` — `### P3-4 · DOCUMENTED · src/App.tsx:70–77` |
+| P3-5 | note | **FIXED** | Phase 5 | `08-fix-log.md:1824` — `### P3-5 · FIXED · README.md:274–276, :322` |
+| P5-9 | note | **FIXED** | Phase 5 | `08-fix-log.md:1840` — `### P5-9 · FIXED · ASSETS.md:118` |
+| P5-10 | note | **FIXED** | Phase 5 | `08-fix-log.md:1857` — `### P5-10 · FIXED · ASSETS.md:138` |
+| P5-11 | note | **FIXED** | Phase 5 | `08-fix-log.md:1872` — `### P5-11 · FIXED · index.html:24–29` |
+| P2-1 | low | **FIXED** | Phase 5 | `08-fix-log.md:1890` — `### P2-1 · FIXED · src/lib/links.ts:10,12,19,21,26,28` |
+| P5-7 | note | **FIXED** | Phase 6 | `08-fix-log.md:2103` — `### P5-7 (with P2-8) · FIXED · Hero.tsx:180,252 · HeroClouds.tsx:823` |
+| P2-8 | note | **FIXED** | Phase 6 | `08-fix-log.md:2103` — same entry |
+| P1-1 | note | **FIXED** | Phase 6 | `08-fix-log.md:2179` — `### P1-1 · FIXED · vite.config.ts:167,191` |
+| P1-2 | note | **DOCUMENTED** (no defect, no code) | Phase 6 | `08-fix-log.md:2259` — `### P1-2 · DOCUMENTED · dist/assets/*.woff2` |
+| P2-5 | note | **FIXED** | Phase 6 | `08-fix-log.md:2274` — `### P2-5 · FIXED · src/main.tsx:17 · src/sheet/main.tsx:14` |
+| P2-6 | note | **DOCUMENTED** (verified safe, comment only) | Phase 6 | `08-fix-log.md:2296` — `### P2-6 · DOCUMENTED · src/components/HeroClouds.tsx:860` |
+| P2-7 | note | **DOCUMENTED** (only legal shape, comment only) | Phase 6 | `08-fix-log.md:2313` — `### P2-7 · DOCUMENTED · src/components/HeroClouds.tsx:782` |
+| P3-7 | note | **WONTFIX** (sheet-only; exemption recorded in code) | Phase 6 | `08-fix-log.md:2332` — `### P3-7 · WONTFIX · src/sheet/parts/TokensPart.tsx:119–131` |
+| P3-8 | note | **FIXED** | Phase 6 | `08-fix-log.md:2356` — `### P3-8 · FIXED · src/sheet/ComponentSheet.tsx:4,95,177` |
+| P4-7 | note | **DOCUMENTED** (no defect, comment only) | Phase 6 | `08-fix-log.md:2395` — `### P4-7 · DOCUMENTED · src/components/Hero.tsx:211` |
 | P1-3 | low | **RESOLVED** (by the project, before the plan) | pre-plan | no fix-log entry — `AUDIT.md` §3, resolved by commit `9a5a72d` |
 | P1-4 | note | **RESOLVED** (by the project, before the plan) | pre-plan | no fix-log entry — `AUDIT.md` §3, resolved by commit `9a5a72d` |
 | P2-9 | note | **WITHDRAWN** (on better evidence) | pre-plan | no fix-log entry — `AUDIT.md` §4 dedup note "P6-11 ← P2-9 (withdrawn)"; the real gap it pointed at is P6-15, FIXED in Phase 1 |
