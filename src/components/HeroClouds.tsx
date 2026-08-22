@@ -814,9 +814,12 @@ function CloudLayer({ layer }: { layer: CloudLayerSpec }) {
     <m.div
       data-cloud-layer={layer.id}
       // Promoted only while `y`/`opacity` are still moving — see `drifting`
-      // above (P5-7). The drift child below keeps its hint unconditionally:
-      // that one animates `x` with `repeat: Infinity` and is what actually
-      // moves, so its promotion never expires.
+      // above (P5-7). The drift child below keeps its hint unconditionally,
+      // even once `drifting` is false and `driftLoop` has frozen it at
+      // `LOOP_START` (P4-4): the promotion is retained so that scrolling back
+      // up resumes the drift without re-promoting a 5700px-wide track, at the
+      // measured cost of one retained, non-drawing (opacity 0) compositor
+      // layer per cloud layer — see the P5-7 entry in audit/08-fix-log.md.
       className={`absolute inset-0${drifting ? ' will-change-transform' : ''}`}
       style={{ opacity, y }}
     >

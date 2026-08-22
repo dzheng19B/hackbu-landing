@@ -1302,7 +1302,7 @@ the readout at the end of this section.
 
 ---
 
-### P5-2 · FIXED · `src/App.tsx:1,39,104`, `src/sheet/ComponentSheet.tsx:2,68,138`, `src/components/Hero.tsx:2,209`, `src/components/HeroClouds.tsx:2,801,806`, `src/components/Reveal.tsx:2,77,109,117,124,151,158`
+### P5-2 · FIXED · `src/App.tsx:1,39,107`, `src/sheet/ComponentSheet.tsx:2,68,144`, `src/components/Hero.tsx:2,240`, `src/components/HeroClouds.tsx:2,814,823`, `src/components/Reveal.tsx:2,77,109,117,124,151,158`
 
 Nine `motion.*` component sites became `m.*`, and both roots are wrapped in one
 `<LazyMotion features={domAnimation} strict>`. `useScroll`, `useTransform`, `useReducedMotion`,
@@ -2105,8 +2105,18 @@ still running. `HeroClouds.tsx:820` gates the `data-cloud-layer` wrapper's hint 
 `drifting` flag, whose threshold is that layer's own `fadeEnd` — the exact progress at which the
 wrapper's `y` and `opacity` stop moving, and at which its opacity is exactly 0, so the
 de-promotion lands on a frame that paints nothing. The three `data-cloud-drift` tracks keep their
-hint unconditionally: they animate `x` with `repeat: Number.POSITIVE_INFINITY` and MDN's "remove it
-when the element stops changing" never triggers for them.
+hint unconditionally — deliberately, and **not** because they keep animating: once `drifting` is
+false, `driftLoop` (P4-4) freezes them at `LOOP_START` with no keyframes and no `repeat`, and the
+second-cycle final audit measured all three at `matrix(1, 0, 0, 1, -1265, 0)` from progress ≈ 0.5
+onward while still reporting `will-change: transform`. The hint is retained so that scrolling back
+up resumes the drift without re-promoting three full-width (5700 × 900) tracks; the cost is three
+retained compositor layers that draw nothing (their wrapper sits at opacity 0, so `drawsContent` is
+false and the raster cost is nil — the 145,568,432 B post-change reading at 1440 × 900 / 0.8 still
+includes their bounds). Gating this `className` on `drifting`, exactly as the sibling wrapper is,
+would take the count to 0 past the hero; it is recorded as a follow-up rather than taken, because
+it changes compositor behaviour after the plan's measurement pass. (An earlier version of this
+paragraph claimed the tracks "animate `x` with `repeat: Infinity`" — that was true before P4-4 and
+false after it; corrected by the final audit.)
 
 Scrolling back up sets both flags true again, so this is a state of the page, not a one-way latch.
 
@@ -2486,26 +2496,26 @@ file** at which the closure entry's `###` heading sits.
 | P6-16 | note | **FIXED** *(one flag; the other **DOCUMENTED**, rationale at `tsconfig.app.json:19–36`)* | Phase 1 | `08-fix-log.md:137` — `### P6-16 · FIXED (one flag) + DOCUMENTED (the other)` |
 | P6-17 | note | **FIXED** | Phase 1 | `08-fix-log.md:165` — `### P6-17 · FIXED · package.json:6–8` |
 | P6-14 | note | **FIXED** | Phase 1 | `08-fix-log.md:179` — `### P6-14 · FIXED · .gitignore:9` |
-| P2-4 | low | **FIXED** | Phase 2 | `08-fix-log.md:219` — `### P2-4 · FIXED · src/App.tsx:54` |
-| P7-2 | note | **FIXED** | Phase 2 | `08-fix-log.md:219` — same entry, "and **P7-2** · FIXED · `src/components/Hero.tsx:176,184`" |
+| P2-4 | low | **FIXED** | Phase 2 | `08-fix-log.md:219` — `### P2-4 · FIXED · src/App.tsx:67` |
+| P7-2 | note | **FIXED** | Phase 2 | `08-fix-log.md:219` — same entry, "and **P7-2** · FIXED · `src/components/Hero.tsx:204,202`" |
 | P4-1 | low | **FIXED** | Phase 2 | `08-fix-log.md:261` — `### P4-1 · FIXED · src/components/ExternalLink.tsx:55,68–78,104–118` |
 | P4-2 | low | **FIXED** | Phase 2 | `08-fix-log.md:299` — `### P4-2 · FIXED · src/components/controls.ts:39–41` |
 | P3-1 | low | **FIXED** | Phase 2 | `08-fix-log.md:299` — same entry, "and **P3-1** · FIXED, same change" |
 | P4-3 | low | **FIXED** | Phase 2 | `08-fix-log.md:355` — `### P4-3 · FIXED · sections/GetInvolvedSection.tsx:40` |
-| P4-4 | low | **FIXED** | Phase 2 | `08-fix-log.md:371` — `### P4-4 · FIXED · HeroClouds.tsx:699–718, :761–765, :809` |
-| P4-5 | note | **DOCUMENTED** (no code change needed) | Phase 2 | `08-fix-log.md:431` — `### P4-5 · DOCUMENTED · src/index.css:40 vs SiteHeader.tsx:48` |
-| P4-8 | note | **DOCUMENTED** (no code change needed) | Phase 2 | `08-fix-log.md:459` — `### P4-8 · DOCUMENTED · src/index.css:106,110,114 measured live` |
+| P4-4 | low | **FIXED** | Phase 2 | `08-fix-log.md:371` — `### P4-4 · FIXED · HeroClouds.tsx:699–717, :767–772, :826` |
+| P4-5 | note | **DOCUMENTED** (no code change needed) | Phase 2 | `08-fix-log.md:431` — `### P4-5 · DOCUMENTED · src/index.css:102 vs SiteHeader.tsx:49` |
+| P4-8 | note | **DOCUMENTED** (no code change needed) | Phase 2 | `08-fix-log.md:459` — `### P4-8 · DOCUMENTED · src/index.css:170,174,178 measured live` |
 | P5-4 | low | **FIXED** | Phase 3 | `08-fix-log.md:581` — `### P5-4 · FIXED · vercel.json:6–9, public/404.html (new), README.md:134–153` |
 | P7-1 | note | **DOCUMENTED** (same change; the dev-vs-Vercel split recorded at `README.md:150–153`) | Phase 3 | `08-fix-log.md:581` — same entry |
-| P2-2 | low | **FIXED** | Phase 3 | `08-fix-log.md:700` — `### P2-2 · FIXED · index.html:81–84` |
-| P5-12 | note | **FIXED** | Phase 3 | `08-fix-log.md:723` — `### P5-12 · FIXED · vite.config.ts:6–45,61` |
-| P3-6 | note | **FIXED** | Phase 3 | `08-fix-log.md:804` — `### P3-6 · FIXED · index.html:96, components.html:30` |
+| P2-2 | low | **FIXED** | Phase 3 | `08-fix-log.md:700` — `### P2-2 · FIXED · index.html:83–86` |
+| P5-12 | note | **FIXED** | Phase 3 | `08-fix-log.md:723` — `### P5-12 · FIXED · vite.config.ts:6–45,183` |
+| P3-6 | note | **FIXED** | Phase 3 | `08-fix-log.md:804` — `### P3-6 · FIXED · index.html:98, components.html:30` |
 | P5-1 | **medium** | **FIXED** (prerender) | Phase 4 | `08-fix-log.md:1011` — `### P5-1 · FIXED · scripts/prerender.mjs (new), src/entry-server.tsx (new)` |
 | P5-8 | note | **FIXED** (by P5-1) | Phase 4 | `08-fix-log.md:1098` — `### P5-8 · FIXED (by P5-1) · dist/index.html body` |
 | P5-5 | low | **FIXED** | Phase 4 | `08-fix-log.md:1124` — `### P5-5 · FIXED · vite.config.ts:62-127, :143` |
 | P5-13 | note | **FIXED** | Phase 4 | `08-fix-log.md:1225` — `### P5-13 · FIXED · src/index.css:31-90` |
 | P5-6 | note | **FIXED** | Phase 4 | `08-fix-log.md:1285` — `### P5-6 · FIXED · same change as P5-13` |
-| P5-2 | low | **FIXED** | Phase 4 | `08-fix-log.md:1305` — `### P5-2 · FIXED · src/App.tsx:1,39,104 and four more sites` |
+| P5-2 | low | **FIXED** | Phase 4 | `08-fix-log.md:1305` — `### P5-2 · FIXED · src/App.tsx:1,39,107 and four more sites` |
 | P5-3 | low | **FIXED** | Phase 4 | `08-fix-log.md:1356` — `### P5-3 · FIXED · vercel.json:10-32, README.md:111-115` |
 | P6-1 | low | **FIXED** | Phase 5 | `08-fix-log.md:1544` — `### P6-1 · FIXED · ASSETS.md:29, :34` |
 | P6-2 | low | **FIXED** | Phase 5 | `08-fix-log.md:1560` — `### P6-2 · FIXED · ASSETS.md:154` |
@@ -2618,16 +2628,22 @@ taken in Phase 6 above, at `08-fix-log.md:2039–2096`.
 
 ## Final audit — renumbering and observations
 
-The cross-phase final audit (after Phase 7) found that twelve `file:line` citations in the
+The cross-phase final audit (after Phase 7) found, over two cycles, that seventeen `file:line`
+citations in the
 closure-entry **headings** above had drifted: each was correct when written, and a later phase
 then edited the same file above the cited line (Phase 4's `@font-face` block moved everything in
 `src/index.css` by +62/+64; Phase 4's `LazyMotion` import moved `App.tsx` by +13; Phase 6's
 `panning`/`will-change` comments moved `Hero.tsx` and `HeroClouds.tsx`; Phase 6's
 `manualChunks` moved `vite.config.ts`'s `plugins:` line to 183; Phase 5's comment edits moved
 `index.html`'s meta tags by +2; Phase 6's P3-8 moved `ComponentSheet.tsx`'s toggle to 109). The
-headings for P2-4/P7-2, P4-2, P4-4, P4-5, P4-8, P2-2, P5-12, P3-6, P5-1 and P5-5 now cite the
-lines as they stand at the final commit; the bodies of those entries still quote the transcripts
-captured at the time, and the reconciliation anchors (`08-fix-log.md:<n>`) were unaffected.
+headings for P2-4/P7-2, P4-2, P4-4, P4-5, P4-8, P2-2, P5-12, P3-6, P5-1, P5-5 and (found by the
+second cycle) P5-2 now cite the lines as they stand at the final commit, and the abbreviated
+headings quoted in the `## Reconciliation` table's anchor column — a second copy of the same cites
+that the first renumbering pass missed — were renumbered to match; the bodies of those entries
+still quote the transcripts captured at the time, and the reconciliation anchors
+(`08-fix-log.md:<n>`) were unaffected. The second cycle also found the P5-7 rationale for the
+drift tracks' retained `will-change` contradicted by P4-4 (see the corrected paragraph in that
+entry and the matching comment at `src/components/HeroClouds.tsx`).
 
 Also taken from the same audit: `src/components/controls.ts:11` said "all four class strings
 identical" for three call sites whose *treatment fragment* was identical (their sizing
