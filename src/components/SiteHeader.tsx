@@ -26,7 +26,7 @@ import { DISCORD_URL, NAV_LINKS } from '../lib/links'
 
 const NAV_LINK_CLASSES = `text-body ${LINK_ON_CLOUD}`
 
-export function SiteHeader() {
+export function SiteHeader({ homeHref = '#top' }: { homeHref?: string }) {
   const [menuOpen, setMenuOpen] = useState(false)
   const toggleRef = useRef<HTMLButtonElement>(null)
 
@@ -47,7 +47,7 @@ export function SiteHeader() {
     <header className="border-frost bg-cloud fixed inset-x-0 top-0 z-50 border-b">
       <Container className="flex h-16 items-center justify-between sm:h-20">
         <a
-          href="#top"
+          href={homeHref}
           className="focus-visible:outline-pine rounded-sm focus-visible:outline-2 focus-visible:outline-offset-4"
         >
           <Wordmark className="text-2xl sm:text-3xl" />

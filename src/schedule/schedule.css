@@ -1,0 +1,10 @@
+/*
+ * The schedule page's stylesheet root.
+ *
+ * Same pattern as landing.css: shared tokens from index.css, but exclude the
+ * component sheet's sources so this page does not download utilities it never
+ * uses.
+ */
+@import '../index.css';
+
+@source not "../sheet";

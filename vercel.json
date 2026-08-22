@@ -6,6 +6,8 @@
   "rewrites": [
     { "source": "/components", "destination": "/components.html" },
     { "source": "/components/", "destination": "/components.html" },
-    { "source": "/((?!components).*)", "destination": "/index.html" }
+    { "source": "/schedule", "destination": "/schedule.html" },
+    { "source": "/schedule/", "destination": "/schedule.html" },
+    { "source": "/((?!components|schedule).*)", "destination": "/index.html" }
   ]
 }

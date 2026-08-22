@@ -8,6 +8,7 @@ import { fileURLToPath } from 'node:url'
  *
  *   index.html       the landing page          -> dist/index.html
  *   components.html  the component sheet       -> dist/components.html
+ *   schedule.html    the schedule page           -> dist/schedule.html
  *
  * They share the component tree, so Rollup hoists what both import into a
  * shared chunk and each page's own entry chunk holds only its own code. The
@@ -24,6 +25,7 @@ export default defineConfig({
       input: {
         index: fileURLToPath(new URL('./index.html', import.meta.url)),
         components: fileURLToPath(new URL('./components.html', import.meta.url)),
+        schedule: fileURLToPath(new URL('./schedule.html', import.meta.url)),
       },
     },
   },
