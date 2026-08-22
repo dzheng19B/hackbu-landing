@@ -1573,7 +1573,7 @@ $ node -e "console.log(2942406/3780900*100)"
 
 2,942,406 / 3,780,900 = 77.8%, rounded to 78% — matching `ASSETS.md:57`'s stated total.
 
-### P6-3 · FIXED · `ASSETS.md:143–156`
+### P6-3 · FIXED · `ASSETS.md:144–157`
 
 The "Notes for later phases" heading and its two resolved bullets are gone. The section is
 now "## Notes" and states both facts in the present tense: the hero is a vertical scale-pan
@@ -1584,7 +1584,7 @@ Derivatives section that already ships them. The third bullet (cloud heights) is
 ```
 $ grep -n "Notes for later phases\|Worth confirming against the intended motion\|is the obvious lever" ASSETS.md ; echo "EXIT=$?"
 EXIT=1
-$ sed -n '143,156p' ASSETS.md
+$ sed -n '144,157p' ASSETS.md
 ## Notes
 
 Observations from the raw files. The two questions this section used to raise are both
@@ -1602,7 +1602,7 @@ settled — recorded here as fact rather than as open questions:
 - The clouds are small (70–303 px tall) and will be visibly soft if scaled far above 1:1.
 ```
 
-### P6-4 · FIXED · `README.md:317`
+### P6-4 · FIXED · `README.md:318`
 
 "collapses to a menu at 390px" → "collapses to a menu below `md` (768px)", matching
 `src/components/SiteHeader.tsx:16`'s own (already-correct) header comment.
@@ -1611,7 +1611,7 @@ settled — recorded here as fact rather than as open questions:
 $ grep -c '390px' README.md
 0
 $ grep -n '768\|md:' README.md
-317:    SiteHeader.tsx           fixed header, collapses to a menu below `md` (768px)
+318:    SiteHeader.tsx           fixed header, collapses to a menu below `md` (768px)
 ```
 
 ### P6-5 · FIXED · `README.md:195`
@@ -1625,7 +1625,7 @@ README.md:195:  the start scale must stay above `1 / 0.351 ≈ 2.85`. Measure wh
 src/components/Hero.tsx:69: * The binding constraint is 1/S < 0.351, i.e. S > 2.85; 2.4 would have shown
 ```
 
-### P6-6 · FIXED · `README.md:301–336`
+### P6-6 · FIXED · `README.md:302–337`
 
 The Layout tree gained `main.tsx`, `entry-server.tsx`, `landing.css`, a `sheet/` entry
 (pointing at the "component sheet" section), `scripts/prerender.mjs` and `public/404.html` —
@@ -1705,7 +1705,7 @@ $ grep -rn "Phase [0-9]" src index.html components.html README.md ASSETS.md scri
 EXIT=1
 ```
 
-### P6-9 · FIXED · `src/lib/motion.ts:44–49`
+### P6-9 · FIXED · `src/lib/motion.ts:45–49`
 
 "motion reads the media query once at mount and does not re-subscribe" named the wrong half
 of the mechanism — the underlying `matchMedia` listener *is* live (it updates a module-level
@@ -1716,7 +1716,7 @@ add a redundant second `matchMedia` listener while trying to "fix" a subscriptio
 already exists.
 
 ```
-$ sed -n '44,49p' src/lib/motion.ts
+$ sed -n '45,49p' src/lib/motion.ts
  * Note: motion captures the value in `useState` at mount and never re-renders
  * on a change — the underlying media query *is* subscribed to (it updates a
  * module-level ref motion keeps for its own purposes), but nothing here reads
@@ -1818,7 +1818,7 @@ $ sed -n '70,77p' src/App.tsx
            * blue band under that would read as a stripe. (A `sky-to-cloud`
 ```
 
-### P3-5 · FIXED · `README.md:274–276`, `README.md:321`
+### P3-5 · FIXED · `README.md:274–276`, `README.md:322`
 
 "the only two link treatments on the page" → "the only two **text-link** treatments on the
 page", matching `src/components/ExternalLink.tsx:8`'s own correctly-scoped wording ("Every
@@ -1831,7 +1831,7 @@ was reworded the same way for consistency.
 ```
 $ grep -n "text-link" README.md
 README.md:275:`LINK_ON_FROST` in `src/components/ExternalLink.tsx` are the only two **text-link**
-README.md:321:    ExternalLink.tsx         same-site vs new-tab routing + the two text-link treatments
+README.md:322:    ExternalLink.tsx         same-site vs new-tab routing + the two text-link treatments
 ```
 
 ### P5-9 · FIXED · `ASSETS.md:118`
@@ -1961,7 +1961,7 @@ EXIT=1
 $ grep -c '390px' README.md
 0
 $ grep -n '768\|md:' README.md
-317:    SiteHeader.tsx           fixed header, collapses to a menu below `md` (768px)
+318:    SiteHeader.tsx           fixed header, collapses to a menu below `md` (768px)
 
 $ grep -c "hackbu.org/resources'" src/lib/links.ts
 1
@@ -2512,25 +2512,25 @@ file** at which the closure entry's `###` heading sits.
 | P3-6 | note | **FIXED** | Phase 3 | `08-fix-log.md:804` — `### P3-6 · FIXED · index.html:98, components.html:30` |
 | P5-1 | **medium** | **FIXED** (prerender) | Phase 4 | `08-fix-log.md:1011` — `### P5-1 · FIXED · scripts/prerender.mjs (new), src/entry-server.tsx (new)` |
 | P5-8 | note | **FIXED** (by P5-1) | Phase 4 | `08-fix-log.md:1098` — `### P5-8 · FIXED (by P5-1) · dist/index.html body` |
-| P5-5 | low | **FIXED** | Phase 4 | `08-fix-log.md:1124` — `### P5-5 · FIXED · vite.config.ts:62-127, :143` |
+| P5-5 | low | **FIXED** | Phase 4 | `08-fix-log.md:1124` — `### P5-5 · FIXED · vite.config.ts:62-127, :183` |
 | P5-13 | note | **FIXED** | Phase 4 | `08-fix-log.md:1225` — `### P5-13 · FIXED · src/index.css:31-90` |
 | P5-6 | note | **FIXED** | Phase 4 | `08-fix-log.md:1285` — `### P5-6 · FIXED · same change as P5-13` |
 | P5-2 | low | **FIXED** | Phase 4 | `08-fix-log.md:1305` — `### P5-2 · FIXED · src/App.tsx:1,39,107 and four more sites` |
 | P5-3 | low | **FIXED** | Phase 4 | `08-fix-log.md:1356` — `### P5-3 · FIXED · vercel.json:10-32, README.md:111-115` |
 | P6-1 | low | **FIXED** | Phase 5 | `08-fix-log.md:1544` — `### P6-1 · FIXED · ASSETS.md:29, :34` |
 | P6-2 | low | **FIXED** | Phase 5 | `08-fix-log.md:1560` — `### P6-2 · FIXED · ASSETS.md:154` |
-| P6-3 | note | **FIXED** | Phase 5 | `08-fix-log.md:1576` — `### P6-3 · FIXED · ASSETS.md:143–156` |
-| P6-4 | low | **FIXED** | Phase 5 | `08-fix-log.md:1605` — `### P6-4 · FIXED · README.md:317` |
+| P6-3 | note | **FIXED** | Phase 5 | `08-fix-log.md:1576` — `### P6-3 · FIXED · ASSETS.md:144–157` |
+| P6-4 | low | **FIXED** | Phase 5 | `08-fix-log.md:1605` — `### P6-4 · FIXED · README.md:318` |
 | P6-5 | note | **FIXED** | Phase 5 | `08-fix-log.md:1617` — `### P6-5 · FIXED · README.md:195` |
-| P6-6 | note | **FIXED** | Phase 5 | `08-fix-log.md:1628` — `### P6-6 · FIXED · README.md:301–336` |
+| P6-6 | note | **FIXED** | Phase 5 | `08-fix-log.md:1628` — `### P6-6 · FIXED · README.md:302–337` |
 | P6-7 | note | **FIXED** | Phase 5 | `08-fix-log.md:1648` — `### P6-7 · FIXED · src/components/HeroClouds.tsx:145` |
 | P6-8 | note | **FIXED** | Phase 5 | `08-fix-log.md:1678` — `### P6-8 · FIXED · 8 files, 15 sites` |
-| P6-9 | note | **FIXED** | Phase 5 | `08-fix-log.md:1708` — `### P6-9 · FIXED · src/lib/motion.ts:44–49` |
+| P6-9 | note | **FIXED** | Phase 5 | `08-fix-log.md:1708` — `### P6-9 · FIXED · src/lib/motion.ts:45–49` |
 | P6-10 | note | **FIXED** | Phase 5 | `08-fix-log.md:1729` — `### P6-10 · FIXED · ASSETS.md:78–84, generate-images.mjs:8–11` |
 | P3-2 | low | **FIXED** | Phase 5 | `08-fix-log.md:1764` — `### P3-2 · FIXED · README.md:261` |
 | P3-3 | low | **FIXED** | Phase 5 | `08-fix-log.md:1779` — `### P3-3 · FIXED · README.md:262, src/index.css:122–130` |
 | P3-4 | note | **DOCUMENTED** (comment reworded) | Phase 5 | `08-fix-log.md:1796` — `### P3-4 · DOCUMENTED · src/App.tsx:70–77` |
-| P3-5 | note | **FIXED** | Phase 5 | `08-fix-log.md:1821` — `### P3-5 · FIXED · README.md:274–276, :321` |
+| P3-5 | note | **FIXED** | Phase 5 | `08-fix-log.md:1821` — `### P3-5 · FIXED · README.md:274–276, :322` |
 | P5-9 | note | **FIXED** | Phase 5 | `08-fix-log.md:1837` — `### P5-9 · FIXED · ASSETS.md:118` |
 | P5-10 | note | **FIXED** | Phase 5 | `08-fix-log.md:1851` — `### P5-10 · FIXED · ASSETS.md:138` |
 | P5-11 | note | **FIXED** | Phase 5 | `08-fix-log.md:1866` — `### P5-11 · FIXED · index.html:26–31` |
@@ -2641,7 +2641,10 @@ second cycle) P5-2 now cite the lines as they stand at the final commit, and the
 headings quoted in the `## Reconciliation` table's anchor column — a second copy of the same cites
 that the first renumbering pass missed — were renumbered to match; the bodies of those entries
 still quote the transcripts captured at the time, and the reconciliation anchors
-(`08-fix-log.md:<n>`) were unaffected. The second cycle also found the P5-7 rationale for the
+(`08-fix-log.md:<n>`) were unaffected. A targeted re-check after the second cycle found the
+same +1 drift in five headings that cite documentation files (`README.md`, `ASSETS.md`) and
+`src/lib/motion.ts` — files the two renumbering passes had not covered — and one stale
+reconciliation row (P5-5); all renumbered. The second cycle also found the P5-7 rationale for the
 drift tracks' retained `will-change` contradicted by P4-4 (see the corrected paragraph in that
 entry and the matching comment at `src/components/HeroClouds.tsx`).
 
