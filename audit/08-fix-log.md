@@ -965,7 +965,7 @@ $ ls -l dist/assets/          # AFTER
 -rw-r--r-- 1 danz3 197609  23664 inter-latin-400-normal-C38fXH4l.woff2
 -rw-r--r-- 1 danz3 197609  24272 inter-latin-500-normal-Cerq10X2.woff2
 # 8 files, 458,135 B   (-129,226 B: -46,181 shared chunk, -84,492 three .woff, -655 font CSS,
-#                       +2,142 of CSS and entry-chunk churn)
+#                       +2,102 of CSS and entry-chunk churn)
 
 $ ls -l dist/*.html
 -rw-r--r-- 1 danz3 197609   3307 dist/404.html          # byte-identical to public/404.html
