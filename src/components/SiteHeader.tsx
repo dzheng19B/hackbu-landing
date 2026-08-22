@@ -24,7 +24,7 @@ import { DISCORD_URL, NAV_LINKS } from '../lib/links'
  * ExternalLink.tsx.
  *
  * Off-site destinations go through <ExternalLink> (new tab). In-site ones
- * (About us) are ordinary same-tab anchors.
+ * (About us, Schedule) are ordinary same-tab anchors.
  */
 
 const NAV_LINK_CLASSES = `text-body ${LINK_ON_CLOUD}`

@@ -20,3 +20,4 @@
 @import './index.css';
 
 @source not "./sheet";
+@source not "./schedule";

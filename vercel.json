@@ -6,8 +6,10 @@
   "rewrites": [
     { "source": "/about", "destination": "/about.html" },
     { "source": "/about/", "destination": "/about.html" },
+    { "source": "/schedule", "destination": "/schedule.html" },
+    { "source": "/schedule/", "destination": "/schedule.html" },
     { "source": "/components", "destination": "/components.html" },
     { "source": "/components/", "destination": "/components.html" },
-    { "source": "/((?!components|about).*)", "destination": "/index.html" }
+    { "source": "/((?!components|about|schedule).*)", "destination": "/index.html" }
   ]
 }
