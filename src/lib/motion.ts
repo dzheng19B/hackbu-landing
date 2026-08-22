@@ -1,4 +1,10 @@
-import { createContext, useContext } from 'react'
+import {
+  createContext,
+  useContext,
+  useEffect,
+  useLayoutEffect,
+  useState,
+} from 'react'
 import { cubicBezier, useReducedMotion, type MotionValue } from 'motion/react'
 
 /**
@@ -37,9 +43,40 @@ import { cubicBezier, useReducedMotion, type MotionValue } from 'motion/react'
  *
  * Note: motion reads the media query once at mount and does not re-subscribe,
  * so a mid-session OS change takes effect on the next page load.
+ *
+ * **Why it is gated on having mounted.** Both pages are prerendered at build
+ * time (P5-1), and a server has no media queries: motion's own hook is written
+ * for that and returns `null` there, which the `?? false` below turns into the
+ * full-motion branch. The client then has to *agree* with that on its first
+ * render or React 19 reports a hydration mismatch — and it would not, because
+ * `matchMedia` is available and answers truthfully from the very first render.
+ * A reduced-motion user would get an error in the console and a subtree React
+ * throws away and re-renders from scratch.
+ *
+ * So the media query is not allowed to reach the returned value until after
+ * the first render has committed. `mounted` is `false` on the server and on
+ * the client's first render — the two agree, hydration is clean — and the
+ * effect below flips it, at which point the real preference takes over and
+ * every consumer re-renders into its resting frame.
+ *
+ * The effect is a *layout* effect in the browser, so that flip happens in the
+ * same frame as hydration, before the browser paints: a reduced-motion user
+ * never sees a frame of the moving version. It falls back to `useEffect` where
+ * there is no DOM, because a layout effect on the server does nothing and
+ * React warns about it.
  */
+const useIsomorphicLayoutEffect =
+  typeof document === 'undefined' ? useEffect : useLayoutEffect
+
 export function usePrefersReducedMotion(): boolean {
-  return useReducedMotion() ?? false
+  const prefersReducedMotion = useReducedMotion() ?? false
+  const [mounted, setMounted] = useState(false)
+
+  useIsomorphicLayoutEffect(() => {
+    setMounted(true)
+  }, [])
+
+  return mounted && prefersReducedMotion
 }
 
 /* -------------------------------------------------------------------------- */

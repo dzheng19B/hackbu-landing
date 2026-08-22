@@ -45,6 +45,88 @@ function siteOrigin(): Plugin {
 }
 
 /**
+ * The three self-hosted faces, by the base name `@fontsource` gives them, in
+ * the order they are preloaded. `src/index.css` declares one `@font-face` per
+ * entry here and Vite emits each as a content-hashed asset — so the hashes are
+ * read back out of the bundle below rather than written down anywhere.
+ *
+ * All three, not just the two above the fold. Fraunces is display-only and the
+ * hero carries no type, so the earlier reading was that preloading it would
+ * compete with the LCP image for bandwidth; against that, `<IntroSection>`'s
+ * <h1> is the first thing under the hero and is set in it, `font-display: swap`
+ * means a late face is a reflow rather than a delay, and 18 KB is small next to
+ * the 495 KB of imagery the same connection is already carrying. Preloading the
+ * set the page actually uses is the simpler contract, and it is the whole set:
+ * Fraunces 600, Inter 400, Inter 500 and nothing else.
+ */
+const PRELOADED_FONTS = [
+  'fraunces-latin-600-normal',
+  'inter-latin-400-normal',
+  'inter-latin-500-normal',
+]
+
+/**
+ * `<link rel="preload" as="font">` for those three, on the landing page.
+ *
+ * Without it the faces cannot be requested until the stylesheet has arrived
+ * *and* style resolution has found an element using each family — which is late,
+ * and above-the-fold text on this page is Inter (the header's nav links are
+ * Inter 500, body copy is Inter 400). The preload starts them alongside the
+ * stylesheet instead. See P5-5.
+ *
+ * The filenames are content-hashed, so they cannot be written by hand. `order:
+ * 'post'` runs this after Vite has emitted the bundle, which is what makes
+ * `ctx.bundle` available to look them up in; in dev `ctx.bundle` is undefined
+ * and the hook is a no-op, which is correct — the dev server serves the faces
+ * unhashed straight out of `node_modules` and there is nothing to preload.
+ *
+ * `crossorigin` is not optional here even though the fonts are same-origin:
+ * fonts are always fetched in CORS mode, and a preload whose mode does not
+ * match the later fetch is a second download rather than a warm cache.
+ *
+ * The tags are written in before the stylesheet link rather than appended to
+ * the end of the head, so the three font requests are queued ahead of the
+ * request that would otherwise have to complete before they could start.
+ *
+ * `index.html` only. The component sheet is internal, is never a cold first
+ * visit that matters, and is `noindex` — one page's worth of head is enough.
+ */
+function fontPreload(): Plugin {
+  let base = '/'
+
+  return {
+    name: 'hackbu-font-preload',
+    configResolved(config) {
+      base = config.base
+    },
+    transformIndexHtml: {
+      order: 'post',
+      handler(html, ctx) {
+        if (!ctx.bundle || !ctx.path.endsWith('/index.html')) return
+
+        const emitted = Object.keys(ctx.bundle).filter((name) =>
+          name.endsWith('.woff2'),
+        )
+
+        const links = PRELOADED_FONTS.map((face) => {
+          const file = emitted.find((name) => name.includes(`${face}-`))
+          if (!file) {
+            throw new Error(
+              `fontPreload: no emitted .woff2 asset for "${face}". Did src/index.css stop declaring it?`,
+            )
+          }
+          return `    <link rel="preload" as="font" type="font/woff2" crossorigin href="${base}${file}" />`
+        }).join('\n')
+
+        const stylesheet = html.indexOf('<link rel="stylesheet"')
+        const at = stylesheet === -1 ? html.indexOf('</head>') : stylesheet
+        return `${html.slice(0, at)}${links.trim()}\n    ${html.slice(at)}`
+      },
+    },
+  }
+}
+
+/**
  * Two entry points, two pages:
  *
  *   index.html       the landing page          -> dist/index.html
@@ -58,7 +140,7 @@ function siteOrigin(): Plugin {
  */
 // https://vite.dev/config/
 export default defineConfig({
-  plugins: [react(), tailwindcss(), siteOrigin()],
+  plugins: [react(), tailwindcss(), siteOrigin(), fontPreload()],
   build: {
     outDir: 'dist',
     rollupOptions: {

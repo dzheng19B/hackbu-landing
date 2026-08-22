@@ -40,7 +40,22 @@ export function SiteFooter() {
             className={`${FOOTER_LINK_CLASSES} underline underline-offset-4`}
           />
           <p className="text-caption text-pine/90">
-            © {new Date().getFullYear()} HackBU · Binghamton University
+            {/*
+             * The one value on the page that the server and the client can
+             * legitimately disagree about. `npm run build` prerenders this
+             * footer (P5-1), so the year in the shipped HTML is the year of
+             * the *build*, while the same expression on the client reads the
+             * year of the *visit* — identical every day except the ones after
+             * a New Year with no deploy in between, on which React 19 would
+             * log the difference as a hydration error.
+             *
+             * `suppressHydrationWarning` is React's documented escape hatch
+             * for exactly this case (its own example is a timestamp). It is
+             * scoped to this one <span>: nothing else in the tree is allowed
+             * to differ, and a mismatch anywhere else still surfaces.
+             */}©{' '}
+            <span suppressHydrationWarning>{new Date().getFullYear()}</span>{' '}
+            HackBU · Binghamton University
           </p>
         </div>
       </Container>

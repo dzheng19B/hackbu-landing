@@ -28,6 +28,68 @@
 @source not inline("transition");
 
 /*
+ * Self-hosted faces — exactly the three the finished pages use, and no more.
+ * Fraunces 600 is every display heading; Inter 400 is body copy and Inter 500
+ * is the eyebrows and button labels. (The logo is artwork, not type.)
+ *
+ * These are hand-written rather than the three `@fontsource` `latin-*.css`
+ * imports that used to sit in `src/main.tsx` / `src/sheet/main.tsx`, for two
+ * reasons:
+ *
+ *   - Both entries imported the same three stylesheets, so Rollup hoisted them
+ *     into the *shared* chunk and Vite emitted them as a second, 655-byte
+ *     `<link rel="stylesheet">` that blocked first paint alongside the real
+ *     one (P5-13). Declaring them here folds them into each page's own
+ *     stylesheet: `src/landing.css` `@import`s this file (a CSS-level import,
+ *     inlined) and `src/sheet/main.tsx` imports it directly, so neither copy
+ *     is a shared JS module and there is no shared CSS chunk left to link.
+ *
+ *   - `@fontsource` publishes no woff2-only entrypoint, so its `src:` lists a
+ *     `.woff` rung after the woff2 one. WOFF2 is Baseline in every current
+ *     engine, and a browser old enough to need the `.woff` never sees the
+ *     woff2 rung either — so those three files (84,492 B) shipped in `dist/`
+ *     and could never be fetched by anyone (P5-6). Dropping the rung drops the
+ *     files.
+ *
+ * Everything else is copied verbatim from `@fontsource`'s own `latin-*.css`:
+ * same family names, same weights, `font-display: swap`. There is deliberately
+ * no `unicode-range` — `@fontsource`'s latin entrypoints declare none, because
+ * the Latin subsetting is baked into the file rather than expressed in CSS.
+ *
+ * The `url()`s are bare package specifiers, which Vite's CSS asset resolver
+ * follows into `node_modules` and rewrites to the hashed `/assets/*.woff2`
+ * emitted alongside the stylesheet. `vite.config.ts`'s `fontPreload` plugin
+ * reads those same hashed names back out of the bundle to emit the three
+ * `<link rel="preload" as="font">` hints in `index.html` (P5-5).
+ */
+@font-face {
+  font-family: 'Fraunces';
+  font-style: normal;
+  font-display: swap;
+  font-weight: 600;
+  src: url('@fontsource/fraunces/files/fraunces-latin-600-normal.woff2')
+    format('woff2');
+}
+
+@font-face {
+  font-family: 'Inter';
+  font-style: normal;
+  font-display: swap;
+  font-weight: 400;
+  src: url('@fontsource/inter/files/inter-latin-400-normal.woff2')
+    format('woff2');
+}
+
+@font-face {
+  font-family: 'Inter';
+  font-style: normal;
+  font-display: swap;
+  font-weight: 500;
+  src: url('@fontsource/inter/files/inter-latin-500-normal.woff2')
+    format('woff2');
+}
+
+/*
  * The site header is fixed and opaque (h-16, h-20 from `sm`), so anything the
  * browser scrolls to the top of the viewport lands underneath it. Section
  * anchors already carry `scroll-mt-24`, but sequential focus navigation scrolls
@@ -85,7 +147,7 @@
   --color-fern: #339966;
 
   /* Typography — Fraunces for display, Inter for body.
-     Faces are self-hosted via @fontsource (imported in src/main.tsx). */
+     Faces are self-hosted; the three @font-face rules are above. */
   --font-display: 'Fraunces', ui-serif, Georgia, 'Times New Roman', serif;
   --font-sans: 'Inter', ui-sans-serif, system-ui, -apple-system, 'Segoe UI',
     Roboto, Helvetica, Arial, sans-serif;

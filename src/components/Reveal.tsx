@@ -1,5 +1,5 @@
 import type { ReactNode } from 'react'
-import { cubicBezier, motion, type MotionProps } from 'motion/react'
+import { cubicBezier, m, type MotionProps } from 'motion/react'
 import { usePrefersReducedMotion } from '../lib/motion'
 
 /**
@@ -74,9 +74,9 @@ export function Reveal({ children, className = '', delay = 0 }: RevealProps) {
       }
 
   return (
-    <motion.div className={className} {...motionProps}>
+    <m.div className={className} {...motionProps}>
       {children}
-    </motion.div>
+    </m.div>
   )
 }
 
@@ -106,24 +106,24 @@ export function RevealGroup({
 
   if (as === 'ul') {
     return (
-      <motion.ul className={className} {...motionProps}>
+      <m.ul className={className} {...motionProps}>
         {children}
-      </motion.ul>
+      </m.ul>
     )
   }
 
   if (as === 'dl') {
     return (
-      <motion.dl className={className} {...motionProps}>
+      <m.dl className={className} {...motionProps}>
         {children}
-      </motion.dl>
+      </m.dl>
     )
   }
 
   return (
-    <motion.div className={className} {...motionProps}>
+    <m.div className={className} {...motionProps}>
       {children}
-    </motion.div>
+    </m.div>
   )
 }
 
@@ -148,15 +148,15 @@ export function RevealItem({
 
   if (as === 'li') {
     return (
-      <motion.li className={className} {...motionProps}>
+      <m.li className={className} {...motionProps}>
         {children}
-      </motion.li>
+      </m.li>
     )
   }
 
   return (
-    <motion.div className={className} {...motionProps}>
+    <m.div className={className} {...motionProps}>
       {children}
-    </motion.div>
+    </m.div>
   )
 }

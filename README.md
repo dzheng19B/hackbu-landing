@@ -51,7 +51,7 @@ Then open the URL Vite prints (usually `http://localhost:5173`).
 | Command | What it does |
 | --- | --- |
 | `npm run dev` | Vite dev server with HMR |
-| `npm run build` | Lints, type-checks (`tsc -b`), then builds to `dist/` |
+| `npm run build` | Lints, type-checks (`tsc -b`), builds to `dist/`, then prerenders both pages into it |
 | `npm run preview` | Serves the built `dist/` locally |
 | `npm run typecheck` | `tsc -b --noEmit` — types only, no output |
 | `npm run lint` | `oxlint --deny-warnings` — any diagnostic is a failure |
@@ -105,7 +105,14 @@ npx vercel deploy --prod
 ```
 
 Image derivatives are **committed**, so `npm run images` does not run during a deploy —
-a build is lint, `tsc -b` and `vite build`, nothing else. Run it by hand whenever the artwork changes (see below).
+a build is lint, `tsc -b`, `vite build` and `node scripts/prerender.mjs`, nothing else. Run
+it by hand whenever the artwork changes (see below).
+
+`vercel.json` also declares a `headers` block. `/assets/(.*)` — everything Vite emits, all
+of it content-hashed — is served `public, max-age=31536000, immutable`, because a hashed
+filename cannot change meaning and never needs revalidating; `/artwork/(.*)` and
+`/brand/(.*)` get `public, max-age=86400, must-revalidate` instead, because those filenames
+are stable across `npm run images` and a day-old copy has to be able to notice.
 
 ### When the custom domain lands
 

@@ -1,5 +1,5 @@
 import { useState, type CSSProperties } from 'react'
-import { motion, useMotionValueEvent, useTransform } from 'motion/react'
+import { m, useMotionValueEvent, useTransform } from 'motion/react'
 import { cloudSources } from '../lib/images'
 import { rangeProgress, useHeroScroll } from '../lib/motion'
 
@@ -798,12 +798,12 @@ function CloudLayer({ layer }: { layer: CloudLayerSpec }) {
   }
 
   return (
-    <motion.div
+    <m.div
       data-cloud-layer={layer.id}
       className="absolute inset-0 will-change-transform"
       style={{ opacity, y }}
     >
-      <motion.div
+      <m.div
         data-cloud-drift
         className="absolute inset-y-0 left-0 w-[calc(100%*var(--cloud-sets))] will-change-transform"
         {...driftLoop(layer.driftSeconds, drifting)}
@@ -811,8 +811,8 @@ function CloudLayer({ layer }: { layer: CloudLayerSpec }) {
         {Array.from({ length: SET_COUNT }, (_, index) => (
           <CloudSet key={index} layer={layer} index={index} />
         ))}
-      </motion.div>
-    </motion.div>
+      </m.div>
+    </m.div>
   )
 }
 

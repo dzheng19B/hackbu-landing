@@ -1,21 +1,33 @@
 import { StrictMode } from 'react'
-import { createRoot } from 'react-dom/client'
+import { createRoot, hydrateRoot } from 'react-dom/client'
 
 /*
- * The same three faces the landing page loads, and no more — the sheet renders
- * the real components, so it needs exactly the fonts they are drawn in.
- * (Fraunces 600 for display, Inter 400/500 for body and labels.)
+ * `../index.css` carries the three `@font-face` rules as well as the tokens, so
+ * the sheet is drawn in exactly the faces the landing page uses (Fraunces 600
+ * for display, Inter 400/500 for body and labels) with no separate import.
  */
-import '@fontsource/fraunces/latin-600.css'
-import '@fontsource/inter/latin-400.css'
-import '@fontsource/inter/latin-500.css'
-
 import '../index.css'
 import './sheet.css'
 import { ComponentSheet } from './ComponentSheet'
 
-createRoot(document.getElementById('root')!).render(
+const mount = document.getElementById('root')!
+
+const tree = (
   <StrictMode>
     <ComponentSheet />
-  </StrictMode>,
+  </StrictMode>
 )
+
+/*
+ * Prerendered and hydrated, like the landing page, and dev-server-rendered for
+ * the same reason — see the longer note in src/main.tsx. The sheet gains
+ * nothing from a fast first paint (it is an internal, noindex page), but it
+ * renders the same components, so building it the same way is what keeps the
+ * SSR path honest: if a component ever reaches for the browser during render,
+ * both pages fail rather than only one.
+ */
+if (import.meta.env.DEV) {
+  createRoot(mount).render(tree)
+} else {
+  hydrateRoot(mount, tree)
+}

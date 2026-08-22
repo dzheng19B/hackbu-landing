@@ -921,3 +921,473 @@ $ git status --short -- public/
 ```
 
 Nothing modified, nothing deleted; `artwork/` and `brand-source/` were not opened.
+
+## Phase 4 — delivery and performance
+
+Seven findings: P5-1 (the audit's only `medium`), P5-5, P5-3, P5-8, P5-13, P5-2, P5-6. Files
+touched: `src/entry-server.tsx` (new), `scripts/prerender.mjs` (new), `package.json`,
+`vite.config.ts`, `src/index.css`, `src/main.tsx`, `src/sheet/main.tsx`, `src/lib/motion.ts`,
+`src/App.tsx`, `src/sheet/ComponentSheet.tsx`, `src/components/Hero.tsx`,
+`src/components/HeroClouds.tsx`, `src/components/Reveal.tsx`, `src/components/SiteFooter.tsx`,
+`vercel.json`, `README.md`.
+
+**What this phase cannot observe.** The `Cache-Control` policy in P5-3 is declared, not measured:
+there is no Vercel deployment reachable from this environment and none was created, so no header
+below was read off a response. Everything else in this section was run.
+
+**The before/after listing**, both from `npm run build` on this machine — the "before" is a clean
+build of `f820e62` (the branch tip this phase started from), the "after" is the tree as it stands
+at the end of the phase:
+
+```
+$ ls -l dist/assets/          # BEFORE (f820e62)
+-rw-r--r-- 1 danz3 197609 329229 SiteFooter-Chc-VP1O.js
+-rw-r--r-- 1 danz3 197609    655 SiteFooter-DgSLZxXM.css
+-rw-r--r-- 1 danz3 197609  20872 components-C1eEHGgJ.css
+-rw-r--r-- 1 danz3 197609  53598 components-DP4er_qM.js
+-rw-r--r-- 1 danz3 197609  18096 fraunces-latin-600-normal-BFCDtZfi.woff2
+-rw-r--r-- 1 danz3 197609  22512 fraunces-latin-600-normal-DL5QCzvS.woff
+-rw-r--r-- 1 danz3 197609  17593 index-CxjLmj0A.css
+-rw-r--r-- 1 danz3 197609  14890 index-KjEM9hHe.js
+-rw-r--r-- 1 danz3 197609  23664 inter-latin-400-normal-C38fXH4l.woff2
+-rw-r--r-- 1 danz3 197609  30696 inter-latin-400-normal-CyCys3Eg.woff
+-rw-r--r-- 1 danz3 197609  31284 inter-latin-500-normal-BL9OpVg8.woff
+-rw-r--r-- 1 danz3 197609  24272 inter-latin-500-normal-Cerq10X2.woff2
+# 12 files, 587,361 B
+
+$ ls -l dist/assets/          # AFTER
+-rw-r--r-- 1 danz3 197609 283048 SiteFooter-VOpZu2sT.js
+-rw-r--r-- 1 danz3 197609  53659 components-CDGg4yHc.js
+-rw-r--r-- 1 danz3 197609  21331 components-xZOInl1b.css
+-rw-r--r-- 1 danz3 197609  18096 fraunces-latin-600-normal-BFCDtZfi.woff2
+-rw-r--r-- 1 danz3 197609  16013 index-HiSFlvET.js
+-rw-r--r-- 1 danz3 197609  18052 index-JaSjmbl1.css
+-rw-r--r-- 1 danz3 197609  23664 inter-latin-400-normal-C38fXH4l.woff2
+-rw-r--r-- 1 danz3 197609  24272 inter-latin-500-normal-Cerq10X2.woff2
+# 8 files, 458,135 B   (-129,226 B: -46,181 shared chunk, -84,492 three .woff, -655 font CSS,
+#                       +2,142 of CSS and entry-chunk churn)
+
+$ ls -l dist/*.html
+-rw-r--r-- 1 danz3 197609   3307 dist/404.html          # byte-identical to public/404.html
+-rw-r--r-- 1 danz3 197609 111186 dist/components.html   # gz 20,009
+-rw-r--r-- 1 danz3 197609  47927 dist/index.html        # gz  7,612  (was 5,013 / gz 2,232)
+```
+
+Every gate the build runs, at the end of the phase:
+
+```
+$ npm run typecheck ; echo "exit $?"
+> tsc -b --noEmit
+exit 0
+$ npm run lint ; echo "exit $?"
+> oxlint --deny-warnings
+exit 0
+$ npm run build ; echo "exit $?"
+> npm run lint && tsc -b && vite build && node scripts/prerender.mjs
+* 448 modules transformed.
+* built in 372ms
+prerendered dist/index.html (42596 chars)
+prerendered dist/components.html (109247 chars)
+exit 0
+```
+
+The sheet is still absent from the landing page's chunks — the same three markers Phase 1 used,
+over the two chunks `dist/index.html` actually references versus the sheet's own:
+
+```
+$ grep -o '/assets/[^"]*\.js' dist/index.html
+/assets/index-HiSFlvET.js
+/assets/SiteFooter-VOpZu2sT.js
+$ for f in dist/assets/*.js; do printf '%s: isolation=%s buyscroll=%s heroprog=%s\n' "$f" \
+    "$(grep -ac 'Primitives in isolation' $f)" "$(grep -ac 'buy scroll distance' $f)" \
+    "$(grep -ac 'HeroScroll.progress' $f)"; done
+dist/assets/SiteFooter-VOpZu2sT.js: isolation=0 buyscroll=0 heroprog=0
+dist/assets/components-CDGg4yHc.js: isolation=1 buyscroll=1 heroprog=1
+dist/assets/index-HiSFlvET.js:      isolation=0 buyscroll=0 heroprog=0
+```
+
+---
+
+### P5-1 · FIXED · `scripts/prerender.mjs` (new), `src/entry-server.tsx` (new), `package.json:11`, `src/main.tsx:47-51`, `src/sheet/main.tsx:29-33`, `src/lib/motion.ts:68-80`, `src/components/SiteFooter.tsx:43-58`
+
+**The decision: prerender, both entries.** `npm run build` is now
+`npm run lint && tsc -b && vite build && node scripts/prerender.mjs`. The last step opens a Vite
+dev server in `middlewareMode` inside its own process — no port bound, no HMR socket, closed in a
+`finally` — `ssrLoadModule`s `src/entry-server.tsx`, calls one export per page, and writes the
+returned string into that page's `<div id="root">`.
+
+**Why that mechanism and not `vite build --ssr`.** The alternative emits a server bundle that has
+to be written somewhere, kept out of `dist/` (Vercel deploys `dist/` verbatim), kept out of git,
+and cleaned up — four new obligations to keep an artefact nobody deploys. The dev-server route
+writes no file at all except the two HTML files it rewrites, and it runs `src/entry-server.tsx`
+through the project's own transform pipeline, so the SSR render and the client build cannot drift
+in how they read TypeScript, JSX or module resolution.
+
+**Why the *built* HTML and not the source template.** Everything `vite build` puts in the head has
+to survive: the hashed script and stylesheet links, the `%SITE_ORIGIN%` substitution from Phase 3's
+`siteOrigin` plugin, the LCP `<link rel="preload" as="image">`, and the three font preloads P5-5
+adds. The script therefore replaces exactly one literal, `<div id="root"></div>`, and adds no tag
+to the head — so the prerendered `<picture>` in the body does not duplicate or contradict the
+image preload declared above it. If that literal ever stops matching, the build throws rather than
+shipping a blank page.
+
+```
+$ grep -c 'id="root"' dist/index.html
+1
+$ node -e "const h=require('fs').readFileSync('dist/index.html','utf8');
+           console.log('root inner chars:', h.match(/<div id=.root.>([\s\S]*)<\/div>/)[1].length)"
+root inner chars: 42596
+$ grep -c '<picture' dist/index.html      # line count; the prerendered body is one line
+3
+$ grep -o '<picture' dist/index.html | wc -l
+51
+$ grep -n 'hydrateRoot(' src/main.tsx src/sheet/main.tsx
+src/main.tsx:50:  hydrateRoot(mount, tree)
+src/sheet/main.tsx:32:  hydrateRoot(mount, tree)
+```
+
+The first frame in the HTML is the frame the client computes at scroll 0 — campus at `scale(3)`,
+the three cloud layers at their resting opacity with no lift, the three drift tracks at
+`LOOP_START`:
+
+```
+$ grep -o '<img[^>]*Campus[^>]*>' dist/index.html
+<img src="/artwork/campus/Campus.png" alt="Illustration of the Binghamton University campus..."
+ width="1672" height="941" draggable="false" decoding="async" fetchPriority="high"
+ class="h-full w-full origin-top object-[52%_0%] object-cover select-none will-change-transform"
+ style="transform:scale(3)"/>
+$ grep -o '<div data-cloud-layer[^>]*>' dist/index.html
+<div data-cloud-layer="far"  class="absolute inset-0 will-change-transform" style="opacity:0.5;transform:none">
+<div data-cloud-layer="mid"  class="absolute inset-0 will-change-transform" style="opacity:0.75;transform:none">
+<div data-cloud-layer="near" class="absolute inset-0 will-change-transform" style="opacity:1;transform:none">
+$ grep -o '<div data-cloud-drift[^>]*>' dist/index.html | head -1
+<div data-cloud-drift="true" class="absolute inset-y-0 left-0 w-[calc(100%*var(--cloud-sets))] will-change-transform" style="transform:translateX(-25%)">
+```
+
+**The two things that had to change for hydration to be clean.**
+
+1. `usePrefersReducedMotion()` (`src/lib/motion.ts:68-80`) is now gated on having mounted. motion's
+   own `useReducedMotion()` returns `null` where there is no `window`, which the `?? false` turns
+   into the full-motion branch on the server — but on the client it answers truthfully from the
+   *first* render, so a reduced-motion user's first render would disagree with the prerendered
+   markup in `h-dvh` vs `h-[260dvh]`, in the presence of `[data-cloud-drift]`, and in
+   `will-change-transform`. A `mounted` flag that is `false` on the server and on the first client
+   render removes the disagreement; the effect that flips it is a **layout** effect in the browser
+   (`useEffect` where there is no DOM, so React does not warn about a no-op layout effect during
+   SSR), so the swap to the resting frame lands in the same frame as hydration and is never
+   painted. The live readout below confirms both branches.
+
+2. `src/components/SiteFooter.tsx` renders `new Date().getFullYear()`. The server renders it at
+   *build* time and the client at *visit* time — equal every day except the ones after a New Year
+   with no deploy between, on which React 19 logs the difference as an error. It is now wrapped in
+   a `<span suppressHydrationWarning>`, React's documented escape hatch for exactly this (its own
+   example is a timestamp), scoped to that one span so a mismatch anywhere else still surfaces.
+
+**The dev server is the one place that still client-renders**, and deliberately: `vite dev` serves
+the *source* `index.html`, whose root div is empty, and hydrating an empty root is itself a
+mismatch — React 19 throws "Hydration failed because the server rendered HTML didn't match the
+client" and re-renders the tree, which was observed on 5173 before the branch was added.
+`src/main.tsx:47` and `src/sheet/main.tsx:29` therefore branch on `import.meta.env.DEV`, which Vite
+folds to `false` in production, so the shipped bundle keeps only the `hydrateRoot` arm.
+
+Nothing server-side reaches `dist/`: neither HTML entry imports `src/entry-server.tsx`, so it is
+not in the client module graph, and `scripts/prerender.mjs` writes only the two HTML files.
+
+---
+
+### P5-8 · FIXED (by P5-1) · `dist/index.html` body
+
+Consequence row, closed by the prerender and by nothing else — no image preload was added, which
+the finding is explicit about (`loading="lazy"` would be wrong in-viewport, and preloading twelve
+decorative cutouts would compete with the LCP image). The cloud `<picture>` elements and the campus
+`<img>` are now in the HTML response, so the preload scanner sees the elements rather than only the
+hint. The live network trace shows all twelve cloud AVIFs requested on load:
+
+```
+$ node p4-net.mjs 9338 http://localhost:4173/      # built output, headless Edge
+1x  200  /artwork/campus/Campus-960.avif
+1x  200  /artwork/clouds/cloud-1.avif ... cloud-12.avif      (12 rows, all 200, each once)
+1x  200  /assets/index-HiSFlvET.js
+1x  200  /assets/SiteFooter-VOpZu2sT.js
+1x  200  /assets/index-JaSjmbl1.css
+1x  200  /assets/fraunces-latin-600-normal-BFCDtZfi.woff2
+1x  200  /assets/inter-latin-400-normal-C38fXH4l.woff2
+1x  200  /assets/inter-latin-500-normal-Cerq10X2.woff2
+total requests: 22
+```
+
+Every asset is fetched exactly once — the campus AVIF included, so the `imagesrcset` preload and
+the `<picture>` still resolve to the same URL.
+
+---
+
+### P5-5 · FIXED · `vite.config.ts:62-127` (`PRELOADED_FONTS`, `fontPreload()`), `vite.config.ts:143`
+
+A `transformIndexHtml` plugin at `order: 'post'`, reading `ctx.bundle` for the emitted `.woff2`
+asset names, so no hash is written by hand. It runs on `index.html` only (the sheet is internal and
+`noindex`), and in dev `ctx.bundle` is undefined and the hook is a no-op — correct, because the dev
+server serves the faces unhashed out of `node_modules`. The tags are inserted *before* the
+stylesheet link rather than appended to the end of the head, so the three font requests queue ahead
+of the request that would otherwise have to finish before they could start.
+
+**All three faces, not the two above the fold.** P5-5 argued against preloading Fraunces because it
+is display-only and would compete with the LCP image. Against that: `<IntroSection>`'s `<h1>` is the
+first thing under the hero and is set in it, `font-display: swap` makes a late face a reflow rather
+than a delay, and 18 KB is small beside the 495 KB of imagery on the same connection. Preloading
+the set the page actually uses is the simpler contract.
+
+```
+$ grep -c 'rel="preload" as="font"' dist/index.html
+3
+$ sed -n '92,99p' dist/index.html
+    <script type="module" crossorigin src="/assets/index-HiSFlvET.js"></script>
+    <link rel="modulepreload" crossorigin href="/assets/SiteFooter-VOpZu2sT.js">
+    <link rel="preload" as="font" type="font/woff2" crossorigin href="/assets/fraunces-latin-600-normal-BFCDtZfi.woff2" />
+    <link rel="preload" as="font" type="font/woff2" crossorigin href="/assets/inter-latin-400-normal-C38fXH4l.woff2" />
+    <link rel="preload" as="font" type="font/woff2" crossorigin href="/assets/inter-latin-500-normal-Cerq10X2.woff2" />
+    <link rel="stylesheet" crossorigin href="/assets/index-JaSjmbl1.css">
+$ for f in $(grep -o 'href="/assets/[^"]*woff2"' dist/index.html | sed 's/href="//;s/"//'); do ls -l "dist$f"; done
+-rw-r--r-- 1 danz3 197609 18096 dist/assets/fraunces-latin-600-normal-BFCDtZfi.woff2
+-rw-r--r-- 1 danz3 197609 23664 dist/assets/inter-latin-400-normal-C38fXH4l.woff2
+-rw-r--r-- 1 danz3 197609 24272 dist/assets/inter-latin-500-normal-Cerq10X2.woff2
+$ grep -c 'rel="preload" as="font"' dist/components.html
+0
+```
+
+`crossorigin` is on every tag even though the fonts are same-origin: fonts are always fetched in
+CORS mode, and a preload whose mode does not match the later fetch is a second download rather than
+a warm cache. The network trace under P5-8 shows one request per face, which is the proof that the
+modes match.
+
+---
+
+### P5-13 · FIXED · `src/index.css:31-90` (three `@font-face` rules), `src/main.tsx:1-11`, `src/sheet/main.tsx:1-11`
+
+The 655-byte stylesheet is gone, and the landing page takes exactly one. The three
+`@fontsource` CSS imports that used to sit in both entries were imported by *both*, so Rollup
+hoisted them into the shared chunk and Vite emitted them as a second render-blocking
+`<link rel="stylesheet">`. They are now three hand-written `@font-face` rules in `src/index.css`,
+which reaches each page separately — `src/landing.css` `@import`s it (a CSS-level import, inlined
+before Vite sees a module) and `src/sheet/main.tsx` imports it directly — so neither copy is a
+shared JS module and there is no shared CSS chunk left to link.
+
+```
+$ grep -c 'rel="stylesheet"' dist/index.html
+1
+$ grep -o '<link rel="stylesheet"[^>]*>' dist/index.html
+<link rel="stylesheet" crossorigin href="/assets/index-JaSjmbl1.css">
+$ ls dist/assets/*.css
+dist/assets/components-xZOInl1b.css
+dist/assets/index-JaSjmbl1.css
+$ grep -rn fontsource src/ ; echo "(exit $?)"
+(exit 1)
+```
+
+**The `url()` form that works: the bare package specifier.** `url('@fontsource/inter/files/...')`
+is resolved by Vite's CSS asset resolver into `node_modules` and rewritten to the hashed
+`/assets/*.woff2`; the relative `../node_modules/@fontsource/...` fallback was not needed and is
+not used. Everything else is copied verbatim from `@fontsource`'s own `latin-*.css` — same family
+names, same weights, `font-display: swap`. There is deliberately **no** `unicode-range`: Phase 5
+§5.5 established that `@fontsource`'s latin entrypoints declare none, because the Latin subsetting
+is baked into the file rather than expressed in CSS, so there was nothing to copy.
+
+The landing and sheet stylesheets are byte-identical to the pre-prerender build of this phase
+(`index-JaSjmbl1.css`, `components-xZOInl1b.css` — same content hashes), i.e. the new source files
+and comments added no dead utilities. Two did appear on a first pass, `.container` and `.static`,
+from an identifier and a phrase in the new prose; the identifier was renamed to `mount` and the
+phrase reworded, and the hashes returned to the values above.
+
+---
+
+### P5-6 · FIXED · same change as P5-13 (`src/index.css:31-90`)
+
+The hand-written `src:` lists the woff2 rung and nothing else, so the three `.woff` files
+(84,492 B) are no longer emitted. Any browser that would reach the woff rung is one that never sees
+the woff2 rung either, so no client loses a face.
+
+```
+$ ls dist/assets/*.woff
+ls: cannot access 'dist/assets/*.woff': No such file or directory
+$ ls dist/assets/*.woff2
+dist/assets/fraunces-latin-600-normal-BFCDtZfi.woff2
+dist/assets/inter-latin-400-normal-C38fXH4l.woff2
+dist/assets/inter-latin-500-normal-Cerq10X2.woff2
+```
+
+Live, all three faces still load and both pages end at `document.fonts.status === "loaded"` — see
+the readout at the end of this section.
+
+---
+
+### P5-2 · FIXED · `src/App.tsx:1,39,104`, `src/sheet/ComponentSheet.tsx:2,68,138`, `src/components/Hero.tsx:2,209`, `src/components/HeroClouds.tsx:2,801,806`, `src/components/Reveal.tsx:2,77,109,117,124,151,158`
+
+Nine `motion.*` component sites became `m.*`, and both roots are wrapped in one
+`<LazyMotion features={domAnimation} strict>`. `useScroll`, `useTransform`, `useReducedMotion`,
+`useMotionValueEvent` and `cubicBezier` are untouched — they are hooks and helpers, not feature
+bundles. `strict` makes the saving enforceable rather than conventional: rendering a `motion.*`
+component below either root throws, so `domMax` cannot creep back one component at a time.
+
+```
+$ grep -rn '<motion\.' src/ ; echo "(exit $?)"
+(exit 1)
+$ grep -rn "from 'motion/react'" src/
+src/App.tsx:1:import { domAnimation, LazyMotion } from 'motion/react'
+src/components/Hero.tsx:2:import { m, useScroll, useTransform } from 'motion/react'
+src/components/HeroClouds.tsx:2:import { m, useMotionValueEvent, useTransform } from 'motion/react'
+src/components/Reveal.tsx:2:import { cubicBezier, m, type MotionProps } from 'motion/react'
+src/lib/motion.ts:8:import { cubicBezier, useReducedMotion, type MotionValue } from 'motion/react'
+src/sheet/ComponentSheet.tsx:2:import { domAnimation, LazyMotion } from 'motion/react'
+```
+
+**Shared chunk, raw bytes.**
+
+| | raw | gzip |
+| --- | --- | --- |
+| Phase 5 §6.1 baseline (`SiteFooter-D2vbYzEP.js`) | 328,964 | 103,956 |
+| clean build of `f820e62` on this machine (`SiteFooter-Chc-VP1O.js`) | 329,229 | 105,232 |
+| after the `m.*` swap alone (`SiteFooter-CsyPoNvN.js`) | **282,710** | 91,617 |
+| end of phase, incl. P5-1's hook + footer edits (`SiteFooter-VOpZu2sT.js`) | **283,048** | 90,497 |
+
+**-46,181 B raw against the local baseline; -45,916 B raw against the audit's 328,964.** Both clear
+the 40 KB target. The +338 B between the third and fourth rows is P5-1's `mounted` gate and the
+footer's `<span>`, which live in the shared chunk too. The landing entry chunk grew 14,890 ->
+16,013 (`LazyMotion` and `domAnimation` are imported from `src/App.tsx`), so the landing page's
+total JS is 344,119 -> 299,061, **-45,058 B raw**.
+
+The drag / pan / layout-projection region the finding located by byte offset is gone:
+
+```
+$ for s in layoutDependency isSharedProjectionDirty PanSession dragSnapToOrigin; do
+    printf '%-26s %s\n' "$s" "$(grep -c "$s" dist/assets/SiteFooter-VOpZu2sT.js)"; done
+layoutDependency           0
+isSharedProjectionDirty    0
+PanSession                 1
+dragSnapToOrigin           0
+```
+
+(`PanSession` survives as a single string. The finding's own evidence had it spanning bytes
+291,083-312,999, i.e. ~22 KB of implementation, and that implementation is no longer there.)
+
+---
+
+### P5-3 · FIXED · `vercel.json:10-32`, `README.md:111-115`
+
+```
+$ node -e "const v=require('./vercel.json');
+           console.log('rewrites:', JSON.stringify(v.rewrites));
+           console.log('headers:',  JSON.stringify(v.headers));
+           console.log('buildCommand:', v.buildCommand)"
+rewrites: [{"source":"/components","destination":"/components.html"},
+           {"source":"/components/","destination":"/components.html"}]
+headers:  [{"source":"/assets/(.*)","headers":[{"key":"Cache-Control","value":"public, max-age=31536000, immutable"}]},
+           {"source":"/artwork/(.*)","headers":[{"key":"Cache-Control","value":"public, max-age=86400, must-revalidate"}]},
+           {"source":"/brand/(.*)","headers":[{"key":"Cache-Control","value":"public, max-age=86400, must-revalidate"}]}]
+buildCommand: npm run build
+```
+
+The two rewrites Phase 3 left are unchanged and `buildCommand` still runs `npm run build`, so the
+prerender step runs on Vercel too. `/assets/(.*)` is everything Vite emits and all of it is
+content-hashed, which is what makes `immutable` safe: the filename cannot change meaning.
+`/artwork/` and `/brand/` are the 53 files `npm run images` overwrites *in place* — stable names,
+changing bytes — so they get a day and an explicit `must-revalidate` instead. Two sentences in
+`README.md`'s "Deploying" section say the same thing.
+
+**Not verified: the served headers.** Vercel is not reachable from here. The finding was about the
+absence of an explicit policy, and the policy now exists; whether the platform applies it is a
+live check against a deployment.
+
+---
+
+### Live readout
+
+Two servers, both stopped afterwards: the Vite **dev** server on 5173 (`preview_start`,
+`hackbu-dev`) and `npm run preview` serving the built `dist/` on 4173 (pid 33764). Headless Edge
+over CDP on port 9338, user-data-dir `<scratchpad>\edge-profile-p4`, pid 48100. The dev server does
+not prerender, so hydration can only be judged against the built output — which is what 4173 is
+for.
+
+```
+===== BUILT http://localhost:4173/ =====
+scroll-0: { "scrollY": 0, "rootChildren": 1,
+            "campusTransform": "matrix(3, 0, 0, 3, 0, 0)",
+            "driftNodes": 3, "driftTransform": "matrix(1, 0, 0, 1, -491.323, 0)",
+            "willChangeCount": 7, "cloudLayers": 3, "pictures": 49,
+            "fontsStatus": "loaded",
+            "fontsLoaded": ["Fraunces 600", "Inter 400", "Inter 500"],
+            "stylesheets": 1, "fontPreloads": 3 }
+drift@scroll0: { "t0": "matrix(1, 0, 0, 1, -491.369, 0)",
+                 "t1": "matrix(1, 0, 0, 1, -492.659, 0)", "moving": true }
+console (normal): 0 errors/warnings
+reduced-motion: { "scrollY": 0, "rootChildren": 1,
+                  "campusTransform": "none",
+                  "driftNodes": 0, "driftTransform": null,
+                  "willChangeCount": 0, "cloudLayers": 3, "pictures": 13,
+                  "fontsStatus": "loaded",
+                  "fontsLoaded": ["Fraunces 600", "Inter 400", "Inter 500"],
+                  "stylesheets": 1, "fontPreloads": 3 }
+console (reduced): 0 errors/warnings
+
+===== BUILT http://localhost:4173/components.html =====
+scroll-0:       { "rootChildren": 1, "campusTransform": null, "driftNodes": 0,
+                  "willChangeCount": 0, "pictures": 13, "fontsStatus": "loaded",
+                  "fontsLoaded": ["Fraunces 600","Inter 400","Inter 500"],
+                  "stylesheets": 1, "fontPreloads": 0 }
+console (normal): 0 errors/warnings
+reduced-motion: { ... identical ... }
+console (reduced): 0 errors/warnings
+
+===== DEV http://localhost:5173/ =====
+scroll-0: { "campusTransform": "matrix(3, 0, 0, 3, 0, 0)", "driftNodes": 3,
+            "willChangeCount": 7, "pictures": 49, "stylesheets": 0, "fontPreloads": 0 }
+drift@scroll0: { "moving": true }
+console (normal): 0 errors/warnings
+reduced-motion: { "campusTransform": "none", "driftNodes": 0, "willChangeCount": 0,
+                  "pictures": 13 }
+console (reduced): [
+ "WARNING: You have Reduced Motion enabled on your device. Animations may not appear as
+  expected.. For more information ... https://motion.dev/troubleshooting/reduced-motion-disabled"
+]
+
+===== DEV http://localhost:5173/components =====
+console (normal):  0 errors/warnings
+console (reduced): [ the same motion warning ]
+```
+
+**Zero hydration warnings** on the built output, on both pages, in both motion branches — the
+condition P5-1 had to meet, and the one the dev server cannot test. Every motion invariant holds
+live: campus `transform` is `matrix(3, 0, 0, 3, 0, 0)` at scroll 0, the drift track's transform
+changes between two samples 500 ms apart (so the drift runs at scroll 0), and under
+`prefers-reduced-motion: reduce` there are 0 `[data-cloud-drift]` nodes, 0 elements with a
+`will-change` other than `auto`, and the campus transform is `none`. Under normal motion the
+`will-change` count is 7, unchanged from Phase 7's live count (that is P5-7, a later row).
+
+The one dev-only line is motion's own `warnOnce` inside `useReducedMotion()`, which the library
+emits when the media query matches and only when `process.env.NODE_ENV !== "production"`. It is a
+library notice, not a page defect, it predates this phase, and it is absent from the production
+build above — which is where the acceptance condition is measured.
+
+`stylesheets: 0` on the dev rows is the dev server injecting CSS through the module graph rather
+than a `<link>`; `fontPreloads: 0` there is P5-5's plugin correctly no-opping when there is no
+bundle to read hashes from.
+
+**Everything was stopped**: `preview_stop` on the dev server, `taskkill /PID 33764 /T /F` on the
+preview server, `taskkill /PID 48100 /T /F` on Edge; `netstat -ano` filtered to
+`:4173|:5173|:9338` then returned no LISTENING row.
+
+---
+
+### Invariants re-checked at the end of the phase
+
+```
+$ sed -n '74p' src/components/Hero.tsx
+const PAN_START_SCALE = 3
+$ grep -n "object-\[52%_0%\]\|origin-top" src/components/Hero.tsx | tail -2
+131:const CAMPUS_OBJECT_POSITION = 'object-[52%_0%]'
+217:                className={`h-full w-full origin-top ${CAMPUS_OBJECT_POSITION} object-cover select-none ${
+$ git diff f820e62 -- src/lib/images.ts scripts/generate-images.mjs index.html
+(no output — the srcset triple is untouched, and index.html was not edited at all)
+$ git status --porcelain public/
+(no output)
+$ cmp public/404.html dist/404.html && echo identical
+identical
+```

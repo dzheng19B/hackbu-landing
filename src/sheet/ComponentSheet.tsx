@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { domAnimation, LazyMotion } from 'motion/react'
 import { Column } from './kit'
 import { LINK_ON_FROST } from '../components/ExternalLink'
 import { TOGGLE_ON_CLOUD } from '../components/controls'
@@ -18,6 +19,11 @@ import { HeroPart } from './parts/HeroPart'
  *
  * It builds as a second Vite entry (components.html) and deploys beside the
  * landing page at /components. Its code is not in the landing page's bundle.
+ *
+ * The <LazyMotion features={domAnimation} strict> below mirrors src/App.tsx's:
+ * the specimens are the real components, which render `m.*` elements and take
+ * their feature set from a provider rather than carrying one. Without it the
+ * reveals in Part 2 would throw. See P5-2 for why the components use `m.*`.
  */
 
 const PARTS = [
@@ -59,75 +65,77 @@ export function ComponentSheet() {
   const [reveals, setReveals] = useState<RevealMode>('resting')
 
   return (
-    <div data-reveals={reveals} className="bg-cloud text-pine font-sans min-h-screen">
-      <a
-        href="#tokens"
-        className="bg-cloud text-pine focus:outline-pine sr-only focus:not-sr-only focus:absolute focus:top-4 focus:left-4 focus:z-[60] focus:rounded-full focus:px-4 focus:py-2 focus:outline-2"
-      >
-        Skip to the sheet
-      </a>
+    <LazyMotion features={domAnimation} strict>
+      <div data-reveals={reveals} className="bg-cloud text-pine font-sans min-h-screen">
+        <a
+          href="#tokens"
+          className="bg-cloud text-pine focus:outline-pine sr-only focus:not-sr-only focus:absolute focus:top-4 focus:left-4 focus:z-[60] focus:rounded-full focus:px-4 focus:py-2 focus:outline-2"
+        >
+          Skip to the sheet
+        </a>
 
-      <Masthead />
+        <Masthead />
 
-      <nav
-        aria-label="Sheet sections"
-        className="bg-cloud border-frost sticky top-0 z-50 border-y"
-      >
-        <Column className="flex h-14 items-center justify-between gap-4">
-          <ul className="-mx-2 flex min-w-0 items-center gap-1 overflow-x-auto px-2">
-            {PARTS.map((part) => (
-              <li key={part.id}>
-                <a
-                  href={`#${part.id}`}
-                  className="text-caption text-pine hover:text-brick focus-visible:outline-pine block rounded-full px-3 py-2 whitespace-nowrap focus-visible:outline-2 focus-visible:outline-offset-2"
-                >
-                  {part.label}
-                </a>
-              </li>
-            ))}
-          </ul>
+        <nav
+          aria-label="Sheet sections"
+          className="bg-cloud border-frost sticky top-0 z-50 border-y"
+        >
+          <Column className="flex h-14 items-center justify-between gap-4">
+            <ul className="-mx-2 flex min-w-0 items-center gap-1 overflow-x-auto px-2">
+              {PARTS.map((part) => (
+                <li key={part.id}>
+                  <a
+                    href={`#${part.id}`}
+                    className="text-caption text-pine hover:text-brick focus-visible:outline-pine block rounded-full px-3 py-2 whitespace-nowrap focus-visible:outline-2 focus-visible:outline-offset-2"
+                  >
+                    {part.label}
+                  </a>
+                </li>
+              ))}
+            </ul>
 
-          <button
-            type="button"
-            aria-pressed={reveals === 'scroll'}
-            onClick={() =>
-              setReveals((mode) => (mode === 'resting' ? 'scroll' : 'resting'))
-            }
-            className={`${TOGGLE_ON_CLOUD} text-caption shrink-0 rounded-full px-3 py-1.5`}
-          >
-            Reveals:{' '}
-            <span className="font-medium">
-              {reveals === 'resting' ? 'at rest' : 'on scroll'}
-            </span>
-          </button>
-        </Column>
-      </nav>
+            <button
+              type="button"
+              aria-pressed={reveals === 'scroll'}
+              onClick={() =>
+                setReveals((mode) => (mode === 'resting' ? 'scroll' : 'resting'))
+              }
+              className={`${TOGGLE_ON_CLOUD} text-caption shrink-0 rounded-full px-3 py-1.5`}
+            >
+              Reveals:{' '}
+              <span className="font-medium">
+                {reveals === 'resting' ? 'at rest' : 'on scroll'}
+              </span>
+            </button>
+          </Column>
+        </nav>
 
-      <main>
-        <TokensPart />
-        <PrimitivesPart revealsAnimate={reveals === 'scroll'} />
-        <ComposedPart />
-        <HeroPart />
-      </main>
+        <main>
+          <TokensPart />
+          <PrimitivesPart revealsAnimate={reveals === 'scroll'} />
+          <ComposedPart />
+          <HeroPart />
+        </main>
 
-      <footer className="border-frost bg-frost border-t">
-        <Column className="py-10">
-          <p className="text-caption text-pine/90">
-            Generated from the components themselves — every specimen above is
-            the real component, imported and rendered. Update a component and
-            this page updates with it; only the prose around it is written by
-            hand.
-          </p>
-          <p className="text-caption text-pine/90 mt-3">
-            {/* This footer band is frost, so it takes the frost treatment —
-                the same rule the sheet documents in Part 2. */}
-            <a href="/" className={LINK_ON_FROST}>
-              Back to the landing page
-            </a>
-          </p>
-        </Column>
-      </footer>
-    </div>
+        <footer className="border-frost bg-frost border-t">
+          <Column className="py-10">
+            <p className="text-caption text-pine/90">
+              Generated from the components themselves — every specimen above is
+              the real component, imported and rendered. Update a component and
+              this page updates with it; only the prose around it is written by
+              hand.
+            </p>
+            <p className="text-caption text-pine/90 mt-3">
+              {/* This footer band is frost, so it takes the frost treatment —
+                  the same rule the sheet documents in Part 2. */}
+              <a href="/" className={LINK_ON_FROST}>
+                Back to the landing page
+              </a>
+            </p>
+          </Column>
+        </footer>
+      </div>
+    </LazyMotion>
   )
 }
 

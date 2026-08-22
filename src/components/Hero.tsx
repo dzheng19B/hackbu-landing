@@ -1,5 +1,5 @@
 import { useMemo, useRef } from 'react'
-import { motion, useScroll, useTransform } from 'motion/react'
+import { m, useScroll, useTransform } from 'motion/react'
 import { HeroClouds } from './HeroClouds'
 import {
   CAMPUS_ALT,
@@ -206,7 +206,7 @@ export function Hero() {
                 srcSet={CAMPUS_SRCSET.webp}
                 sizes={CAMPUS_SIZES}
               />
-              <motion.img
+              <m.img
                 src={CAMPUS_PNG}
                 alt={CAMPUS_ALT}
                 width={CAMPUS_WIDTH}
