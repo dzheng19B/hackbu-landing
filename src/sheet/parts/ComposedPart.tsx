@@ -2,7 +2,6 @@ import type { ReactNode } from 'react'
 import { Block, Caption, Entry, Rule, SheetSection, Stage } from '../kit'
 import { SiteHeader } from '../../components/SiteHeader'
 import { SiteFooter } from '../../components/SiteFooter'
-import { IntroSection } from '../../components/sections/IntroSection'
 import { AboutSection } from '../../components/sections/AboutSection'
 import { GetInvolvedSection } from '../../components/sections/GetInvolvedSection'
 import { QuestionsSection } from '../../components/sections/QuestionsSection'
@@ -33,7 +32,7 @@ export function ComposedPart() {
       id="composed"
       number="3"
       title="Composed, as used"
-      intro="The header, the five content sections and the footer — imported from src/components/ and rendered here unmodified. Page order is: header, hero, drift-c, Intro, About, drift-a, Get involved, drift-b, Questions, drift-c, Contact, cloud-to-frost, footer."
+      intro="The header, the four content sections and the footer — imported from src/components/ and rendered here unmodified. Page order is: header, hero, drift-c, About, drift-a, Get involved, drift-b, Questions, drift-c, Contact, cloud-to-frost, footer."
     >
       <Entry
         name="SiteHeader"
@@ -72,7 +71,7 @@ export function ComposedPart() {
             <b>scroll-mt-24</b>, the <b>scroll-padding-top</b> in{' '}
             <b>src/index.css</b> — is written against those two numbers. Both the
             bar and the compact panel are opaque cloud, so every link inside
-            takes <b>LINK_ON_CLOUD</b> and hovers to brick.
+            takes <b>LINK_ON_CLOUD</b> and hovers to grove.
           </Rule>
           <Caption>
             The compact panel stays mounted and is hidden with the{' '}
@@ -86,17 +85,17 @@ export function ComposedPart() {
       </Entry>
 
       <Entry
-        name="IntroSection"
-        path="src/components/sections/IntroSection.tsx"
-        use="The page’s masthead. It sits directly under the hero and carries the only <h1>."
+        name="AboutSection"
+        path="src/components/sections/AboutSection.tsx"
+        use="The page’s masthead. It sits directly under the hero and carries the only <h1>: mission, Discord and mailing-list CTAs."
       >
         <NoProps>Copy is written into the component.</NoProps>
         <Block title="As rendered">
           <Stage
-            label="IntroSection — on cloud"
+            label="AboutSection — on cloud"
             note="On this sheet it means a second <h1> on the page. That is a property of the sheet, not of the section."
           >
-            <IntroSection />
+            <AboutSection />
           </Stage>
         </Block>
         <Block title="Notes">
@@ -107,28 +106,6 @@ export function ComposedPart() {
             headline, lede and CTA down here retired that trade rather than
             tuning it — no text sits over the artwork at any scroll position.
           </Rule>
-        </Block>
-      </Entry>
-
-      <Entry
-        name="AboutSection"
-        path="src/components/sections/AboutSection.tsx"
-        use="What the club is, plus the two pillars — the weekly workshops and the annual hackathon."
-      >
-        <NoProps>The two pillars are a const array inside the file.</NoProps>
-        <Block title="As rendered">
-          <Stage
-            label="AboutSection — on cloud"
-            note="A Reveal around the header, then a RevealGroup as='ul' of two RevealItem as='li' cards, staggered 0.12s apart."
-          >
-            <AboutSection />
-          </Stage>
-        </Block>
-        <Block title="Notes">
-          <Caption>
-            Intro and About are one uninterrupted stretch of cloud — there is no
-            divider between them, because a drift there would separate nothing.
-          </Caption>
         </Block>
       </Entry>
 
@@ -151,8 +128,8 @@ export function ComposedPart() {
         <Block title="Notes">
           <Rule>
             The card is frost, so the mailing-list link inside it uses{' '}
-            <b>LINK_ON_FROST</b> and underlines on hover — brick on frost is
-            4.03:1 and fails AA. The section band around the card is cloud,
+            <b>LINK_ON_FROST</b> and underlines on hover — colour hovers stay
+            off frost. The section band around the card is cloud,
             which is why the rule is “pick by the surface the link is painted
             on, not by the component it lives in”.
           </Rule>
@@ -206,7 +183,7 @@ export function ComposedPart() {
         <Block title="Notes">
           <Caption>
             On cloud, so both links take <b>LINK_ON_CLOUD</b> and hover to
-            brick.
+            grove.
           </Caption>
         </Block>
       </Entry>

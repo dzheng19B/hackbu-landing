@@ -78,7 +78,7 @@ export function ComponentSheet() {
               <li key={part.id}>
                 <a
                   href={`#${part.id}`}
-                  className="text-caption text-pine hover:text-brick focus-visible:outline-pine block rounded-full px-3 py-2 whitespace-nowrap focus-visible:outline-2 focus-visible:outline-offset-2"
+                  className="text-caption text-pine hover:text-grove focus-visible:outline-pine block rounded-full px-3 py-2 whitespace-nowrap focus-visible:outline-2 focus-visible:outline-offset-2"
                 >
                   {part.label}
                 </a>
@@ -156,7 +156,7 @@ function Masthead() {
                 <span className="text-eyebrow text-pine/90 font-medium uppercase sm:w-16 sm:shrink-0">
                   Part {index + 1}
                 </span>
-                <span className="text-body text-pine group-hover:text-brick font-medium sm:w-56 sm:shrink-0">
+                <span className="text-body text-pine group-hover:text-grove font-medium sm:w-56 sm:shrink-0">
                   {part.title}
                 </span>
                 <span className="text-caption text-pine/90">{part.blurb}</span>

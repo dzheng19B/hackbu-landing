@@ -2,16 +2,16 @@ import type { ReactNode } from 'react'
 import { ExternalLink } from './ExternalLink'
 
 /**
- * The page's only button treatment: solid brick, reserved for the Discord
- * conversion action. Size is the only thing that varies.
+ * The page's only button treatment: solid grove (Binghamton PMS 342), reserved
+ * for conversion actions. Size is the only thing that varies.
  *
- * brick is the single accent in the palette, so a button on screen always means
- * "join the Discord" — which is why there is one treatment and not a set. (A
+ * grove is the single interactive accent, so a button on screen always means
+ * a join action — which is why there is one treatment and not a set. (A
  * `secondary` outlined-pine variant was declared here for supporting actions.
- * The finished page has none: every button is the Discord CTA, and the mailing
- * list, the resources archive and the nav are all text links. It went unused
- * through every phase and is gone; a second treatment can come back with the
- * second kind of action that needs it.)
+ * The finished page has none: every button is a join CTA, and the resources
+ * archive and the nav are all text links. It went unused through every phase
+ * and is gone; a second treatment can come back with the second kind of action
+ * that needs it.)
  */
 type Size = 'sm' | 'md' | 'lg'
 
@@ -27,7 +27,7 @@ type Size = 'sm' | 'md' | 'lg'
  */
 const BASE =
   'inline-flex items-center justify-center gap-2 rounded-full font-medium ' +
-  'bg-brick text-cloud hover:bg-pine ' +
+  'bg-grove text-cloud hover:bg-pine ' +
   'focus-visible:outline-pine focus-visible:outline-2 focus-visible:outline-offset-2'
 
 const SIZES: Record<Size, string> = {

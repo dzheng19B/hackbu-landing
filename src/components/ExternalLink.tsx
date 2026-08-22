@@ -9,11 +9,11 @@ import type { AnchorHTMLAttributes, ReactNode } from 'react'
  * surface it sits on. They exist so the surface rule is structural rather than
  * a convention four separate class-strings each had to remember:
  *
- *   **cloud** (`#F7F5EE`) — hover recolours to `brick`, which measures 4.78:1
+ *   **cloud** (`#F7F5EE`) — hover recolours to `grove`, which measures ~7.7:1
  *   there and clears AA.
- *   **frost** (`#DCE3EA`) — hover underlines instead. `brick` on frost measures
- *   **4.03:1** and fails AA, so it must never be the hover on this surface;
- *   thickening an underline signals the same thing and costs no contrast.
+ *   **frost** (`#DCE3EA`) — hover underlines instead. `grove` is reserved for
+ *   cloud; thickening an underline on frost signals the same thing and costs
+ *   no contrast.
  *
  * Pick by the background the link is actually painted on, not by the component
  * it lives in: the header and the content sections are cloud, the footer and
@@ -30,9 +30,9 @@ const FOCUS_RING =
   'focus-visible:outline-pine'
 
 /** Links on `cloud`. Brick hover. */
-export const LINK_ON_CLOUD = `text-pine hover:text-brick ${FOCUS_RING}`
+export const LINK_ON_CLOUD = `text-pine hover:text-grove ${FOCUS_RING}`
 
-/** Links on `frost`. Underline hover — never brick. */
+/** Links on `frost`. Underline hover — never grove. */
 export const LINK_ON_FROST =
   'text-pine hover:underline hover:decoration-2 hover:underline-offset-4 ' +
   FOCUS_RING

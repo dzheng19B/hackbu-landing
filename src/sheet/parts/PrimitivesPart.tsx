@@ -150,7 +150,7 @@ function ButtonEntry() {
       <Block title="States">
         <ul className="border-frost text-body text-pine border-t">
           <li className="border-frost border-b py-3">
-            <b>Rest</b> — <span className="text-pine/90">bg-brick, text-cloud, fully rounded.</span>
+            <b>Rest</b> — <span className="text-pine/90">bg-grove, text-cloud, fully rounded. Binghamton PMS 342.</span>
           </li>
           <li className="border-frost border-b py-3">
             <b>Hover</b> —{' '}
@@ -223,7 +223,7 @@ function LinkEntry() {
                 />
               </li>
             </ul>
-            <Caption>Hover recolours to brick — 4.78:1 on cloud, clears AA.</Caption>
+            <Caption>Hover recolours to grove — Binghamton green, ~7.7:1 on cloud, clears AA.</Caption>
           </Ground>
           <Ground tone="frost" label="LINK_ON_FROST">
             <ul className="flex flex-col gap-3">
@@ -239,17 +239,17 @@ function LinkEntry() {
                 />
               </li>
             </ul>
-            <Caption>Hover thickens an underline instead. Never brick.</Caption>
+            <Caption>Hover thickens an underline instead. Never grove.</Caption>
           </Ground>
         </div>
       </Block>
 
       <Block title="Why there are two">
         <Rule>
-          <b>brick</b> hover on <b>frost</b> measures <b>4.03:1</b> and fails AA,
-          so it cannot be the hover on that surface — and thickening an
-          underline signals the same thing at no contrast cost. Pick by the
-          background the link is painted on, not by the component it lives in:
+          <b>grove</b> is the cloud hover. On <b>frost</b>, a colour hover is
+          skipped — thickening an underline signals the same thing at no
+          contrast cost. Pick by the background the link is painted on, not by
+          the component it lives in:
           the header and the content sections are cloud; the footer and the
           get-involved card are frost. Both strings carry the same pine focus
           ring at offset 4 (6.83:1 on cloud, 5.76:1 on frost), so the ring needs

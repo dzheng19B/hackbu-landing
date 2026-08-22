@@ -21,7 +21,7 @@ import {
  * The hero: a scroll-driven pan down the campus illustration.
  *
  * It is illustration and nothing else. Phase 7 moved the headline, lede and
- * Discord CTA out to <IntroSection>, on the cloud background below — cloud text
+ * Discord CTA out to <AboutSection>, on the cloud background below — cloud text
  * over the painted sky measured 1.43:1, and the only wash that lifted it past
  * 4.5:1 was a near-opaque pine field covering most of the frame. Removing the
  * copy retires that trade rather than tuning it: no text sits over the artwork

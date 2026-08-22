@@ -20,7 +20,7 @@ import { DISCORD_URL, NAV_LINKS } from '../lib/links'
  * resolves.
  *
  * Both the bar and the compact panel are opaque `bg-cloud`, so every link in
- * here takes the cloud treatment — brick hover. See LINK_ON_CLOUD in
+ * here takes the cloud treatment — grove hover. See LINK_ON_CLOUD in
  * ExternalLink.tsx.
  */
 

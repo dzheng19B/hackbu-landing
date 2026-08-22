@@ -10,7 +10,7 @@ import { CONTACT_EMAIL, SITE_PAGES, SOCIAL_LINKS } from '../lib/links'
  */
 
 /* The footer band is frost, so its links underline on hover rather than
-   turning brick — see LINK_ON_FROST in ExternalLink.tsx. */
+   turning grove — see LINK_ON_FROST in ExternalLink.tsx. */
 const FOOTER_LINK_CLASSES = `text-caption ${LINK_ON_FROST}`
 
 const COLUMN_ONE = SITE_PAGES.slice(0, 4)

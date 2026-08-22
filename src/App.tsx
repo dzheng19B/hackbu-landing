@@ -1,7 +1,6 @@
 import { SiteHeader } from './components/SiteHeader'
 import { Hero } from './components/Hero'
 import { SnowdriftDivider } from './components/SnowdriftDivider'
-import { IntroSection } from './components/sections/IntroSection'
 import { AboutSection } from './components/sections/AboutSection'
 import { GetInvolvedSection } from './components/sections/GetInvolvedSection'
 import { QuestionsSection } from './components/sections/QuestionsSection'
@@ -11,13 +10,11 @@ import { SiteFooter } from './components/SiteFooter'
 /**
  * Page shell.
  *
- * Order is: fixed header -> the hero's scroll track -> five content sections on
+ * Order is: fixed header -> the hero's scroll track -> four content sections on
  * cloud, separated by snowdrift dividers -> footer on frost.
  *
- * The hero is illustration only. <IntroSection> directly under it is the
- * page's masthead and carries the only <h1>; it and <AboutSection> are one
- * uninterrupted stretch of cloud, so the drift between them would separate
- * nothing and there isn't one.
+ * The hero is illustration only. <AboutSection> directly under it is the
+ * page's masthead and carries the only <h1>.
  *
  * The hero is the only element the scroll work touches; see
  * src/components/Hero.tsx for its layer contract.
@@ -55,7 +52,6 @@ export default function App() {
          * row.
          */}
         <SnowdriftDivider variant="drift-c" />
-        <IntroSection />
         <AboutSection />
 
         <SnowdriftDivider variant="drift-a" />

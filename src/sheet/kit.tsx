@@ -7,9 +7,9 @@ import type { ReactNode } from 'react'
  * exists so the documented components can be shown *as themselves*, with a
  * frame around them that is visibly not part of what is being documented.
  *
- * It draws on the same nine tokens and the same type scale as the page: cloud
+ * It draws on the same ten tokens and the same type scale as the page: cloud
  * and frost for grounds, frost for rules and borders, pine for text, pine/90
- * for labels, brick nowhere (it is the page's interactive accent, and the sheet
+ * for labels, grove nowhere (it is the page's interactive accent, and the sheet
  * has no interactions of its own worth spending it on) — except where a real
  * component brings it.
  */
