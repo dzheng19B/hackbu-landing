@@ -91,7 +91,7 @@ export function AboutPage() {
               <SectionHeader
                 eyebrow="Every year"
                 titleId="hackathon-title"
-                title="Around 350 students from across the Northeast."
+                title="Hackers from all over the Northeast"
                 lede="HackBU brings together collegiate students to collaborate on innovative projects, discover new technologies, network with recruiters, and compete for prizes."
               />
             </Reveal>
