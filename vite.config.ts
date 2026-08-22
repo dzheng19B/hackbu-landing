@@ -13,6 +13,8 @@ function cleanHtmlUrls(): Plugin {
     '/about/': '/about.html',
     '/schedule': '/schedule.html',
     '/schedule/': '/schedule.html',
+    '/hackathons': '/hackathons.html',
+    '/hackathons/': '/hackathons.html',
     '/components': '/components.html',
     '/components/': '/components.html',
   }
@@ -32,11 +34,12 @@ function cleanHtmlUrls(): Plugin {
 }
 
 /**
- * Four entry points, four pages:
+ * Five entry points, five pages:
  *
  *   index.html       the landing page          -> dist/index.html
  *   about.html       the About us page         -> dist/about.html
  *   schedule.html    the schedule page         -> dist/schedule.html
+ *   hackathons.html  the hackathons page       -> dist/hackathons.html
  *   components.html  the component sheet       -> dist/components.html
  *
  * They share the component tree, so Rollup hoists what both import into a
@@ -56,6 +59,7 @@ export default defineConfig({
         about: fileURLToPath(new URL('./about.html', import.meta.url)),
         components: fileURLToPath(new URL('./components.html', import.meta.url)),
         schedule: fileURLToPath(new URL('./schedule.html', import.meta.url)),
+        hackathons: fileURLToPath(new URL('./hackathons.html', import.meta.url)),
       },
     },
   },
