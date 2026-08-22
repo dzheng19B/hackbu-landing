@@ -30,6 +30,15 @@ import { BEARCAT_MARK, WORDMARK_MARK } from '../lib/images'
  * name. In the header that label is also what names the link wrapping it, which
  * would otherwise have no accessible name at all — the marks are empty
  * elements with no text to fall back on.
+ *
+ * That wrapper is the one lint suppression in `src/`. `jsx-a11y`'s
+ * `prefer-tag-over-role` reads `role="img"` and asks for an `<img>` element
+ * instead, which cannot express this: there is no single image file to point
+ * at, only two masked elements that have to be announced as one graphic —
+ * exactly the case WAI-ARIA's `img` role exists for. Rewriting it as an `<img>`
+ * would mean shipping a third, pre-coloured logo file and giving up the
+ * one-token recolouring described above, so the rule is switched off for this
+ * attribute only and stays on everywhere else.
  */
 
 /** Ratio of the bearcat's height to the lockup's font-size. */
@@ -44,6 +53,7 @@ function aspect(mark: { width: number; height: number }) {
 export function Wordmark({ className = '' }: { className?: string }) {
   return (
     <span
+      // eslint-disable-next-line jsx-a11y/prefer-tag-over-role
       role="img"
       aria-label="HackBU"
       className={`flex w-fit items-center gap-[0.34em] ${className}`}

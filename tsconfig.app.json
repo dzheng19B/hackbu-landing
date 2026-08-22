@@ -16,7 +16,26 @@
     "noEmit": true,
     "jsx": "react-jsx",
 
-    /* Linting */
+    /* Linting.
+
+       `strict` is declared rather than inherited: TypeScript 6 defaults it on,
+       but that is a compiler-version default, and a project that never says so
+       silently loosens if it is ever built with a compiler that decides
+       otherwise.
+
+       `noUncheckedIndexedAccess` is on and costs nothing today — the codebase
+       reaches into arrays through `map` and `for…of` rather than raw
+       subscripts, so it typechecks clean; keeping it on is what stops the
+       first unguarded subscript from landing.
+
+       `exactOptionalPropertyTypes` is deliberately off. It is not a statement
+       about this code: motion's `MotionProps` declares `viewport?:
+       ViewportOptions` without `| undefined`, so passing a possibly-absent
+       viewport through — which src/components/Reveal.tsx does twice, at its
+       two spread sites — becomes an error that can only be worked around at
+       the call site. Revisit if that type gains `| undefined`. */
+    "strict": true,
+    "noUncheckedIndexedAccess": true,
     "noUnusedLocals": true,
     "noUnusedParameters": true,
     "erasableSyntaxOnly": true,

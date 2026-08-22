@@ -13,7 +13,11 @@
     "moduleDetection": "force",
     "noEmit": true,
 
-    /* Linting */
+    /* Linting. Same strictness as tsconfig.app.json, and declared for the same
+       reason — see the longer note there, including why
+       `exactOptionalPropertyTypes` stays off. */
+    "strict": true,
+    "noUncheckedIndexedAccess": true,
     "noUnusedLocals": true,
     "noUnusedParameters": true,
     "erasableSyntaxOnly": true,

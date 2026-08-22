@@ -2,9 +2,11 @@
 node_modules/
 dist/
 
-# Vercel CLI link and the local env it writes (contains an OIDC token)
+# Vercel CLI link and the local env it writes (contains an OIDC token).
+# Scoped to the *.local files Vite treats as machine-local, so a committed
+# .env.example or .env.production stays visible to git.
 .vercel/
-.env*
+.env*.local
 
 # Source archives the artwork and branding were delivered in. Their contents
 # live unpacked in artwork/ and brand-source/, so the zips are redundant here.

@@ -1,4 +1,22 @@
-@import 'tailwindcss';
+/*
+ * Class scanning is scoped to `src/`.
+ *
+ * Tailwind v4's automatic source detection otherwise walks every file the
+ * repo does not gitignore, and any utility name that appears as loose text in
+ * one of them becomes a rule in the shipped stylesheet. It did: the landing
+ * CSS carried three rules whose class name appears nowhere in the landing
+ * source, one of them the sheet's own five-column grid utility, quoted in an
+ * audit report and thereby smuggled past the exclusion below.
+ *
+ * `source(...)` resolves against the directory of the file that writes it, so
+ * `'.'` here means `src/` for both stylesheet roots: `src/landing.css` imports
+ * this file, and `src/sheet/main.tsx` imports it directly. `src/landing.css`'s
+ * `@source not "./sheet"` still narrows the landing build further.
+ *
+ * Neither HTML entry carries a `class` attribute, so neither needs scanning.
+ * If one ever does, add an explicit `@source "../index.html";` line here.
+ */
+@import 'tailwindcss' source('.');
 
 /*
  * The class scanner reads every source file as loose text, so the `transition`

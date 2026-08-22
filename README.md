@@ -32,6 +32,10 @@ from the header and footer.
 
 ## Local setup
 
+**Node 24 or newer** — declared as `"engines": { "node": ">=24" }` in `package.json`, which
+is both what `npm install` warns against and what Vercel reads to pick a build runtime. The
+toolchain (Vite 8, TypeScript 6, `@types/node` 24, `sharp`) is what sets the floor.
+
 ```bash
 npm install
 ```
@@ -47,15 +51,48 @@ Then open the URL Vite prints (usually `http://localhost:5173`).
 | Command | What it does |
 | --- | --- |
 | `npm run dev` | Vite dev server with HMR |
-| `npm run build` | Type-checks (`tsc -b`) then builds to `dist/` |
+| `npm run build` | Lints, type-checks (`tsc -b`), then builds to `dist/` |
 | `npm run preview` | Serves the built `dist/` locally |
 | `npm run typecheck` | `tsc -b --noEmit` — types only, no output |
-| `npm run lint` | `oxlint` |
+| `npm run lint` | `oxlint --deny-warnings` — any diagnostic is a failure |
 | `npm run images` | Regenerates the AVIF/WebP artwork derivatives and the `public/brand/` logo masks and app icons |
 
 > `npm run typecheck` uses `tsc -b`, not a bare `tsc --noEmit`. The root `tsconfig.json`
 > is a solution file (`"files": []` plus project references), so a bare `tsc --noEmit`
 > would silently check nothing.
+
+### Tooling
+
+**Lint is a gate, not a report.** Every oxlint rule but one is a warning, so `npm run lint`
+runs with `--deny-warnings` and `npm run build` runs it first — a warning fails the build,
+and therefore the deploy, because `vercel.json` builds with `npm run build`. There is no CI
+workflow in the repo; the build script is the only enforcement point there is.
+
+**Enabled plugins** (`.oxlintrc.json`): `react`, `typescript`, `oxc`, `unicorn`, `jsx-a11y`.
+Naming `plugins` at all *replaces* oxlint's default set rather than adding to it, so
+`unicorn` has to be listed explicitly to keep the 13 rules that are on by default; `jsx-a11y`
+is listed because accessibility is this page's main risk surface and 35 of its rules catch by
+hand what a review would otherwise have to re-derive every time.
+
+**The one suppression.** `src/components/Wordmark.tsx` turns off `jsx-a11y/prefer-tag-over-role`
+for a single attribute, with the reasoning in that file's doc comment: the logo lockup is two
+mask-painted `<span>`s that have to be announced as one graphic, which is what WAI-ARIA's
+`img` role is for, and there is no image file for the `<img>` element the rule asks for. It is
+an inline disable, not a config-level one, so the rule stays on everywhere else. oxlint's JSON
+config takes no comments, which is why any such decision is recorded here.
+
+**TypeScript strictness** (`tsconfig.app.json`, `tsconfig.node.json`): `strict` and
+`noUncheckedIndexedAccess` are both declared `true`. `strict` is written out rather than left
+to the compiler default so the setting survives a compiler upgrade. `exactOptionalPropertyTypes`
+is deliberately off — motion's `MotionProps` types `viewport` as optional without `| undefined`,
+which makes passing one through an error at every spread site; see the note in
+`tsconfig.app.json`.
+
+**Tailwind scanning** is scoped to `src/` by `@import 'tailwindcss' source('.')` in
+`src/index.css`. Left unscoped, Tailwind's automatic detection reads every file the repo does
+not gitignore — including Markdown — and any utility name that appears as prose in one of them
+becomes a rule in the shipped stylesheet. Neither HTML entry carries a `class` attribute; if
+one ever does, it needs an explicit `@source` line.
 
 ## Deploying
 
@@ -68,7 +105,7 @@ npx vercel deploy --prod
 ```
 
 Image derivatives are **committed**, so `npm run images` does not run during a deploy —
-a build is just `vite build`. Run it by hand whenever the artwork changes (see below).
+a build is lint, `tsc -b` and `vite build`, nothing else. Run it by hand whenever the artwork changes (see below).
 
 ### The component sheet, at `/components`
 
