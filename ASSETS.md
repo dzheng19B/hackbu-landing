@@ -22,6 +22,13 @@ Because these live under `public/`, Vite serves them verbatim at the matching UR
 and copies them into `dist/` untransformed. Reference them by absolute URL, e.g.
 `/artwork/campus/Campus.png` — **not** by import.
 
+Two further subdirectories, `public/artwork/about/` and `public/artwork/sponsors/`, hold
+the event **photographs** the About us and Sponsors pages show. They are the one part of
+`public/artwork/` with no counterpart in `artwork/`: their sources are the committed JPEGs
+themselves, not a read-only original elsewhere. Everything else on this page applies to
+them unchanged — `npm run images` writes the AVIF/WebP beside each JPEG, and the JPEG stays
+as the `<picture>` fallback. See "The page photographs" below.
+
 ## The campus illustration
 
 **`public/artwork/campus/Campus.png` is the campus illustration** — the single painterly
@@ -75,6 +82,40 @@ All thirteen are valid PNGs at 8-bit depth, and every cutout is tightly cropped 
 ink fills its canvas. Dimensions were read directly from each file's IHDR chunk; sizes
 are from the filesystem.
 
+## The page photographs
+
+Five JPEGs, in two directories that hold no PNG at all. They are the source files, so
+unlike the illustration and the cutouts there is nothing in `artwork/` behind them. Each
+is referenced from `src/lib/images.ts` (`ABOUT_PHOTOS`, `SPONSORS_PHOTO`), which also
+carries its `alt` text, and each is rendered inside a `<picture>` with AVIF and WebP
+sources ahead of the JPEG.
+
+| File | Dimensions (px) | JPEG | AVIF | WebP | Used by |
+| --- | --- | --- | --- | --- | --- |
+| `public/artwork/about/collaborate.jpg` | 1024 × 683 | 166,855 B | 89,543 B | 71,252 B | About us — masthead, eager |
+| `public/artwork/about/table.jpg` | 1024 × 768 | 266,257 B | 127,648 B | 136,812 B | About us — workshops, `loading="lazy"` |
+| `public/artwork/about/hackathon.jpg` | 1024 × 683 | 214,391 B | 120,341 B | 116,448 B | About us — hackathon, `loading="lazy"` |
+| `public/artwork/about/hall.jpg` | 1024 × 683 | 224,970 B | 121,151 B | 120,930 B | **nothing — see below** |
+| `public/artwork/sponsors/workshop.jpg` | 1024 × 768 | 240,688 B | 131,221 B | 135,700 B | Sponsors — masthead, eager |
+
+15 files, 2,284,207 bytes (2.18 MiB) on disk; what a visitor downloads is one derivative
+per photo the page renders, so About us costs 337,532 B of AVIF across its three and
+Sponsors 131,221 B for its one.
+
+**`hall.jpg` and its two derivatives are shipped but unreferenced.** No component names it
+and `src/lib/images.ts` does not list it: it is a fourth About us photo that the page as
+built does not use. It costs nothing on any page load — nothing links it — but it is 467 KB
+in `dist/` and it is the one exception to this file's otherwise exact
+shipped-equals-referenced accounting. Either give it a place on the page or delete all
+three files; do not leave it as a permanent third state.
+
+Both directories predate the AVIF/WebP quality settings being written down for photographs
+specifically: `scripts/generate-images.mjs` reuses the campus encoder settings (`AVIF`
+q68, `CAMPUS_WEBP` q82) for them, which is why the WebP is *larger* than the AVIF on four
+of the five. `<picture>` offers AVIF first, so the WebP is only ever fetched by a browser
+that has no AVIF at all, and the ordering costs those browsers nothing they would not have
+paid for the JPEG.
+
 ## Derivatives
 
 `npm run images` (`scripts/generate-images.mjs`, using `sharp` as a devDependency)
@@ -90,13 +131,18 @@ fails the deploy too) and nothing else.
 | `campus/Campus-{640,960,1280,1672}.webp` | 4 | WebP q82 | 790 KB |
 | `clouds/cloud-N.avif` | 1 each (intrinsic) × 12 | AVIF q70 | 169 KB |
 | `clouds/cloud-N.webp` | 1 each (intrinsic) × 12 | WebP q82, alphaQuality 90 | 256 KB |
+| `about/{collaborate,table,hackathon,hall}.avif` | 1 each (intrinsic) × 4 | AVIF q68 | 448 KB |
+| `about/{collaborate,table,hackathon,hall}.webp` | 1 each (intrinsic) × 4 | WebP q82 | 435 KB |
+| `sponsors/workshop.avif` | 1 (intrinsic) | AVIF q68 | 128 KB |
+| `sponsors/workshop.webp` | 1 (intrinsic) | WebP q82 | 133 KB |
 
 The campus ladder stops at the intrinsic **1672px**: the hero magnifies the artwork up
 to 3x, so no viewport wants fewer pixels than the source has and none can be given more.
 The clouds render at up to 1.15x their intrinsic width, so they get one derivative each
 and their `<picture>` switches on format only, with no `srcset`.
 
-**Measured first load** (production build, Chrome, both 1440x900 and 390x844): 13 image
+**Measured first load of the landing page** (production build, Chrome, both 1440x900 and
+390x844): 13 image
 requests, **495,259 bytes (483.7 KB)** — the widest campus AVIF (322,040 B) plus the
 twelve cloud AVIFs (173,219 B), each fetched exactly once. Doubling the cloud count
 added 93,296 B. That is 13% of the 3.61 MB the PNGs would have cost and **32% of the

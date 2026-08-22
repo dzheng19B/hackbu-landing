@@ -2671,3 +2671,836 @@ hero (count 3 from progress 0.5 onward); inside Phase 6's 7 / <7 / 0 bar, and th
 numbers show the campus `<img>` and the three layer wrappers do release. (4) Still unmeasured,
 as the plan anticipated: Vercel-side routing/headers (P7-1), FCP/LCP timings, Safari skip-link
 behaviour.
+
+## Integration — four new pages (merge of origin/main)
+
+`origin/main` grew four pages while the seven fix phases above were running on `audit-fixes`.
+Commit **`386295a`** is the merge of the two, and this section is the phase that gave those four
+pages the same treatment the audit gave the landing page. Commands were run from the repo root on
+Windows (Git Bash), Node v24.18.0, at the end of the phase, so every output below reflects the
+final tree.
+
+### What arrived in the merge
+
+`about.html` → `src/about/main.tsx` (`AboutPage`), `schedule.html` → `src/schedule/main.tsx`
+(`ScheduleApp`), `sponsors.html` → `src/sponsors/main.tsx` (`SponsorsPage`), `hackathons.html` →
+`src/hackathons/main.tsx` (`HackathonsApp`); a `cleanHtmlUrls()` dev-server plugin; six Rollup
+inputs; three new nav constants (`ABOUT_PATH`, `SPONSORS_PATH`, `HACKATHONS_PATH`) and
+`SCHEDULE_URL` repointed from `hackbu.org/schedule` to the in-site `/schedule`; `IntroSection`
+folded into `AboutSection`; regenerated `public/` images including two new photo directories.
+
+**The routing decision: the honest 404 stands.** `origin/main`'s `vercel.json` carried eleven
+rewrites and no `headers` block; the eleventh was a catch-all,
+`/((?!components|about|schedule|sponsors|hackathons).*)` → `/index.html`. It was dropped and the
+`headers` block (P5-3) kept. `vercel.json` now carries exactly ten rewrites — one per clean URL, with
+and without a trailing slash, for `/about`, `/schedule`, `/sponsors`, `/hackathons` and
+`/components` — and no catch-all, so an unknown path still gets a real 404 with `dist/404.html` as
+the body (P5-4/P7-1, unchanged).
+
+```
+$ node -e "const v=require('./vercel.json'); console.log('rewrites:', v.rewrites.length); v.rewrites.forEach(r=>console.log('  ', r.source, '->', r.destination)); console.log('catch-all present:', v.rewrites.some(r=>/^\/\(|\/\(\.\*\)|^\/:|\*/.test(r.source))); console.log('headers blocks:', v.headers.length, v.headers.map(h=>h.source).join(', '))"
+rewrites: 10
+   /about -> /about.html
+   /about/ -> /about.html
+   /schedule -> /schedule.html
+   /schedule/ -> /schedule.html
+   /sponsors -> /sponsors.html
+   /sponsors/ -> /sponsors.html
+   /hackathons -> /hackathons.html
+   /hackathons/ -> /hackathons.html
+   /components -> /components.html
+   /components/ -> /components.html
+catch-all present: false
+headers blocks: 3 /assets/(.*), /artwork/(.*), /brand/(.*)
+```
+
+---
+
+### The build as merged, before this phase
+
+Two pages prerendered out of six, three dead `.woff` files back in `dist/`, a second stylesheet on
+four of the six pages, and 6,742 B of two other pages' section code in the chunk the landing page
+downloads:
+
+```
+$ npm run build            # as merged, before this phase
+...
+dist/assets/fraunces-latin-600-normal-BFCDtZfi.woff2   18.09 kB
+dist/assets/fraunces-latin-600-normal-DL5QCzvS.woff    22.51 kB
+dist/assets/inter-latin-400-normal-C38fXH4l.woff2      23.66 kB
+dist/assets/inter-latin-500-normal-Cerq10X2.woff2      24.27 kB
+dist/assets/inter-latin-400-normal-CyCys3Eg.woff       30.69 kB
+dist/assets/inter-latin-500-normal-BL9OpVg8.woff       31.28 kB
+dist/assets/latin-500-DgSLZxXM.css                      0.65 kB │ gzip:  0.23 kB
+...
+prerendered dist/index.html (42444 chars)
+prerendered dist/components.html (107476 chars)
+
+$ ls -l dist/assets/            # before
+-rw-r--r-- 1 danz3 197609   4283 about-BRzD8s2b.js
+-rw-r--r-- 1 danz3 197609  22331 components-CAIJoR56.css
+-rw-r--r-- 1 danz3 197609  52881 components-D1RAujI-.js
+-rw-r--r-- 1 danz3 197609  18096 fraunces-latin-600-normal-BFCDtZfi.woff2
+-rw-r--r-- 1 danz3 197609  22512 fraunces-latin-600-normal-DL5QCzvS.woff
+-rw-r--r-- 1 danz3 197609    922 hackathons-zTvYFRql.js
+-rw-r--r-- 1 danz3 197609   1209 index-50dAsE9x.js
+-rw-r--r-- 1 danz3 197609  23664 inter-latin-400-normal-C38fXH4l.woff2
+-rw-r--r-- 1 danz3 197609  30696 inter-latin-400-normal-CyCys3Eg.woff
+-rw-r--r-- 1 danz3 197609  31284 inter-latin-500-normal-BL9OpVg8.woff
+-rw-r--r-- 1 danz3 197609  24272 inter-latin-500-normal-Cerq10X2.woff2
+-rw-r--r-- 1 danz3 197609    655 latin-500-DgSLZxXM.css
+-rw-r--r-- 1 danz3 197609    589 rolldown-runtime-CbXtAM7H.js
+-rw-r--r-- 1 danz3 197609   1015 schedule-CKGw1w17.js
+-rw-r--r-- 1 danz3 197609  19026 schedule-DVtNLg9-.css
+-rw-r--r-- 1 danz3 197609  89487 shared-DHPNqy4W.js
+-rw-r--r-- 1 danz3 197609   2640 sponsors-B59m_TEI.js
+-rw-r--r-- 1 danz3 197609 217364 vendor-DAxSGf3O.js
+18 files, 562,926 B
+
+$ for p in index about schedule sponsors hackathons components; do echo -n "$p: "; grep -c 'rel="stylesheet"' dist/$p.html; done
+index: 1
+about: 2
+schedule: 2
+sponsors: 2
+hackathons: 2
+components: 1
+```
+
+---
+
+### I-1 · FIXED · `src/entry-server.tsx:45,54,63,72`, `scripts/prerender.mjs:64–71`
+
+Four new exports — `renderAbout`, `renderSchedule`, `renderSponsors`, `renderHackathons` — each the
+verbatim client tree of its page, and four new `PAGES` rows. `src/entry-server.tsx:11` now says "all
+six pages" and names all six client entries as the trees it has to stay identical to; the `PAGES`
+comment at `scripts/prerender.mjs:58–63` records that a new page needs three edits together (a
+`rollupOptions.input` entry, a `render*` export, a `PAGES` row) or it ships with an empty root div.
+
+All four HTML files already carried the exact literal `<div id="root"></div>` the script replaces,
+so nothing in the templates had to change for this.
+
+```
+$ npm run build | tail -6
+prerendered dist/index.html (42444 chars)
+prerendered dist/about.html (16349 chars)
+prerendered dist/schedule.html (18376 chars)
+prerendered dist/sponsors.html (11505 chars)
+prerendered dist/hackathons.html (12382 chars)
+prerendered dist/components.html (107476 chars)
+
+$ node -e "const fs=require('fs'); for (const p of ['index','about','schedule','sponsors','hackathons','components']) { const h=fs.readFileSync('dist/'+p+'.html','utf8'); const i=h.indexOf('<div id=\"root\">'), j=h.lastIndexOf('</div>'); const inner=h.slice(i+15,j); console.log(p.padEnd(12), 'root len', String(inner.length).padStart(7), '| has <main:', inner.includes('<main')); }"
+index        root len   42444 | has <main: true
+about        root len   16349 | has <main: true
+schedule     root len   18376 | has <main: true
+sponsors     root len   11505 | has <main: true
+hackathons   root len   12382 | has <main: true
+components   root len  107476 | has <main: true
+```
+
+`dist/404.html` is the one `dist/*.html` with no `#root` and no `<main>`; it is a static body copied
+from `public/`, not an entry.
+
+---
+
+### I-2 · FIXED · `src/about/main.tsx:17–18,34,37`, `src/schedule/main.tsx:11–12,22,25`, `src/sponsors/main.tsx:10–11,21,24`, `src/hackathons/main.tsx:11–12,22,25`
+
+All four client entries were `createRoot(document.getElementById('root')!).render(...)`. They now
+follow `src/main.tsx` exactly: `#root` is **checked by name** rather than asserted (P2-5), so an HTML
+edit that drops the div fails with `#root is missing from about.html` instead of inside
+`hydrateRoot`; and the mount is `hydrateRoot` in production, `createRoot` under
+`import.meta.env.DEV`, because `vite dev` serves the source HTML whose root div is empty and
+hydrating an empty root is itself a mismatch.
+
+```
+$ grep -rn "getElementById('root')!" src ; echo "(exit $?)"
+(exit 1)
+$ grep -n "hydrateRoot(mount, tree)" src/*/main.tsx src/main.tsx
+src/about/main.tsx:37:  hydrateRoot(mount, tree)
+src/hackathons/main.tsx:25:  hydrateRoot(mount, tree)
+src/schedule/main.tsx:25:  hydrateRoot(mount, tree)
+src/sheet/main.tsx:34:  hydrateRoot(mount, tree)
+src/sponsors/main.tsx:24:  hydrateRoot(mount, tree)
+src/main.tsx:59:  hydrateRoot(mount, tree)
+```
+
+---
+
+### I-3 · FIXED · `src/about/main.tsx:13`, `src/schedule/main.tsx:7`, `src/sponsors/main.tsx:6`, `src/hackathons/main.tsx:7`
+
+The twelve `@fontsource/*/latin-*.css` imports across the four entries are gone. They were the exact
+shape P5-13 removed from the landing page and the sheet, and they reintroduced both of its
+symptoms: imported by four entries at once, Rollup hoisted them into a shared CSS chunk that Vite
+emitted as a second, render-blocking `<link rel="stylesheet">` (`latin-500-DgSLZxXM.css`, 655 B), and
+`@fontsource`'s `src:` lists a `.woff` rung after the woff2 one, so the three files P5-6 deleted
+(84,492 B) were back in `dist/`.
+
+The faces come from `src/index.css:31–90` instead, which every page reaches through one of the three
+stylesheet roots — `src/landing.css` (landing, About us, Sponsors), `src/schedule/schedule.css`,
+`src/hackathons/hackathons.css` — each a CSS-level `@import` that is inlined before Vite sees a
+module, so no stylesheet is a shared JS dependency and there is no second link left to emit.
+
+```
+$ ls dist/assets/*.woff
+ls: cannot access 'dist/assets/*.woff': No such file or directory
+$ ls dist/assets/*.woff2 | wc -l
+3
+$ for p in index about schedule sponsors hackathons components; do echo -n "$p "; grep -c 'rel="stylesheet"' dist/$p.html; done
+index 1
+about 1
+schedule 1
+sponsors 1
+hackathons 1
+components 1
+$ for f in dist/assets/*.css; do echo -n "$f "; grep -o '@font-face' "$f" | wc -l; done
+dist/assets/components-CAIJoR56.css 3
+dist/assets/schedule-DVtNLg9-.css 3
+$ grep -c '\.woff)' dist/assets/*.css
+dist/assets/components-CAIJoR56.css:0
+dist/assets/schedule-DVtNLg9-.css:0
+$ grep -rn "fontsource" src --include=*.tsx --include=*.ts
+src/sheet/parts/TokensPart.tsx:352:                Self-hosted via @fontsource. Weight 600 only — a heading asking
+src/sheet/parts/TokensPart.tsx:365:                Self-hosted via @fontsource. Weights 400 and 500 only — 400 for
+```
+
+Two hits remain and both are sheet **copy** — the prose that tells a reader where the faces come
+from, exactly as P5-13 left them. No import survives anywhere in `src/`.
+
+**Note on the shared stylesheet's name.** The three page roots currently produce byte-identical CSS,
+so Vite deduplicates them into one hashed asset that all five public pages link — and it names it
+`schedule-DVtNLg9-.css`, after whichever entry it was first emitted for. That is a naming trap of the
+same kind P1-1 fixed for `SiteFooter-*.js`, and it is left alone here because the only way to change
+it is to make the landing page's CSS differ from the schedule page's, which would cost bytes to fix
+cosmetics. Recorded so that nobody reads the name as evidence the landing page loads schedule CSS:
+it does not — the file is the shared stylesheet, and its hash is unchanged from the merged build
+(`DVtNLg9-` before and after this phase), i.e. none of the prose added in this phase emitted a dead
+utility.
+
+---
+
+### I-4 · FIXED · `src/about/AboutPage.tsx:1,33,153`, `src/schedule/ScheduleApp.tsx:1,22,49`, `src/sponsors/SponsorsPage.tsx:1,27,80`, `src/hackathons/HackathonsApp.tsx:1,20,41`
+
+All four page trees now sit inside one `<LazyMotion features={domAnimation} strict>`, as `App` and
+`ComponentSheet` do (P5-2). Their sections render `<Reveal>` / `<RevealGroup>` / `<RevealItem>`,
+which are `m.*` components: without a provider they carry no features at all. `strict` keeps the
+saving enforceable — a `motion.*` below this point throws rather than dragging motion's full feature
+set back into the shared chunk.
+
+The wrapper is **inside** each page component, not around it in `main.tsx`, so the client tree and
+the matching `render*` export in `src/entry-server.tsx` are the same tree and hydration has nothing
+to disagree about.
+
+There was no `motion.*` usage to convert: the merge's new code already used `m.*` throughout, via
+the shared `src/components/Reveal.tsx`.
+
+```
+$ grep -rn '<motion\.' src ; echo "(exit $?)"
+(exit 1)
+$ grep -rln "LazyMotion" src
+src/about/AboutPage.tsx
+src/App.tsx
+src/hackathons/HackathonsApp.tsx
+src/schedule/ScheduleApp.tsx
+src/sheet/ComponentSheet.tsx
+src/sponsors/SponsorsPage.tsx
+```
+
+Six files: the two roots P5-2 wrapped, and the four page roots added here.
+
+---
+
+### I-5 · FIXED · `src/components/Reveal.tsx:24–41,55–56,96,127,174`
+
+**A defect the live checks found, not one the merge introduced — it was on the landing page too.**
+Under `prefers-reduced-motion: reduce` every `<Reveal>` wrapper stayed at `opacity: 0` forever, so a
+reduced-motion visitor saw blank sections.
+
+The cause is the interaction between two correct decisions. `usePrefersReducedMotion()` is
+deliberately gated on having mounted (`src/lib/motion.ts:75–84`), so that the server's answer and the
+client's first render agree and hydration is clean. That means the *first* render always takes the
+full-motion branch and motion writes `opacity: 0; transform: translateY(16px)` onto every wrapper.
+The hook then flips in a layout effect. The old reduced branch was `{}` — it dropped the motion props
+— and dropping them removes nothing: `initial` is a mount-time prop that motion never revisits, and
+the `whileInView` trigger that would eventually have cleared the hidden state was dropped along with
+it. The element kept the hidden inline style for the rest of the session.
+
+Measured on the built output before the fix:
+
+```
+$ node int-rm.mjs 9390 http://localhost:4173/about.html      # prefers-reduced-motion: reduce
+http://localhost:4173/about.html
+  matchMedia reduce = true | elements in <main> with a style attribute: 7
+    div top=250  opacity=0 transform=matrix(1, 0, 0, 1, 0, 16) style="opacity:0;transform:translateY(16px)"
+    div top=208  opacity=0 transform=matrix(1, 0, 0, 1, 0, 16) style="opacity:0;transform:translateY(16px)"
+    div top=1152 opacity=0 transform=matrix(1, 0, 0, 1, 0, 16) style="opacity:0;transform:translateY(16px)"
+    div top=1224 opacity=0 transform=matrix(1, 0, 0, 1, 0, 16) style="opacity:0;transform:translateY(16px)"
+    div top=2236 opacity=0 transform=matrix(1, 0, 0, 1, 0, 16) style="opacity:0;transform:translateY(16px)"
+    div top=2096 opacity=0 transform=matrix(1, 0, 0, 1, 0, 16) style="opacity:0;transform:translateY(16px)"
+    div top=3040 opacity=0 transform=matrix(1, 0, 0, 1, 0, 16) style="opacity:0;transform:translateY(16px)"
+```
+
+The fix is to hand the reduced branch the resting frame as `animate` — the one prop motion *does*
+re-read when it changes — with `duration: 0`:
+
+```tsx
+const REST = { opacity: 1, y: 0 } as const
+const REST_TRANSITION = { duration: 0 } as const
+...
+const motionProps: MotionProps = prefersReducedMotion
+  ? { animate: REST, transition: REST_TRANSITION }
+  : { /* unchanged */ }
+```
+
+in all three components. The flip happens in a layout effect, so the set lands in the same frame as
+hydration and before the first paint: a reduced-motion visitor sees the resting frame and never a
+step of the movement. motion writes `transform: none` rather than `translateY(0px)` once every
+transform channel is back at its default, so the resting frame is byte-identical to an unanimated
+element's.
+
+The full-motion branch is untouched, and the reduced branch is unreachable on the first render, so
+the prerendered markup is unchanged — the six `prerendered … chars` counts are identical either side
+of this fix (42444 / 16349 / 18376 / 11505 / 12382 / 107476).
+
+After, on the built output, first load in a fresh profile at `prefers-reduced-motion: reduce`:
+
+```
+$ node int-rm.mjs <port> http://localhost:4173/about.html
+  matchMedia reduce = true | elements in <main> with a style attribute: 7
+    div top=234  opacity=1 transform=none style="opacity: 1; transform: none;"
+    div top=192  opacity=1 transform=none style="opacity: 1; transform: none;"
+    div top=1136 opacity=1 transform=none style="opacity: 1; transform: none;"
+    div top=1208 opacity=1 transform=none style="opacity: 1; transform: none;"
+    div top=2220 opacity=1 transform=none style="opacity: 1; transform: none;"
+    div top=2080 opacity=1 transform=none style="opacity: 1; transform: none;"
+    div top=3024 opacity=1 transform=none style="opacity: 1; transform: none;"
+
+$ node int-rm.mjs <port> http://localhost:4173/schedule.html
+  matchMedia reduce = true | elements in <main> with a style attribute: 12
+    div top=160  opacity=1 transform=none style="opacity: 1; transform: none;"
+    div top=810  opacity=1 transform=none style="opacity: 1; transform: none;"
+    ul  top=1082 opacity=1 transform=none style="transform: none; opacity: 1;"
+    li  top=1082 opacity=1 transform=none style="opacity: 1; transform: none;"
+    li  top=1082 opacity=1 transform=none style="opacity: 1; transform: none;"
+    li  top=1082 opacity=1 transform=none style="opacity: 1; transform: none;"
+    div top=1921 opacity=1 transform=none style="opacity: 1; transform: none;"
+    div top=2133 opacity=1 transform=none style="transform: none; opacity: 1;"
+    div top=2133 opacity=1 transform=none style="opacity: 1; transform: none;"
+    div top=2133 opacity=1 transform=none style="opacity: 1; transform: none;"
+    div top=2634 opacity=1 transform=none style="opacity: 1; transform: none;"
+    div top=2847 opacity=1 transform=none style="opacity: 1; transform: none;"
+
+$ node int-rm.mjs <port> http://localhost:4173/sponsors.html
+  matchMedia reduce = true | elements in <main> with a style attribute: 2
+    div top=192 opacity=1 transform=none style="opacity: 1; transform: none;"
+    div top=192 opacity=1 transform=none style="opacity: 1; transform: none;"
+
+$ node int-rm.mjs <port> http://localhost:4173/hackathons.html
+  matchMedia reduce = true | elements in <main> with a style attribute: 3
+    div top=192  opacity=1 transform=none style="opacity: 1; transform: none;"
+    div top=996  opacity=1 transform=none style="opacity: 1; transform: none;"
+    div top=1260 opacity=1 transform=none style="opacity: 1; transform: none;"
+```
+
+The landing page and the sheet are fixed by the same change, since all six pages render the same
+`Reveal.tsx`. This closes the one part of AUDIT invariant `r` — "reduced motion handled per
+component" — that had only ever been measured on the hero and the cloud drift, never on the reveals.
+
+---
+
+### I-6 · FIXED · `about.html:25`, `schedule.html:26`, `sponsors.html:26`, `hackathons.html:25`
+
+`<meta name="theme-color" content="#f7f5ee" />` on the four new entries, the P3-6 treatment the
+landing page and the sheet already had. `#f7f5ee` is the `cloud` token from `src/index.css`'s
+`@theme`, confirmed against it; each carries the same one-line comment pointing at `index.html`,
+where the reasoning is written out. There is no dark scheme to vary it against.
+
+```
+$ grep -c 'name="theme-color"' index.html components.html about.html schedule.html sponsors.html hackathons.html
+index.html:1
+components.html:1
+about.html:1
+schedule.html:1
+sponsors.html:1
+hackathons.html:1
+```
+
+---
+
+### I-7 · FIXED · `vite.config.ts:93–99,112`
+
+`fontPreload()` was `index.html` only, by an explicit `!ctx.path.endsWith('/index.html')` guard. It
+is now every entry but the sheet — one line:
+
+```ts
+if (!ctx.bundle || ctx.path.endsWith('/components.html')) return
+```
+
+The argument P5-5 made for `index.html` applies unchanged to the other four public pages: all of them
+set body copy above the fold in Inter 400/500 and headings in Fraunces 600, and each is a plausible
+cold first visit — an inbound link to `/about` has exactly the problem the landing page had. It is
+the same three hashed assets on every page, so the cost is five head tags. `components.html` keeps
+its exemption: internal, `noindex`, never a cold first visit that matters.
+
+```
+$ for p in index about schedule sponsors hackathons components; do echo -n "$p: "; grep -c 'rel="preload" as="font"' dist/$p.html; done
+index: 3
+about: 3
+schedule: 3
+sponsors: 3
+hackathons: 3
+components: 0
+```
+
+Verified live rather than by inspection, because a preload the page does not consume is a console
+warning: on a **first load in a fresh browser profile**, all five pages report 0 warnings and
+`document.fonts.status === "loaded"` with all three faces (readout below). A second, sequential pass
+in one warm profile does raise "preloaded … but not used" on the four pages loaded after the first —
+that is the browser declining to match a preload against a request already served from cache, an
+artifact of the measurement, and it is why the readout below uses one fresh profile per page.
+
+---
+
+### I-8 · FIXED · `vite.config.ts:199–222,235`
+
+`manualChunks` sent everything under `src/components/**` to the `shared` chunk. Two of those
+directories — `src/components/sections/schedule/` and `src/components/sections/hackathons/` — are
+rendered by exactly one page each, and `shared` is downloaded by all six, so the landing page was
+paying for the schedule page's calendar copy and the hackathon page's registration copy.
+
+A named exception, `SECTIONS_ONE_PAGE`, now returns them to their own entry chunks. Nothing else
+moved: `src/components/sections/` itself stays in `shared` because the landing sections are genuinely
+rendered by two entries (the sheet's `ComposedPart` renders them live), and nothing under
+`src/about|schedule|sponsors|hackathons` ever matched the `shared` rule in the first place.
+
+Before → after, same build otherwise:
+
+```
+                       before      after
+shared-*.js            89,487 B    82,745 B   (−6,742)
+schedule-*.js           1,015 B     6,102 B
+hackathons-*.js           922 B     2,914 B
+```
+
+```
+$ cd dist/assets && for s in "Add to your calendar" "Registration opens"; do echo "-- '$s'"; for f in index-*.js about-*.js schedule-*.js sponsors-*.js hackathons-*.js shared-*.js components-*.js; do printf "  %-28s %s\n" "$f" "$(grep -ac "$s" $f)"; done; done
+-- 'Add to your calendar'
+  index-Bkx4IPC7.js            0
+  about-CVP1pGar.js            0
+  schedule-8bNgrPmI.js         1
+  sponsors-BZ65Yu9L.js         0
+  hackathons-Ln8f0CVt.js       0
+  shared-DQViWOsl.js           0
+  components-DqkT7AXf.js       0
+-- 'Registration opens'
+  index-Bkx4IPC7.js            0
+  about-CVP1pGar.js            0
+  schedule-8bNgrPmI.js         0
+  sponsors-BZ65Yu9L.js         0
+  hackathons-Ln8f0CVt.js       0
+  shared-DQViWOsl.js           0
+  components-DqkT7AXf.js       1
+```
+
+(Before this change both strings returned **1** in `shared-*.js` and **0** everywhere else.)
+
+Sheet isolation is unchanged and now checked against all five non-sheet pages rather than one:
+
+```
+$ cd dist/assets && printf "%-30s %-11s %-10s %-10s\n" chunk Primitives buyscroll HeroScroll && for f in index-*.js about-*.js schedule-*.js sponsors-*.js hackathons-*.js shared-*.js vendor-*.js rolldown-runtime-*.js components-*.js; do printf "%-30s %-11s %-10s %-10s\n" "$f" "$(grep -ac 'Primitives in isolation' $f)" "$(grep -ac 'buy scroll distance' $f)" "$(grep -ac 'HeroScroll.progress' $f)"; done
+chunk                          Primitives  buyscroll  HeroScroll
+index-Bkx4IPC7.js              0           0          0
+about-CVP1pGar.js              0           0          0
+schedule-8bNgrPmI.js           0           0          0
+sponsors-BZ65Yu9L.js           0           0          0
+hackathons-Ln8f0CVt.js         0           0          0
+shared-DQViWOsl.js             0           0          0
+vendor-BEH_W1wF.js             0           0          0
+rolldown-runtime-CbXtAM7H.js   0           0          0
+components-DqkT7AXf.js         1           1          1
+
+$ ls dist/assets/SiteFooter-*.js
+ls: cannot access 'dist/assets/SiteFooter-*.js': No such file or directory
+$ ls dist/assets/vendor-*.js dist/assets/shared-*.js
+dist/assets/shared-DQViWOsl.js
+dist/assets/vendor-BEH_W1wF.js
+```
+
+Every page loads exactly four scripts — its own entry chunk plus `rolldown-runtime`, `shared` and
+`vendor`:
+
+```
+$ for p in index about schedule sponsors hackathons components; do echo "-- $p"; grep -o 'src="/assets/[^"]*"' dist/$p.html; grep -o 'href="/assets/[^"]*\.js"' dist/$p.html; done
+-- index
+src="/assets/index-Bkx4IPC7.js"
+href="/assets/rolldown-runtime-CbXtAM7H.js"
+href="/assets/shared-DQViWOsl.js"
+href="/assets/vendor-BEH_W1wF.js"
+-- about
+src="/assets/about-CVP1pGar.js"
+href="/assets/rolldown-runtime-CbXtAM7H.js"
+href="/assets/shared-DQViWOsl.js"
+href="/assets/vendor-BEH_W1wF.js"
+-- schedule
+src="/assets/schedule-8bNgrPmI.js"
+href="/assets/rolldown-runtime-CbXtAM7H.js"
+href="/assets/shared-DQViWOsl.js"
+href="/assets/vendor-BEH_W1wF.js"
+-- sponsors
+src="/assets/sponsors-BZ65Yu9L.js"
+href="/assets/rolldown-runtime-CbXtAM7H.js"
+href="/assets/shared-DQViWOsl.js"
+href="/assets/vendor-BEH_W1wF.js"
+-- hackathons
+src="/assets/hackathons-Ln8f0CVt.js"
+href="/assets/rolldown-runtime-CbXtAM7H.js"
+href="/assets/shared-DQViWOsl.js"
+href="/assets/vendor-BEH_W1wF.js"
+-- components
+src="/assets/components-DqkT7AXf.js"
+href="/assets/rolldown-runtime-CbXtAM7H.js"
+href="/assets/shared-DQViWOsl.js"
+href="/assets/vendor-BEH_W1wF.js"
+```
+
+---
+
+### I-9 · FIXED · `about.html:17`, `schedule.html:18`, `sponsors.html:18`, `hackathons.html:17`, documented at `README.md:130–133`, `vite.config.ts:6–10`
+
+The four new pages hardcoded `https://hackbu-landing.vercel.app` in their `og:image`, which made
+README's "When the custom domain lands / **Nothing in this repo needs editing**" false: a domain move
+would have left four social cards pointing at the old host. Each literal is now `%SITE_ORIGIN%`, the
+placeholder `siteOrigin()` already substitutes — that plugin's `transformIndexHtml` carries no path
+filter, so it applies to every entry and needed no change. No `og:` tag was added or removed; only
+the origin half of an existing `content` attribute changed.
+
+```
+$ grep -rn "hackbu-landing.vercel.app" *.html ; echo "(exit $?)"
+(exit 1)
+$ grep -o 'content="https://[^"]*og-image.png"' dist/*.html
+dist/about.html:content="https://hackbu-landing.vercel.app/brand/og-image.png"
+dist/hackathons.html:content="https://hackbu-landing.vercel.app/brand/og-image.png"
+dist/index.html:content="https://hackbu-landing.vercel.app/brand/og-image.png"
+dist/schedule.html:content="https://hackbu-landing.vercel.app/brand/og-image.png"
+dist/sponsors.html:content="https://hackbu-landing.vercel.app/brand/og-image.png"
+```
+
+The built output is unchanged — off Vercel the plugin substitutes the fallback literal, which is what
+was hardcoded — and on Vercel all five now follow `VERCEL_PROJECT_PRODUCTION_URL` together.
+
+---
+
+### I-10 · FIXED · `README.md:19–23,56,96,99–107,144–198,336–399`, `src/main.tsx:4–12`, `src/landing.css:1–29`, `src/sheet/main.tsx:29`, `scripts/prerender.mjs:1–41,58–63`, `src/entry-server.tsx:11`, `vite.config.ts:169–184,193–221`
+
+Documentation, brought back in line with a six-page build.
+
+- **README's opening** said the redesign "replaces **only** the landing page" and listed schedule,
+  hackathons and sponsors as staying on `hackbu.org`. It now names the five public pages and lists
+  what is still off-site (blog, photos, organizers, resources).
+- **The Scripts table** said `npm run build` "prerenders both pages"; now "all six pages".
+- **Tailwind scanning** said "Neither HTML entry carries a `class` attribute"; now "None of the six".
+  A new paragraph names the three stylesheet roots and why each page ends up with exactly one
+  `<link rel="stylesheet">`, `@font-face` rules included.
+- **"The component sheet, at `/components`"** became **"The pages, and how they are routed"**: a table
+  of the six entries with their client entry and `render*` export, the prerender/hydrate contract and
+  the three-edits-together rule, the chunking (including I-8's exception), and a routing table with a
+  row per clean URL. The honest-404 row and the "Vite dev and preview do not emulate this" caveat are
+  unchanged in substance; the caveat now also records that the clean URLs *are* emulated in `vite dev`
+  by `cleanHtmlUrls()` and are not under `npm run preview`.
+- **The Layout tree** lists the four new page directories with their files, the two new per-page
+  section directories, the About us/Sponsors photographs under `public/artwork/`, and the six HTML
+  entries at the repo root; a closing paragraph states the shape every client entry follows.
+- **Comments**: the "both pages"/"two pages" wording is gone from `scripts/prerender.mjs`,
+  `src/entry-server.tsx`, `src/main.tsx`, `src/sheet/main.tsx` and `vite.config.ts`.
+  `src/landing.css`'s header now says it is the root for three pages and records the one thing that
+  makes its `@source not "./sponsors"` line safe — that the five public pages must keep linking one
+  deduplicated stylesheet, which is exactly the check that would catch a sponsors-only utility being
+  scanned away.
+
+```
+$ grep -n "both pages\|two pages\|two entries\|Two entry\|both entries\|two entry" vite.config.ts scripts/prerender.mjs src/entry-server.tsx src/main.tsx src/sheet/main.tsx README.md src/index.css src/landing.css ; echo "(exit $?)"
+(exit 1)
+$ grep -rn "Phase [0-9]" src index.html components.html about.html schedule.html sponsors.html hackathons.html README.md ASSETS.md scripts vercel.json ; echo "(exit $?)"
+(exit 1)
+```
+
+The one `Phase [0-9]` hit that survived the merge was at `src/components/sections/AboutSection.tsx:11`
+("Phase 7 moved it here instead"), inherited from the landing page's own history; it is now written
+without the phase number, which is what the rest of `src/` already does.
+
+---
+
+### I-11 · FIXED · `ASSETS.md:25–30,85–117,134–137,144`
+
+`ASSETS.md` enumerated `public/artwork/` and predated the two directories the merge added. It now
+records that `about/` and `sponsors/` are the one part of `public/artwork/` with **no** counterpart in
+the read-only `artwork/` — their sources are the committed JPEGs themselves — and carries a "The page
+photographs" section with all five files, their dimensions, the byte size of each of the three
+encodings, and which page renders each. Four rows were added to the Derivatives table, and the
+"Measured first load" paragraph is now labelled as the landing page's, which is what it always
+measured.
+
+```
+$ ls public/artwork
+about
+campus
+clouds
+sponsors
+$ node .dims.tmp.mjs      # sharp metadata + filesystem size, then deleted
+public/artwork/about/collaborate.avif | 1024 x 683 | 89543 B | heif
+public/artwork/about/collaborate.jpg  | 1024 x 683 | 166855 B | jpeg
+public/artwork/about/collaborate.webp | 1024 x 683 | 71252 B | webp
+public/artwork/about/hackathon.avif | 1024 x 683 | 120341 B | heif
+public/artwork/about/hackathon.jpg  | 1024 x 683 | 214391 B | jpeg
+public/artwork/about/hackathon.webp | 1024 x 683 | 116448 B | webp
+public/artwork/about/hall.avif | 1024 x 683 | 121151 B | heif
+public/artwork/about/hall.jpg  | 1024 x 683 | 224970 B | jpeg
+public/artwork/about/hall.webp | 1024 x 683 | 120930 B | webp
+public/artwork/about/table.avif | 1024 x 768 | 127648 B | heif
+public/artwork/about/table.jpg  | 1024 x 768 | 266257 B | jpeg
+public/artwork/about/table.webp | 1024 x 768 | 136812 B | webp
+public/artwork/sponsors/workshop.avif | 1024 x 768 | 131221 B | heif
+public/artwork/sponsors/workshop.jpg  | 1024 x 768 | 240688 B | jpeg
+public/artwork/sponsors/workshop.webp | 1024 x 768 | 135700 B | webp
+15 files, 2284207 B
+```
+
+**One finding recorded rather than fixed**: `hall.jpg` and its two derivatives (467,051 B) ship in
+`dist/` and nothing references them — `src/lib/images.ts`'s `ABOUT_PHOTOS` names `collaborate`,
+`table` and `hackathon` only. `public/` is read-only for this phase, so the files are documented at
+`ASSETS.md:105–110` with the decision it needs (give it a place on the page, or delete all three);
+until then it is the one exception to invariant `l`'s otherwise exact shipped-equals-referenced
+accounting. No page load fetches it.
+
+---
+
+### The build after this phase
+
+```
+$ npm run typecheck ; echo "exit=$?"
+exit=0
+$ npm run lint ; echo "exit=$?"
+exit=0
+$ npm run build            # lint, tsc -b, vite build, node scripts/prerender.mjs
+✓ 467 modules transformed.
+dist/components.html                                    1.68 kB │ gzip:  0.79 kB
+dist/about.html                                         1.90 kB │ gzip:  0.76 kB
+dist/hackathons.html                                    1.91 kB │ gzip:  0.76 kB
+dist/schedule.html                                      1.94 kB │ gzip:  0.79 kB
+dist/sponsors.html                                      1.95 kB │ gzip:  0.79 kB
+dist/index.html                                         5.57 kB │ gzip:  2.38 kB
+dist/assets/fraunces-latin-600-normal-BFCDtZfi.woff2   18.09 kB
+dist/assets/inter-latin-400-normal-C38fXH4l.woff2      23.66 kB
+dist/assets/inter-latin-500-normal-Cerq10X2.woff2      24.27 kB
+dist/assets/schedule-DVtNLg9-.css                      19.02 kB │ gzip:  4.79 kB
+dist/assets/components-CAIJoR56.css                    22.33 kB │ gzip:  5.44 kB
+dist/assets/rolldown-runtime-CbXtAM7H.js                0.58 kB │ gzip:  0.36 kB
+dist/assets/index-Bkx4IPC7.js                           1.19 kB │ gzip:  0.58 kB
+dist/assets/sponsors-BZ65Yu9L.js                        2.72 kB │ gzip:  1.26 kB
+dist/assets/hackathons-Ln8f0CVt.js                      2.91 kB │ gzip:  1.25 kB
+dist/assets/about-CVP1pGar.js                           4.36 kB │ gzip:  1.72 kB
+dist/assets/schedule-8bNgrPmI.js                        6.10 kB │ gzip:  2.30 kB
+dist/assets/components-DqkT7AXf.js                     52.88 kB │ gzip: 16.28 kB
+dist/assets/shared-DQViWOsl.js                         82.74 kB │ gzip: 29.09 kB
+dist/assets/vendor-BEH_W1wF.js                        216.95 kB │ gzip: 70.07 kB
+✓ built in 758ms
+prerendered dist/index.html (42444 chars)
+prerendered dist/about.html (16349 chars)
+prerendered dist/schedule.html (18376 chars)
+prerendered dist/sponsors.html (11505 chars)
+prerendered dist/hackathons.html (12382 chars)
+prerendered dist/components.html (107476 chars)
+
+$ ls -l dist/assets/            # after
+-rw-r--r-- 1 danz3 197609   4360 about-CVP1pGar.js
+-rw-r--r-- 1 danz3 197609  22331 components-CAIJoR56.css
+-rw-r--r-- 1 danz3 197609  52886 components-DqkT7AXf.js
+-rw-r--r-- 1 danz3 197609  18096 fraunces-latin-600-normal-BFCDtZfi.woff2
+-rw-r--r-- 1 danz3 197609   2914 hackathons-Ln8f0CVt.js
+-rw-r--r-- 1 danz3 197609   1199 index-Bkx4IPC7.js
+-rw-r--r-- 1 danz3 197609  23664 inter-latin-400-normal-C38fXH4l.woff2
+-rw-r--r-- 1 danz3 197609  24272 inter-latin-500-normal-Cerq10X2.woff2
+-rw-r--r-- 1 danz3 197609    589 rolldown-runtime-CbXtAM7H.js
+-rw-r--r-- 1 danz3 197609   6102 schedule-8bNgrPmI.js
+-rw-r--r-- 1 danz3 197609  19026 schedule-DVtNLg9-.css
+-rw-r--r-- 1 danz3 197609  82745 shared-DQViWOsl.js
+-rw-r--r-- 1 danz3 197609   2725 sponsors-BZ65Yu9L.js
+-rw-r--r-- 1 danz3 197609 216957 vendor-BEH_W1wF.js
+14 files, 477,866 B
+```
+
+18 files → 14, and 562,926 B → 477,866 B (**−85,060**). The arithmetic closes exactly: the three
+dead `.woff` files are −84,492 B and the split `latin-500-*.css` is −655 B, which is −85,147; the
+JavaScript nets **+87 B** back on top of that (`shared` −6,742, `schedule` +5,087, `hackathons`
++1,992, `vendor` −407, `about` +77, `sponsors` +85, `index` −10, `components` +5 — I-8's chunk move
+plus the new entry code). Both stylesheets and all three `.woff2` are byte-identical to the merged
+build, same content hashes.
+
+---
+
+### Live readout (raw)
+
+Headless Microsoft Edge 151.0.4129.101 (`--headless=new`) over CDP, viewport 1280×800,
+`deviceScaleFactor: 1`. **Every built-output row below is a first load in a brand-new
+`--user-data-dir`**, one profile per page, sampled 3.5 s after `Page.loadEventFired`. `npm run
+preview` served `dist/` on 4173; `npm run dev` served source on 5173.
+
+#### Built output, normal motion — 6/6 pages clean
+
+```
+URL http://localhost:4173/
+  title="HackBU" rootChildren=1 rootHasMain=true stylesheets=1 fontPreloads=3
+  fonts=loaded loadedFaces=["Fraunces 600","Inter 400","Inter 500"] themeColor=#f7f5ee
+  errors=0 warnings=0 failedRequests=0 http4xx5xx=0 hydrationMentions=0
+  willChangeTransform=7 campus={"transform":"matrix(3, 0, 0, 3, 0, 0)","objectPosition":"52% 0%"}
+URL http://localhost:4173/about.html
+  title="About Us · HackBU" rootChildren=1 rootHasMain=true stylesheets=1 fontPreloads=3
+  fonts=loaded loadedFaces=["Fraunces 600","Inter 400","Inter 500"] themeColor=#f7f5ee
+  errors=0 warnings=0 failedRequests=0 http4xx5xx=0 hydrationMentions=0
+  reveals=["div 1 none","div 1 none","div 0 matrix(1, 0, 0, 1, 0, 16)","div 0 matrix(1, 0, 0, 1, 0, 16)","div 0 matrix(1, 0, 0, 1, 0, 16)","div 0 matrix(1, 0, 0, 1, 0, 16)"]
+URL http://localhost:4173/schedule.html
+  title="Schedule | HackBU" rootChildren=1 rootHasMain=true stylesheets=1 fontPreloads=3
+  fonts=loaded loadedFaces=["Fraunces 600","Inter 400","Inter 500"] themeColor=#f7f5ee
+  errors=0 warnings=0 failedRequests=0 http4xx5xx=0 hydrationMentions=0
+  reveals=["div 1 none","div 0 matrix(1, 0, 0, 1, 0, 16)","li 0 matrix(1, 0, 0, 1, 0, 16)","li 0 matrix(1, 0, 0, 1, 0, 16)","li 0 matrix(1, 0, 0, 1, 0, 16)","div 0 matrix(1, 0, 0, 1, 0, 16)"]
+URL http://localhost:4173/sponsors.html
+  title="Sponsors · HackBU" rootChildren=1 rootHasMain=true stylesheets=1 fontPreloads=3
+  fonts=loaded loadedFaces=["Fraunces 600","Inter 400","Inter 500"] themeColor=#f7f5ee
+  errors=0 warnings=0 failedRequests=0 http4xx5xx=0 hydrationMentions=0
+  reveals=["div 1 none","div 1 none"]
+URL http://localhost:4173/hackathons.html
+  title="Hackathons · HackBU" rootChildren=1 rootHasMain=true stylesheets=1 fontPreloads=3
+  fonts=loaded loadedFaces=["Fraunces 600","Inter 400","Inter 500"] themeColor=#f7f5ee
+  errors=0 warnings=0 failedRequests=0 http4xx5xx=0 hydrationMentions=0
+  reveals=["div 1 none","div 0 matrix(1, 0, 0, 1, 0, 16)","div 0 matrix(1, 0, 0, 1, 0, 16)"]
+URL http://localhost:4173/components.html
+  title="HackBU component sheet" rootChildren=1 rootHasMain=true stylesheets=1 fontPreloads=0
+  fonts=loaded loadedFaces=["Fraunces 600","Inter 400","Inter 500"] themeColor=#f7f5ee
+  errors=0 warnings=0 failedRequests=0 http4xx5xx=0 hydrationMentions=0
+```
+
+Zero console errors, zero warnings, zero failed or ≥400 requests, and **zero occurrences of
+"hydrat" or "did not match"** on all six — the check that the six new server trees really are the six
+client trees. The mixed `1 none` / `0 translateY(16px)` reveal rows are correct `whileInView`
+behaviour at scroll 0: what is on screen has revealed, what is below the fold is waiting.
+
+#### Reveals actually fire (built output, normal motion, stepped scroll)
+
+```
+http://localhost:4173/about.html
+  scrollY=0                        ["1/none","1/none","0/moved","0/moved","0/moved","0/moved","0/moved"]
+  after stepped scroll to bottom   ["1/none","1/none","1/none","1/none","1/none","1/none","1/none"]
+http://localhost:4173/schedule.html
+  scrollY=0                        ["1/none","0/moved","0/moved","0/moved","0/moved","0/moved","0/moved","0/moved","0/moved","0/moved"]
+  after stepped scroll to bottom   ["1/none","1/none","1/none","1/none","1/none","1/none","1/none","1/none","1/none","1/none"]
+http://localhost:4173/hackathons.html
+  scrollY=0                        ["1/none","0/moved","0/moved"]
+  after stepped scroll to bottom   ["1/none","1/none","1/none"]
+http://localhost:4173/sponsors.html
+  scrollY=0                        ["1/none","1/none"]
+  after stepped scroll to bottom   ["1/none","1/none"]
+```
+
+Every reveal on every new page goes from hidden to resting. Sponsors has two and both are above the
+fold, so both have already fired at scroll 0.
+
+#### Built output, `prefers-reduced-motion: reduce` — 6/6 pages at rest
+
+```
+URL http://localhost:4173/  [prefers-reduced-motion: reduce]
+  errors=0 warnings=0 failedRequests=0 http4xx5xx=0 hydrationMentions=0
+  reveals=["img 1 none","div 0.5 none","div 0.75 none","div 1 none","div 1 none","ul 1 none"]
+  willChangeTransform=0 campus={"transform":"none","objectPosition":"52% 0%"}
+URL http://localhost:4173/about.html  [prefers-reduced-motion: reduce]
+  errors=0 warnings=0 failedRequests=0 http4xx5xx=0 hydrationMentions=0
+  reveals=["div 1 none","div 1 none","div 1 none","div 1 none","div 1 none","div 1 none"]
+  willChangeTransform=0
+URL http://localhost:4173/schedule.html  [prefers-reduced-motion: reduce]
+  errors=0 warnings=0 failedRequests=0 http4xx5xx=0 hydrationMentions=0
+  reveals=["div 1 none","div 1 none","ul 1 none","li 1 none","li 1 none","li 1 none"]
+  willChangeTransform=0
+URL http://localhost:4173/sponsors.html  [prefers-reduced-motion: reduce]
+  errors=0 warnings=0 failedRequests=0 http4xx5xx=0 hydrationMentions=0
+  reveals=["div 1 none","div 1 none"]
+  willChangeTransform=0
+URL http://localhost:4173/hackathons.html  [prefers-reduced-motion: reduce]
+  errors=0 warnings=0 failedRequests=0 http4xx5xx=0 hydrationMentions=0
+  reveals=["div 1 none","div 1 none","div 1 none"]
+  willChangeTransform=0
+URL http://localhost:4173/components.html  [prefers-reduced-motion: reduce]
+  errors=0 warnings=0 failedRequests=0 http4xx5xx=0 hydrationMentions=0
+  reveals=["ul 1 none","li 1 none","li 1 none","li 1 none","li 1 none","li 1 none"]
+  willChangeTransform=0
+```
+
+`opacity: 1` and `transform: none` on every reveal, on every page. The landing page's remaining
+`0.5` / `0.75` rows are the hero's three cloud layer wrappers, which are painted at fixed opacities
+by design and are not reveals. Page-wide `will-change: transform` is **0** under reduced motion on
+all six, against **7** on the landing page at scroll 0 under normal motion — both unchanged from
+Phase 6's measurement.
+
+#### Landing-page invariants, on the built output
+
+```
+  campus transform at scroll 0 : matrix(3, 0, 0, 3, 0, 0)
+  campus object-position       : 52% 0%
+  will-change: transform count : 7  (normal motion, scroll 0)   /  0  (reduced motion)
+  skip link activates          -> main#main
+```
+
+#### Dev server (`npm run dev`, port 5173) — clean URLs, 6/6 clean
+
+```
+dev /            title="HackBU"                  rootChildren=1 hasMain=true fonts=loaded themeColor=#f7f5ee
+  dev /: errors=0 warnings=0 failedOr4xx=0 hydrationMentions=0
+dev /about       title="About Us · HackBU"       rootChildren=1 hasMain=true fonts=loaded themeColor=#f7f5ee
+  dev /about: errors=0 warnings=0 failedOr4xx=0 hydrationMentions=0
+dev /schedule    title="Schedule | HackBU"       rootChildren=1 hasMain=true fonts=loaded themeColor=#f7f5ee
+  dev /schedule: errors=0 warnings=0 failedOr4xx=0 hydrationMentions=0
+dev /sponsors    title="Sponsors · HackBU"       rootChildren=1 hasMain=true fonts=loaded themeColor=#f7f5ee
+  dev /sponsors: errors=0 warnings=0 failedOr4xx=0 hydrationMentions=0
+dev /hackathons  title="Hackathons · HackBU"     rootChildren=1 hasMain=true fonts=loaded themeColor=#f7f5ee
+  dev /hackathons: errors=0 warnings=0 failedOr4xx=0 hydrationMentions=0
+dev /components  title="HackBU component sheet"  rootChildren=1 hasMain=true fonts=loaded themeColor=#f7f5ee
+  dev /components: errors=0 warnings=0 failedOr4xx=0 hydrationMentions=0
+```
+
+All six clean URLs resolve through `cleanHtmlUrls()` with the right document and no console output.
+`createRoot` is the dev branch, so `rootChildren=1` here is the client's own render, not a hydration.
+
+---
+
+### Hero invariants re-checked at the end of the phase
+
+```
+$ grep -n 'PAN_START_SCALE = 3' src/components/Hero.tsx
+74:const PAN_START_SCALE = 3
+$ grep -n 'object-\[52%_0%\]\|origin-top' src/components/Hero.tsx
+52: * with its top edge pinned to the top of the stage (see `object-[52%_0%]` and
+53: * `origin-top` below). Writing `f1` for the fraction of the image's height that
+120: * (`origin-top` is `50% 0%`, so the horizontal half of the scale still grows
+131:const CAMPUS_OBJECT_POSITION = 'object-[52%_0%]'
+251:                className={`h-full w-full origin-top ${CAMPUS_OBJECT_POSITION} object-cover select-none ${
+$ grep -rn "addEventListener('scroll'" src
+src/components/Hero.tsx:138:  // hand-rolled `addEventListener('scroll', ...)` anywhere in src/. Everything
+$ grep -n '640, 960, 1280, 1672' src/lib/images.ts scripts/generate-images.mjs
+src/lib/images.ts:25:const CAMPUS_WIDTHS = [640, 960, 1280, 1672] as const
+scripts/generate-images.mjs:91:const CAMPUS_WIDTHS = [640, 960, 1280, 1672]
+$ grep -o 'Campus-[0-9]*\.avif [0-9]*w' index.html
+Campus-640.avif 640w
+Campus-960.avif 960w
+Campus-1280.avif 1280w
+Campus-1672.avif 1672w
+```
+
+The one `addEventListener('scroll'` hit is still the comment asserting there are none, exactly as in
+invariant `i`. Nothing this phase touched goes near the hero.
+
+### What this phase did not do
+
+- **`public/artwork/about/hall.{jpg,avif,webp}`** is shipped and unreferenced (I-11). `public/` was
+  read-only for this phase, so it is documented rather than resolved.
+- **Vercel-side observation** of the ten new rewrites and the 404 is still impossible from here, for
+  the reason P7-1 gives: `vite dev` and `vite preview` both apply their own `index.html` fallback.
+  The rewrite *table* is verified against `vercel.json` and the clean URLs are verified against
+  `cleanHtmlUrls()`, which carries the same ten paths; the 404 itself remains unmeasured.
+- **Paint and LCP timings** for the four new pages, and Safari's skip-link behaviour — the same two
+  items Phase 7 left open.

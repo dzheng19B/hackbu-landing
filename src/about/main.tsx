@@ -1,24 +1,38 @@
 import { StrictMode } from 'react'
-import { createRoot } from 'react-dom/client'
+import { createRoot, hydrateRoot } from 'react-dom/client'
 
 /*
- * The same three faces the landing page loads, and no more. Fraunces 600 is
- * every display heading; Inter 400 is body copy and Inter 500 is the eyebrows
- * and button labels.
- */
-import '@fontsource/fraunces/latin-600.css'
-import '@fontsource/inter/latin-400.css'
-import '@fontsource/inter/latin-500.css'
-
-/*
- * Same stylesheet root as the landing page, so this page shares tokens and
- * type without pulling in the component sheet's utilities.
+ * `../landing.css` is `../index.css` plus a few `@source not` lines. It carries
+ * the three `@font-face` rules with it, so this page needs no font stylesheet
+ * import of its own — three such imports used to sit here, were imported by
+ * four entries at once, and were therefore hoisted into a second, render-
+ * blocking `<link rel="stylesheet">` (the same P5-13 shape the landing page
+ * already fixed) along with the three `.woff` rungs no browser can reach
+ * (P5-6).
  */
 import '../landing.css'
 import { AboutPage } from './AboutPage'
 
-createRoot(document.getElementById('root')!).render(
+// Checked, not asserted, for the reason written out in src/main.tsx (P2-5).
+const mount = document.getElementById('root')
+if (!mount) throw new Error('#root is missing from about.html')
+
+const tree = (
   <StrictMode>
     <AboutPage />
-  </StrictMode>,
+  </StrictMode>
 )
+
+/*
+ * Prerendered and hydrated like the landing page, and dev-server-rendered for
+ * the same reason — the long note is in src/main.tsx. `scripts/prerender.mjs`
+ * renders `renderAbout()` from src/entry-server.tsx into `dist/about.html`, and
+ * that tree has to stay identical to this one, <StrictMode> and the motion
+ * feature provider inside <AboutPage> included, or React 19 reports the
+ * difference as a hydration error.
+ */
+if (import.meta.env.DEV) {
+  createRoot(mount).render(tree)
+} else {
+  hydrateRoot(mount, tree)
+}

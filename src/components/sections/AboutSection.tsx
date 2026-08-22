@@ -7,9 +7,9 @@ import { DISCORD_URL, MAILING_LIST_URL } from '../../lib/links'
  * "About us" — the page's masthead: mission, Discord and mailing-list CTAs.
  *
  * This copy used to sit inside the hero, over the illustration. It measured
- * 1.43:1 there and the only wash that fixed it covered most of the frame, so
- * Phase 7 moved it here instead: the hero stays pure illustration and the words
- * land on cloud, where `text-pine` is 6.83:1 and `text-pine/90` is 5.36:1.
+ * 1.43:1 there and the only wash that fixed it covered most of the frame, so it
+ * was moved here instead: the hero stays pure illustration and the words land
+ * on cloud, where `text-pine` is 6.83:1 and `text-pine/90` is 5.36:1.
  *
  * It carries the page's only <h1>, and it is the first heading in the document,
  * so the outline is h1 -> the three section h2s with no skipped level. That is

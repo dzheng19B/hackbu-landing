@@ -4,8 +4,10 @@ import tailwindcss from '@tailwindcss/vite'
 import { fileURLToPath } from 'node:url'
 
 /**
- * The deployed origin, for the absolute URLs in `index.html`'s social preview
- * (`og:url`, `og:image` — scrapers do not resolve a relative one).
+ * The deployed origin, for the absolute URLs in the public pages' social
+ * preview (`index.html`'s `og:url` and `og:image`, and the `og:image` on
+ * `about|schedule|sponsors|hackathons.html` — scrapers do not resolve a
+ * relative one).
  *
  * Vercel sets `VERCEL_PROJECT_PRODUCTION_URL` on every build to the project's
  * production hostname with no scheme (`hackbu-landing.vercel.app`, and the
@@ -66,7 +68,7 @@ const PRELOADED_FONTS = [
 ]
 
 /**
- * `<link rel="preload" as="font">` for those three, on the landing page.
+ * `<link rel="preload" as="font">` for those three, on every public page.
  *
  * Without it the faces cannot be requested until the stylesheet has arrived
  * *and* style resolution has found an element using each family — which is late,
@@ -88,8 +90,13 @@ const PRELOADED_FONTS = [
  * the end of the head, so the three font requests are queued ahead of the
  * request that would otherwise have to complete before they could start.
  *
- * `index.html` only. The component sheet is internal, is never a cold first
- * visit that matters, and is `noindex` — one page's worth of head is enough.
+ * Every entry but `components.html`. The five public pages all set their body
+ * copy in Inter 400/500 above the fold and their headings in Fraunces 600, and
+ * each is a plausible cold first visit — an inbound link to `/about` or
+ * `/schedule` has exactly the same problem `index.html` had. The component
+ * sheet is excluded because it is internal, is `noindex`, and is never a cold
+ * first visit that matters. The three faces are the same three assets on every
+ * page, so the hints cost nothing beyond the five head tags themselves.
  */
 function fontPreload(): Plugin {
   let base = '/'
@@ -102,7 +109,7 @@ function fontPreload(): Plugin {
     transformIndexHtml: {
       order: 'post',
       handler(html, ctx) {
-        if (!ctx.bundle || !ctx.path.endsWith('/index.html')) return
+        if (!ctx.bundle || ctx.path.endsWith('/components.html')) return
 
         const emitted = Object.keys(ctx.bundle).filter((name) =>
           name.endsWith('.woff2'),
@@ -169,15 +176,15 @@ function cleanHtmlUrls(): Plugin {
  *   hackathons.html  the hackathons page       -> dist/hackathons.html
  *   components.html  the component sheet       -> dist/components.html
  *
- * They share the component tree, so Rollup hoists what both import into a
+ * They share the component tree, so Rollup hoists what they all import into a
  * shared chunk and each page's own entry chunk holds only its own code. The
- * sheet's code therefore never reaches the landing page's bundle — verify by
+ * sheet's code therefore never reaches any other page's bundle — verify by
  * checking that nothing under `src/sheet/` appears in the landing page's
  * module graph after a build.
  */
 
 /**
- * Names the two chunks both pages share, instead of letting Rollup name them
+ * Names the two chunks the pages share, instead of letting Rollup name them
  * after whichever module happens to be their facade (P1-1).
  *
  * Left alone, Rollup hoisted React, `motion` *and* every shared component into
@@ -190,28 +197,42 @@ function cleanHtmlUrls(): Plugin {
  *           internals. Third-party code, versioned by package.json, changing
  *           only when a dependency does.
  *   shared  `src/components/**` and `src/lib/**` — the component tree and the
- *           three lib modules. This is exactly the set both entries import:
- *           the sheet renders the real components, sections included
+ *           three lib modules — minus the per-page section directories named
+ *           below. This is the set every entry imports: the sheet renders the
+ *           real components, the landing page's sections included
  *           (`src/sheet/parts/ComposedPart.tsx`), so nothing landing-only is
  *           being pushed into the sheet's download by naming it this way.
  *
+ * `src/components/sections/schedule/` and `src/components/sections/hackathons/`
+ * are the exception, and they are why `SECTIONS_ONE_PAGE` exists. They sit
+ * under `src/components/` by the merge's filing convention, but each directory
+ * is rendered by exactly one page — `ScheduleApp` and `HackathonsApp` — and a
+ * module in `shared` is downloaded by *every* page, so the plain rule put the
+ * schedule's calendar copy and the hackathon's registration copy into the
+ * landing page's critical path. Excluded here, they fall into their own page's
+ * entry chunk instead, where the same bytes are paid for once by the one page
+ * that renders them. (`src/components/sections/` itself stays in `shared`: the
+ * landing sections really are rendered by two entries.)
+ *
  * Nothing under `src/sheet/` matches either rule, so the sheet's own code stays
  * in the `components` entry chunk and out of the landing page, exactly as
- * before. CSS is left to Vite: `@fontsource` ships stylesheets, not modules,
- * and assigning them a JS chunk would take Vite's stylesheet handling out of
- * the loop for no gain.
+ * before. CSS is left to Vite: assigning stylesheets a JS chunk would take
+ * Vite's stylesheet handling out of the loop for no gain.
  */
+const SECTIONS_ONE_PAGE = /\/src\/components\/sections\/(schedule|hackathons)\//
+
 function manualChunks(id: string): string | undefined {
   const path = id.replaceAll('\\', '/')
   if (/\.(css|scss|sass|less)($|\?)/.test(path)) return undefined
   // Vite's `modulepreload-polyfill` is a virtual module, so it has no
-  // `node_modules` path to match on, and both entries pull it in — without this
+  // `node_modules` path to match on, and every entry pulls it in — without this
   // it becomes a shared chunk of its own. Rolldown's own runtime shim is the
   // one thing here that cannot be placed: the bundler emits
   // `rolldown-runtime-*.js` itself and never offers it to this function. It is
   // 589 B, it is named after what it is, and it is left alone.
   if (path.includes('modulepreload-polyfill')) return 'vendor'
   if (path.includes('/node_modules/')) return 'vendor'
+  if (SECTIONS_ONE_PAGE.test(path)) return undefined
   if (/\/src\/(components|lib)\//.test(path)) return 'shared'
   return undefined
 }

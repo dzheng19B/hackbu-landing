@@ -18,14 +18,42 @@ import { usePrefersReducedMotion } from '../lib/motion'
  *     <RevealItem>      one member of a group
  *
  * Reduced motion: `usePrefersReducedMotion()` is the project convention, and
- * when it returns true every component below drops its motion props entirely.
- * With no `initial` and no variants to inherit, the element paints at its
- * resting state on the first frame — there is no animation to skip, shorten or
- * wait out.
+ * when it returns true every component below animates to `REST` with a zero
+ * duration instead of hiding and fading up.
+ *
+ * **Why `animate: REST` and not simply dropping the motion props.** That is
+ * what this file used to do, and it left reduced-motion visitors looking at
+ * blank sections. The hook is deliberately gated on having mounted (see
+ * `src/lib/motion.ts`), so the *first* render — the one the server produced and
+ * the one hydration has to match — always takes the full-motion branch and
+ * writes `opacity: 0; transform: translateY(16px)` onto every wrapper.
+ * `usePrefersReducedMotion()` only flips to `true` in the layout effect after
+ * that. Dropping the props on the second render removes nothing: `initial` is a
+ * mount-time prop, so motion never revisits it, and the element keeps the
+ * hidden inline style for the rest of the session — permanently, because the
+ * `whileInView` trigger was removed along with everything else. Measured on the
+ * built output: seven wrappers on `/about.html`, all at `opacity: 0`, none of
+ * them ever revealed.
+ *
+ * `animate` *is* re-read when it changes, so handing it the resting frame is
+ * what actually clears the hidden state. `duration: 0` makes it a set rather
+ * than an animation, and the flip happens in a layout effect, so it lands in
+ * the same frame as hydration and before the first paint: a reduced-motion
+ * visitor sees the resting frame and never a step of the movement. motion
+ * writes `transform: none` rather than `translateY(0px)` once every transform
+ * channel is back at its default, so the resting frame is the same one an
+ * unanimated element would have had.
  */
 
 /** Travel distance of the upward translate, in px. Deliberately small. */
 const DISTANCE = 16
+
+/**
+ * The frame every reveal finishes on, and the frame a reduced-motion visitor
+ * starts on. `duration: 0` because there is nothing to watch.
+ */
+const REST = { opacity: 1, y: 0 } as const
+const REST_TRANSITION = { duration: 0 } as const
 
 const EASE = cubicBezier(0.22, 0.61, 0.36, 1)
 const DURATION = 0.55
@@ -65,7 +93,7 @@ export function Reveal({ children, className = '', delay = 0 }: RevealProps) {
   const prefersReducedMotion = usePrefersReducedMotion()
 
   const motionProps: MotionProps = prefersReducedMotion
-    ? {}
+    ? { animate: REST, transition: REST_TRANSITION }
     : {
         initial: { opacity: 0, y: DISTANCE },
         whileInView: { opacity: 1, y: 0 },
@@ -96,7 +124,7 @@ export function RevealGroup({
   const prefersReducedMotion = usePrefersReducedMotion()
 
   const motionProps: MotionProps = prefersReducedMotion
-    ? {}
+    ? { animate: REST, transition: REST_TRANSITION }
     : {
         initial: 'hidden',
         whileInView: 'visible',
@@ -143,7 +171,7 @@ export function RevealItem({
   const prefersReducedMotion = usePrefersReducedMotion()
 
   const motionProps: MotionProps = prefersReducedMotion
-    ? {}
+    ? { animate: REST, transition: REST_TRANSITION }
     : { variants: ITEM_VARIANTS }
 
   if (as === 'li') {

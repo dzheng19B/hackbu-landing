@@ -1,3 +1,4 @@
+import { domAnimation, LazyMotion } from 'motion/react'
 import { SiteHeader } from '../components/SiteHeader'
 import { SiteFooter } from '../components/SiteFooter'
 import { SnowdriftDivider } from '../components/SnowdriftDivider'
@@ -14,61 +15,69 @@ const PHOTO =
 
 /**
  * Sponsors — why to partner with HackBU and how to get the sponsorship packet.
+ *
+ * One `<LazyMotion features={domAnimation} strict>` around the whole tree, for
+ * the reason written out in `src/App.tsx` and `src/about/AboutPage.tsx`: the
+ * `<Reveal>`s render `m.*`, which need a provider, and the wrapper sits inside
+ * this component so `renderSponsors()` in `src/entry-server.tsx` renders the
+ * same tree the client hydrates.
  */
 export function SponsorsPage() {
   return (
-    <div className="bg-cloud font-sans text-pine min-h-screen">
-      <a
-        href="#main"
-        className="bg-cloud text-pine focus:outline-pine sr-only focus:not-sr-only focus:absolute focus:top-4 focus:left-4 focus:z-[60] focus:rounded-full focus:px-4 focus:py-2 focus:outline-2"
-      >
-        Skip to content
-      </a>
+    <LazyMotion features={domAnimation} strict>
+      <div className="bg-cloud font-sans text-pine min-h-screen">
+        <a
+          href="#main"
+          className="bg-cloud text-pine focus:outline-pine sr-only focus:not-sr-only focus:absolute focus:top-4 focus:left-4 focus:z-[60] focus:rounded-full focus:px-4 focus:py-2 focus:outline-2"
+        >
+          Skip to content
+        </a>
 
-      <SiteHeader homeHref="/" currentHref={SPONSORS_PATH} />
+        <SiteHeader homeHref="/" currentHref={SPONSORS_PATH} />
 
-      <main id="main" className="pt-16 sm:pt-20">
-        <Section id="sponsors" labelledBy="sponsors-title" className="bg-cloud">
-          <div className="grid items-start gap-10 md:grid-cols-[minmax(0,1fr)_24rem] lg:grid-cols-[minmax(0,1fr)_28rem] lg:gap-14">
-            <Reveal>
-              <div className="max-w-2xl">
-                <Eyebrow>Sponsors</Eyebrow>
-                <h1
-                  id="sponsors-title"
-                  className="font-display text-display-lg text-pine mt-4 font-semibold text-balance"
-                >
-                  Partner with HackBU.
-                </h1>
-                <p className="text-lede text-pine mt-5">
-                  Sponsoring a hackathon is a powerful way to recruit, build your
-                  platform&apos;s reputation among young developers, or help get
-                  people building on top of your technology.
-                </p>
-                <p className="text-body text-pine mt-5">
-                  Want to support HackBU at Binghamton University? We&apos;re
-                  looking to help you hire, and to make our events as awesome as
-                  they can be.
-                </p>
-                <p className="text-body text-pine mt-5">
-                  We have a sponsorship packet available; contact{' '}
-                  <MailLink email={CONTACT_EMAIL} className={EMAIL_LINK}>
-                    {CONTACT_EMAIL}
-                  </MailLink>{' '}
-                  to learn more.
-                </p>
-              </div>
-            </Reveal>
+        <main id="main" className="pt-16 sm:pt-20">
+          <Section id="sponsors" labelledBy="sponsors-title" className="bg-cloud">
+            <div className="grid items-start gap-10 md:grid-cols-[minmax(0,1fr)_24rem] lg:grid-cols-[minmax(0,1fr)_28rem] lg:gap-14">
+              <Reveal>
+                <div className="max-w-2xl">
+                  <Eyebrow>Sponsors</Eyebrow>
+                  <h1
+                    id="sponsors-title"
+                    className="font-display text-display-lg text-pine mt-4 font-semibold text-balance"
+                  >
+                    Partner with HackBU.
+                  </h1>
+                  <p className="text-lede text-pine mt-5">
+                    Sponsoring a hackathon is a powerful way to recruit, build your
+                    platform&apos;s reputation among young developers, or help get
+                    people building on top of your technology.
+                  </p>
+                  <p className="text-body text-pine mt-5">
+                    Want to support HackBU at Binghamton University? We&apos;re
+                    looking to help you hire, and to make our events as awesome as
+                    they can be.
+                  </p>
+                  <p className="text-body text-pine mt-5">
+                    We have a sponsorship packet available; contact{' '}
+                    <MailLink email={CONTACT_EMAIL} className={EMAIL_LINK}>
+                      {CONTACT_EMAIL}
+                    </MailLink>{' '}
+                    to learn more.
+                  </p>
+                </div>
+              </Reveal>
 
-            <Reveal delay={0.1}>
-              <SponsorsPhoto photo={SPONSORS_PHOTO} className={PHOTO} />
-            </Reveal>
-          </div>
-        </Section>
-      </main>
+              <Reveal delay={0.1}>
+                <SponsorsPhoto photo={SPONSORS_PHOTO} className={PHOTO} />
+              </Reveal>
+            </div>
+          </Section>
+        </main>
 
-      <SnowdriftDivider variant="cloud-to-frost" />
-      <SiteFooter />
-    </div>
+        <SnowdriftDivider variant="cloud-to-frost" />
+        <SiteFooter />
+      </div>
+    </LazyMotion>
   )
 }
 

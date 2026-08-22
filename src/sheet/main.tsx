@@ -26,7 +26,7 @@ const tree = (
  * nothing from a fast first paint (it is an internal, noindex page), but it
  * renders the same components, so building it the same way is what keeps the
  * SSR path honest: if a component ever reaches for the browser during render,
- * both pages fail rather than only one.
+ * every page fails rather than only the ones a reviewer happened to open.
  */
 if (import.meta.env.DEV) {
   createRoot(mount).render(tree)

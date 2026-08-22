@@ -4,8 +4,11 @@ import { createRoot, hydrateRoot } from 'react-dom/client'
 /*
  * `./landing.css` is `./index.css` plus one `@source not` line, so that the
  * component sheet's utilities are not emitted into the stylesheet this page
- * downloads. Everything else — tokens, type scale, brand marks — is unchanged
- * and still lives in `./index.css`, which both pages import.
+ * downloads. Everything else — tokens, type scale, brand marks, and the three
+ * `@font-face` rules — is unchanged and still lives in `./index.css`, which
+ * every page reaches, directly or through one of the three roots that
+ * `@import` it (`./landing.css`, `./schedule/schedule.css`,
+ * `./hackathons/hackathons.css`).
  */
 import './landing.css'
 import App from './App.tsx'
@@ -35,7 +38,8 @@ const tree = (
  * throw the server's DOM away and reintroduce the blank first paint the
  * prerender exists to remove.
  *
- * The tree above must therefore match `src/entry-server.tsx`'s exactly,
+ * The tree above must therefore match `src/entry-server.tsx`'s `renderIndex()`
+ * exactly,
  * <StrictMode> included, and nothing in it may read the browser during render
  * — see the note on `usePrefersReducedMotion()` in src/lib/motion.ts, which is
  * the one place that wanted to.

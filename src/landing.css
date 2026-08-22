@@ -1,7 +1,7 @@
 /*
- * The landing page's stylesheet root.
+ * The stylesheet root for the landing page, About us and Sponsors.
  *
- * It is `src/index.css` and one extra line. The line exists because Tailwind
+ * It is `src/index.css` and a few extra lines. They exist because Tailwind
  * builds one utility set per stylesheet root, from the classes it finds by
  * scanning the project — and since the component sheet (`src/sheet/`) reaches
  * for utilities the landing page has no use for (five-column grids, the sheet's
@@ -13,6 +13,16 @@
  * `src/index.css` directly, so it still scans everything and still gets its own
  * classes. A negated `@source` in the shared file would have travelled with it
  * and deleted the sheet's utilities from the sheet.
+ *
+ * The three page directories below are excluded for the same reason and are
+ * safe to exclude only while they add no utility of their own: `src/schedule/`
+ * and `src/hackathons/` have their own roots (`schedule.css`,
+ * `hackathons.css`, which exclude only the sheet), and `src/sponsors/` reuses
+ * this one, so a class that appears *only* in `SponsorsPage.tsx` would be
+ * scanned out of existence. Nothing there is unique today — Vite emits one
+ * deduplicated stylesheet for all five public pages, which is the check that
+ * this still holds: if the pages ever link two different files, one of them is
+ * short a rule.
  *
  * Net effect: the landing page's CSS is byte-for-byte what it was before the
  * sheet existed, and the sheet pays for itself on its own page.

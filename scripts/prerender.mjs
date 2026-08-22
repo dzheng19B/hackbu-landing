@@ -1,12 +1,12 @@
 /**
  * Build-time prerender — the last step of `npm run build`.
  *
- * `vite build` writes two HTML files whose entire body is `<div id="root">`,
+ * `vite build` writes six HTML files whose entire body is `<div id="root">`,
  * so nothing paints until ~100 KB gzip of JavaScript has downloaded, parsed and
  * executed, and the LCP element — the campus illustration — does not exist in
  * the HTML response at all (P5-1, and P5-8 with it: the twelve cloud cutouts
  * above the fold are undiscoverable for the same reason). This script renders
- * both pages to a string and writes that string into the root div, so the
+ * every page to a string and writes that string into the root div, so the
  * markup ships with the document and the client hydrates it instead of building
  * it from nothing.
  *
@@ -19,7 +19,7 @@
  * pipeline and no second build output. The alternative, `vite build --ssr`,
  * would emit a server bundle that has to be written somewhere, kept out of
  * `dist/` (Vercel deploys `dist/` verbatim), kept out of git, and cleaned up.
- * Nothing here writes a file except the two HTML files it rewrites.
+ * Nothing here writes a file except the six HTML files it rewrites.
  *
  * It rewrites the *built* HTML rather than the source template, so everything
  * `vite build` put in the head survives untouched: the hashed script and
@@ -33,10 +33,10 @@
  * ---------------------------------------------------------------------------
  * What it does not do
  * ---------------------------------------------------------------------------
- * There is no data fetching, no router and no per-request state: the two pages
+ * There is no data fetching, no router and no per-request state: all six pages
  * are the same for every visitor, which is what makes a build-time render
  * enough. Nothing from this file, from `src/entry-server.tsx`, or from
- * `react-dom/server` reaches the browser bundle — neither HTML entry imports
+ * `react-dom/server` reaches the browser bundle — no HTML entry imports
  * them, so they are not in the client module graph.
  */
 
@@ -48,15 +48,25 @@ import { createServer } from 'vite'
 const projectRoot = fileURLToPath(new URL('..', import.meta.url))
 
 /**
- * The placeholder both templates carry, and the only thing this script
- * replaces. An exact literal rather than a regex: if `index.html` ever stops
- * matching it the build fails loudly instead of silently shipping a blank page.
+ * The placeholder every template carries, and the only thing this script
+ * replaces. An exact literal rather than a regex: if one of the HTML entries
+ * ever stops matching it the build fails loudly instead of silently shipping a
+ * blank page.
  */
 const ROOT_DIV = '<div id="root"></div>'
 
-/** One entry per HTML page: the built file, and the export that renders it. */
+/**
+ * One entry per HTML page: the built file, and the export that renders it.
+ * Adding a page means adding a `rollupOptions.input` entry in vite.config.ts, a
+ * `render*` export in src/entry-server.tsx, and a row here — all three, or the
+ * page ships with an empty root div.
+ */
 const PAGES = [
   { file: 'dist/index.html', render: 'renderIndex' },
+  { file: 'dist/about.html', render: 'renderAbout' },
+  { file: 'dist/schedule.html', render: 'renderSchedule' },
+  { file: 'dist/sponsors.html', render: 'renderSponsors' },
+  { file: 'dist/hackathons.html', render: 'renderHackathons' },
   { file: 'dist/components.html', render: 'renderComponents' },
 ]
 
