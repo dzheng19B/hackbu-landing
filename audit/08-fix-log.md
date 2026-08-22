@@ -1139,7 +1139,7 @@ the set the page actually uses is the simpler contract.
 ```
 $ grep -c 'rel="preload" as="font"' dist/index.html
 3
-$ sed -n '92,99p' dist/index.html
+$ sed -n '94,99p' dist/index.html
     <script type="module" crossorigin src="/assets/index-HiSFlvET.js"></script>
     <link rel="modulepreload" crossorigin href="/assets/SiteFooter-VOpZu2sT.js">
     <link rel="preload" as="font" type="font/woff2" crossorigin href="/assets/fraunces-latin-600-normal-BFCDtZfi.woff2" />
@@ -1158,6 +1158,67 @@ $ grep -c 'rel="preload" as="font"' dist/components.html
 CORS mode, and a preload whose mode does not match the later fetch is a second download rather than
 a warm cache. The network trace under P5-8 shows one request per face, which is the proof that the
 modes match.
+
+**What these three tags cost: three console warnings on a *repeat* visit.** A first load in a fresh
+profile is silent; a second navigation to `/` in the same tab reports each preload as unused about
+three seconds after the load event. Both numbers below are sampled 3.5 s *after*
+`Page.loadEventFired`, which is the window the acceptance bar in the live readout defines — the
+warning fires too late for a shorter one to see it.
+
+```
+$ node p4r-console.mjs 9340 http://localhost:4173/ normal 2 3500      # fresh profile, headless Edge
+--- nav#1  motion=normal  url=http://localhost:4173/  loadEventFired=yes @116ms  settle=3500ms
+    messages=0   errors/warnings=0
+    fonts: {"fontsStatus":"loaded","faces":["Fraunces 600 loaded","Inter 400 loaded","Inter 500 loaded"],"fontPreloads":3,"stylesheets":1,"rootChildren":1}
+--- nav#2  motion=normal  url=http://localhost:4173/  loadEventFired=yes @44ms  settle=3500ms
+    messages=3   errors/warnings=3
+    [log.warning] The resource http://localhost:4173/assets/inter-latin-500-normal-Cerq10X2.woff2 was preloaded using link preload but not used within a few seconds from the window's load event. Please make sure it has an appropriate `as` value and it is preloaded intentionally.
+    [log.warning] The resource http://localhost:4173/assets/fraunces-latin-600-normal-BFCDtZfi.woff2 was preloaded using link preload but not used within a few seconds from the window's load event. Please make sure it has an appropriate `as` value and it is preloaded intentionally.
+    [log.warning] The resource http://localhost:4173/assets/inter-latin-400-normal-C38fXH4l.woff2 was preloaded using link preload but not used within a few seconds from the window's load event. Please make sure it has an appropriate `as` value and it is preloaded intentionally.
+    fonts: {"fontsStatus":"loaded","faces":["Fraunces 600 loaded","Inter 400 loaded","Inter 500 loaded"],"fontPreloads":3,"stylesheets":1,"rootChildren":1}
+```
+
+The same run under `prefers-reduced-motion: reduce` (`node p4r-console.mjs 9341 ... reduce 2 3500`,
+its own fresh profile) gives `messages=0 errors/warnings=0` on the first navigation and those same
+three lines on the second, so this is Chromium's preload heuristic and not P5-1's reduced-motion
+branch. A visitor who opens `/`, goes to `/components`, and comes back sees them.
+
+**Why the tags stay anyway.** The faces load in every run, warning or not: `document.fonts.status`
+is `"loaded"` and all three report `loaded` on the second navigation exactly as on the first, so no
+typography is missing — the warning is about a bookkeeping record, not a font. And the repeat visit
+re-downloads nothing:
+
+```
+$ node p4r-net.mjs 9343 http://localhost:4173/ 2 3500                 # fresh profile, headless Edge
+--- nav#1  total requests observed: 23
+    /assets/fraunces-latin-600-normal-BFCDtZfi.woff2  initiator=parser status=200 fromDiskCache=false servedFromMemoryCache=false wireBytes=18416
+    /assets/inter-latin-400-normal-C38fXH4l.woff2  initiator=parser status=200 fromDiskCache=false servedFromMemoryCache=false wireBytes=23984
+    /assets/inter-latin-500-normal-Cerq10X2.woff2  initiator=parser status=200 fromDiskCache=false servedFromMemoryCache=false wireBytes=24592
+--- nav#2  total requests observed: 22
+    /assets/fraunces-latin-600-normal-BFCDtZfi.woff2  initiator=parser status=304 fromDiskCache=false servedFromMemoryCache=false wireBytes=179
+    /assets/inter-latin-400-normal-C38fXH4l.woff2  initiator=parser status=304 fromDiskCache=false servedFromMemoryCache=false wireBytes=179
+    /assets/inter-latin-500-normal-Cerq10X2.woff2  initiator=parser status=304 fromDiskCache=false servedFromMemoryCache=false wireBytes=179
+$ curl -sI http://localhost:4173/assets/inter-latin-400-normal-C38fXH4l.woff2 | grep -i cache
+Cache-Control: no-cache
+```
+
+179 B per face on the second visit against 18,416 / 23,984 / 24,592 B on the first — and even those
+179 B are `vite preview`'s doing, since it serves `/assets/` as `no-cache` and so forces a
+revalidation. The deployed policy for `/assets/*` is `public, max-age=31536000, immutable` (P5-3 —
+declared in `vercel.json`, never measured against a deployment), under which the conditional request
+would not be made at all. That is a claim about bytes only: nothing measured here says the deployed
+headers would silence the warning, and the expectation is that they would not.
+
+**The mechanism is inference**, not something these two traces prove. Each face is requested exactly
+once per navigation and the request is `initiator=parser` — it is the `<link>` tag's own fetch — so
+on a first load the `@font-face` rule consumes that fetch and Chromium counts the preload used. On
+the second navigation the face is already in the renderer's font cache, so the CSS font load
+resolves without a resource fetch that could claim the preload record, and the unclaimed record is
+what gets reported. Consistent with both traces; not established by them.
+
+Narrowing the set or dropping the tags would buy a quiet console for a returning visitor at the cost
+of the head start on the visit that has nothing cached — the visit P5-5 exists to speed up. The
+three tags stay, and the warnings are recorded here rather than designed around.
 
 ---
 
@@ -1179,9 +1240,31 @@ $ grep -o '<link rel="stylesheet"[^>]*>' dist/index.html
 $ ls dist/assets/*.css
 dist/assets/components-xZOInl1b.css
 dist/assets/index-JaSjmbl1.css
-$ grep -rn fontsource src/ ; echo "(exit $?)"
+$ grep -rnE "^\s*import\s+['\"]@fontsource" src/ ; echo "(exit $?)"
 (exit 1)
+$ grep -n "url('@fontsource" src/index.css
+70:  src: url('@fontsource/fraunces/files/fraunces-latin-600-normal.woff2')
+79:  src: url('@fontsource/inter/files/inter-latin-400-normal.woff2')
+88:  src: url('@fontsource/inter/files/inter-latin-500-normal.woff2')
 ```
+
+The `import` grep is the claim that matters: not one `@fontsource` **CSS import** survives in `src/`,
+and that import is what put the second stylesheet in the head. `@fontsource` is still a dependency
+and the string still occurs — the three `url()` references above, which are how the woff2 files
+reach the bundle at all, plus six mentions in prose:
+
+```
+$ grep -rn fontsource src/ | grep -v "url('@fontsource"
+src/index.css:35: * These are hand-written rather than the three `@fontsource` `latin-*.css`
+src/index.css:47: *   - `@fontsource` publishes no woff2-only entrypoint, so its `src:` lists a
+src/index.css:54: * Everything else is copied verbatim from `@fontsource`'s own `latin-*.css`:
+src/index.css:56: * no `unicode-range` — `@fontsource`'s latin entrypoints declare none, because
+src/sheet/parts/TokensPart.tsx:341:                Self-hosted via @fontsource. Weight 600 only — a heading asking
+src/sheet/parts/TokensPart.tsx:354:                Self-hosted via @fontsource. Weights 400 and 500 only — 400 for
+```
+
+Four are comments in `src/index.css` explaining the hand-written rules; two are sheet copy telling a
+reader where the faces come from.
 
 **The `url()` form that works: the bare package specifier.** `url('@fontsource/inter/files/...')`
 is resolved by Vite's CSS asset resolver into `node_modules` and rewritten to the hashed
@@ -1300,10 +1383,29 @@ live check against a deployment.
 
 ### Live readout
 
-Two servers, both stopped afterwards: the Vite **dev** server on 5173 (`preview_start`,
-`hackbu-dev`) and `npm run preview` serving the built `dist/` on 4173 (pid 33764). Headless Edge
-over CDP on port 9338, user-data-dir `<scratchpad>\edge-profile-p4`, pid 48100. The dev server does
-not prerender, so hydration can only be judged against the built output — which is what 4173 is
+**The acceptance bar, stated so the numbers below can be read.** A page passes when a **first load
+in a fresh browser profile, sampled at least 3 s after `Page.loadEventFired`, produces 0 console
+errors and 0 warnings**, in the normal and the `prefers-reduced-motion: reduce` branch alike, on the
+**built** output. Both halves of that sentence carry weight. *First load in a fresh profile* is the
+visit that has nothing cached; a **repeat** navigation to `/` is deliberately not covered, because it
+is not silent — it emits the three font-preload warnings recorded verbatim under P5-5. *At least 3 s
+after the load event* is what makes the measurement honest: Chromium's preload heuristic fires about
+three seconds after load, so a probe that instead sleeps a fixed interval from `Page.navigate` can
+close its sampling window before the warning exists and report a zero it did not earn. An earlier
+draft of this section reported exactly such a zero; the console rows below were re-measured to fix
+it.
+
+Two servers, both stopped afterwards: the Vite **dev** server on 5173 and `npm run preview` serving
+the built `dist/` on 4173. The DOM and motion values below come from this phase's original probe
+(`p4-probe.mjs`, headless Edge over CDP on port 9338, user-data-dir `<scratchpad>\edge-profile-p4`).
+Every `console` row was then re-measured with `p4r-console.mjs`, which waits for
+`Page.loadEventFired` and settles 3.5 s before counting, using a fresh `--user-data-dir` per browser
+(CDP ports 9340, 9341, 9350-9353; the network trace under P5-5 used 9343). Those runs also
+reproduced `fontsStatus`, `stylesheets`, `fontPreloads` and `rootChildren` at the values shown.
+Every **built**-page *first-load* row is a first navigation in a browser that had never loaded
+anything else, and each *second navigation* row is the next navigation in that same tab; the
+**dev** rows share one profile per motion branch, `/` first and `/components` second. The dev server
+does not prerender, so hydration can only be judged against the built output — which is what 4173 is
 for.
 
 ```
@@ -1317,7 +1419,7 @@ scroll-0: { "scrollY": 0, "rootChildren": 1,
             "stylesheets": 1, "fontPreloads": 3 }
 drift@scroll0: { "t0": "matrix(1, 0, 0, 1, -491.369, 0)",
                  "t1": "matrix(1, 0, 0, 1, -492.659, 0)", "moving": true }
-console (normal): 0 errors/warnings
+console (normal, first load, fresh profile): 0 messages, 0 errors/warnings
 reduced-motion: { "scrollY": 0, "rootChildren": 1,
                   "campusTransform": "none",
                   "driftNodes": 0, "driftTransform": null,
@@ -1325,54 +1427,76 @@ reduced-motion: { "scrollY": 0, "rootChildren": 1,
                   "fontsStatus": "loaded",
                   "fontsLoaded": ["Fraunces 600", "Inter 400", "Inter 500"],
                   "stylesheets": 1, "fontPreloads": 3 }
-console (reduced): 0 errors/warnings
+console (reduced, first load, fresh profile): 0 messages, 0 errors/warnings
+console (second navigation to / in the same tab, normal AND reduced): 3 warnings
+    — the three font preloads reported unused ~3 s after load; quoted verbatim under P5-5.
+      Outside the acceptance bar; recorded, not designed around.
 
 ===== BUILT http://localhost:4173/components.html =====
 scroll-0:       { "rootChildren": 1, "campusTransform": null, "driftNodes": 0,
                   "willChangeCount": 0, "pictures": 13, "fontsStatus": "loaded",
                   "fontsLoaded": ["Fraunces 600","Inter 400","Inter 500"],
                   "stylesheets": 1, "fontPreloads": 0 }
-console (normal): 0 errors/warnings
+console (normal, first load, fresh profile): 1 message, 0 errors/warnings
+    [log.info] Images loaded lazily and replaced with placeholders. Load events are deferred.
+               See https://go.microsoft.com/fwlink/?linkid=2048113
 reduced-motion: { ... identical ... }
-console (reduced): 0 errors/warnings
+console (reduced, first load, fresh profile): the same single info line, 0 errors/warnings
+console (second navigation, same tab, normal): unchanged, that one info line — this page
+    carries 0 font preloads, so there is no preload record that could go unclaimed
 
 ===== DEV http://localhost:5173/ =====
 scroll-0: { "campusTransform": "matrix(3, 0, 0, 3, 0, 0)", "driftNodes": 3,
             "willChangeCount": 7, "pictures": 49, "stylesheets": 0, "fontPreloads": 0 }
 drift@scroll0: { "moving": true }
-console (normal): 0 errors/warnings
+console (normal): 3 messages, 0 errors/warnings
+    [console.debug] [vite] connecting...
+    [console.debug] [vite] connected.
+    [console.info]  %cDownload the React DevTools for a better development experience:
+                    https://react.dev/link/react-devtools font-weight:bold
 reduced-motion: { "campusTransform": "none", "driftNodes": 0, "willChangeCount": 0,
                   "pictures": 13 }
-console (reduced): [
- "WARNING: You have Reduced Motion enabled on your device. Animations may not appear as
-  expected.. For more information ... https://motion.dev/troubleshooting/reduced-motion-disabled"
-]
+console (reduced): 4 messages, 1 warning — the three above, plus
+    [console.warning] You have Reduced Motion enabled on your device. Animations may not appear as
+                      expected.. For more information and steps for solving, visit
+                      https://motion.dev/troubleshooting/reduced-motion-disabled
 
 ===== DEV http://localhost:5173/components =====
-console (normal):  0 errors/warnings
-console (reduced): [ the same motion warning ]
+console (normal):  4 messages, 0 errors/warnings — the three dev lines above, plus Edge's
+                   "Images loaded lazily..." info line
+console (reduced): 5 messages, 1 warning — those four plus the same motion warning
 ```
 
-**Zero hydration warnings** on the built output, on both pages, in both motion branches — the
-condition P5-1 had to meet, and the one the dev server cannot test. Every motion invariant holds
-live: campus `transform` is `matrix(3, 0, 0, 3, 0, 0)` at scroll 0, the drift track's transform
+**Zero hydration warnings** on the built output, on both pages, in both motion branches, and none in
+the repeat-navigation runs either — the condition P5-1 had to meet, and the one the dev server cannot
+test. Across every built-page run the console produces exactly two kinds of message: Edge's `Images
+loaded lazily...` notice on `/components.html` (info level, both motion branches, first load and
+repeat alike), and the three font-preload warnings on a repeat navigation to `/` (P5-5). No error of
+any kind, on any page, in any run.
+
+Every motion invariant holds live: campus `transform` is `matrix(3, 0, 0, 3, 0, 0)` at scroll 0,
+the drift track's transform
 changes between two samples 500 ms apart (so the drift runs at scroll 0), and under
 `prefers-reduced-motion: reduce` there are 0 `[data-cloud-drift]` nodes, 0 elements with a
 `will-change` other than `auto`, and the campus transform is `none`. Under normal motion the
 `will-change` count is 7, unchanged from Phase 7's live count (that is P5-7, a later row).
 
-The one dev-only line is motion's own `warnOnce` inside `useReducedMotion()`, which the library
+The one dev-only *warning* is motion's own `warnOnce` inside `useReducedMotion()`, which the library
 emits when the media query matches and only when `process.env.NODE_ENV !== "production"`. It is a
 library notice, not a page defect, it predates this phase, and it is absent from the production
-build above — which is where the acceptance condition is measured.
+build above — which is where the acceptance condition is measured. The other dev lines are Vite's
+HMR-client handshake and React's DevTools suggestion, both `debug`/`info` and both unconditional in
+a dev server.
 
 `stylesheets: 0` on the dev rows is the dev server injecting CSS through the module graph rather
 than a `<link>`; `fontPreloads: 0` there is P5-5's plugin correctly no-opping when there is no
 bundle to read hashes from.
 
-**Everything was stopped**: `preview_stop` on the dev server, `taskkill /PID 33764 /T /F` on the
-preview server, `taskkill /PID 48100 /T /F` on Edge; `netstat -ano` filtered to
-`:4173|:5173|:9338` then returned no LISTENING row.
+**Everything was stopped**, on the original run and on the re-measurement: `taskkill /PID <pid> /T
+/F` on each dev server, preview server and headless Edge; `netstat -ano` filtered to the ports in
+play (`:4173`, `:5173`, `:9338`, `:9340`-`:9343`, `:9350`-`:9353`) then returned no LISTENING row,
+and a `Win32_Process` query for `msedge.exe` with this session's scratchpad path in its command line
+returned 0.
 
 ---
 
