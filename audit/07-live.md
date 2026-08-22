@@ -169,7 +169,7 @@ from the three `[data-cloud-drift]` tracks.
 **Drift is running.** All three transforms changed (`[true, true, true]`).
 
 The implied-elapsed column is `Δ ÷ (W / period)` with `W = 1265 px`, one stage width of travel per
-cycle (`HeroClouds.tsx:436–441`). All three layers independently imply **6.40 s** of wall clock (6.3995 / 6.3990 / 6.3989 s)
+cycle (`HeroClouds.tsx:436–441`). All three layers independently imply **6.40 s** of wall clock (6.3994 / 6.3990 / 6.3989 s)
 between the samples — the `sleep(6000)` plus the round-trip cost of the two `Runtime.evaluate` calls.
 Three different periods producing one consistent elapsed time is strong evidence that the periods are
 exactly the documented **188 / 129 / 90 s** (`HeroClouds.tsx:691–702`), and that rAF was running at
