@@ -98,7 +98,28 @@ type CloudLayerSpec = {
   scale: number
   /** Resting opacity of the whole layer. far < mid < near. */
   opacity: number
-  /** Seconds for one full loop — one stage width of travel. near < mid < far. */
+  /**
+   * Seconds for one full loop — one stage width of travel, so a layer's speed
+   * is exactly `1 / driftSeconds`. Every layer travels the same distance
+   * (`SET_COUNT` is global), which is what makes that proportionality hold.
+   *
+   * These are derived from `scale`, not chosen: parallax reads as depth only
+   * when apparent speed is proportional to apparent size, because both scale
+   * with 1/distance. So `driftSeconds ∝ 1 / scale`, anchored at near = 60s:
+   *
+   *   far   60 x (1.15 / 0.55) = 125s
+   *   mid   60 x (1.15 / 0.80) =  86s
+   *   near                        60s
+   *
+   * That gives a far:near speed ratio of 2.08x, matching the 2.09x size ratio.
+   * Merely ordering them (the earlier 88/74/62 — a 1.42x spread against a
+   * 2.09x size spread) left the near layer looking too slow for its size, and
+   * the effect read as drift rather than as depth.
+   *
+   * Note this pushes `far` past the brief's 60-90s band. The band existed to
+   * keep the drift slow; 125s is slower still, so the intent is intact. The
+   * fastest layer is the one pinned to the 60s floor.
+   */
   driftSeconds: number
   /** How far the layer lifts (as a % of stage height) while it fades out. */
   rise: number
@@ -130,6 +151,8 @@ type CloudLayerSpec = {
  * loop is frozen. This is a fill-rate and node-count argument, not a profile.)
  *
  * Three depth layers, distinct in all four parameters the brief calls out.
+ * `scale`, `opacity` and speed all rise together toward the viewer, and speed
+ * is derived from `scale` rather than picked — see `driftSeconds` above.
  *
  * The cutouts are cast by shape, not just size: cloud-6 (3.2:1) and cloud-4
  * (2.5:1) are flat wisps, which is what distant cloud reads as; cloud-1 and
@@ -147,7 +170,7 @@ const CLOUD_LAYERS: CloudLayerSpec[] = [
     id: 'far',
     scale: 0.55,
     opacity: 0.5,
-    driftSeconds: 88,
+    driftSeconds: 125,
     rise: 10,
     fadeStart: 0.04,
     fadeEnd: 0.3,
@@ -176,7 +199,7 @@ const CLOUD_LAYERS: CloudLayerSpec[] = [
     id: 'mid',
     scale: 0.8,
     opacity: 0.75,
-    driftSeconds: 74,
+    driftSeconds: 86,
     rise: 16,
     fadeStart: 0.02,
     fadeEnd: 0.26,
@@ -205,7 +228,7 @@ const CLOUD_LAYERS: CloudLayerSpec[] = [
     id: 'near',
     scale: 1.15,
     opacity: 1,
-    driftSeconds: 62,
+    driftSeconds: 60,
     rise: 24,
     fadeStart: 0.01,
     fadeEnd: 0.22,
@@ -304,7 +327,7 @@ const TILE_OVERHANG = measureTileOverhang(CLOUD_LAYERS)
  * wanted a tile at `-W` to supply cloud-1's tail and the end frame wanted a
  * tile at `+2W` to supply cloud-5's head; neither existed, so a 115.2 x 291px
  * slice of cloud-5 popped in at the right edge and a 147.4 x 298px slice of
- * cloud-1 popped out at the left edge, once every 62 seconds.
+ * cloud-1 popped out at the left edge, once every near-layer loop.
  *
  * **Why this construction is exact.** Write the measured overhangs as `oL` and
  * `oR`, so every cloud's box within its own tile is `[p, p + w]` with
