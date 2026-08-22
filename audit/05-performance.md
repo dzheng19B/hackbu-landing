@@ -1101,7 +1101,10 @@ fully opaque. The two are different facts, and the parenthetical shows the autho
 cell just states the wrong one.
 
 **Fix.** Reword the cell to "Yes — channel present, fully opaque" (Phase 6). No code change; the
-generator flattens it anyway (`generate-images.mjs:216–222`).
+generator's palette PNG encode (`generate-images.mjs:216–222`, `.png({ palette: true })` — there is
+no `.flatten()` call in the script) drops the fully-opaque alpha channel, so the derived
+`apple-touch-icon.png` / `og-image.png` are 3-channel on disk regardless. [Corrected after
+checker review: the earlier wording attributed this to an explicit flatten.]
 
 ---
 
