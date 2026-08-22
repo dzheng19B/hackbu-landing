@@ -204,8 +204,8 @@ rows below are the **prose** claims, counts and derived numbers.
 | 118 | "The three header nav destinations (the Discord CTA is separate)." | `src/lib/links.ts:15` | 3 entries `:17–19`; `SiteHeader.tsx:56–63` maps them, `:66` renders the CTA separately | TRUE |
 | 119 | "All eight existing hackbu.org pages, split into two footer columns." | `src/lib/links.ts:22` | 8 entries `:24–31`; `SiteFooter.tsx:16–17` slices 0–4 / 4– | TRUE |
 | 120 | "Phase 3 establishes both. Phase 4 (cloud parallax) and Phase 5 (section reveals) **are expected to** consume them" | `src/lib/motion.ts:15–17` | Both shipped: `HeroClouds.tsx:4`, `Reveal.tsx:3` | **STALE** (P6-8) |
-| 121 | "See `Hero.tsx`, which collapses its 260dvh track to a single viewport." | `src/lib/motion.ts:38–39` | `Hero.tsx:80,176` | TRUE |
-| 122 | "motion reads the media query once at mount and does not re-subscribe, so a mid-session OS change takes effect on the next page load" | `src/lib/motion.ts:41–42` | `framer-motion/dist/es/utils/reduced-motion/use-reduced-motion.mjs` — `useState(prefersReducedMotion.current)`, never updated (its own `TODO` says so) | TRUE as to effect; the mechanism wording is imprecise (P6-9) |
+| 121 | "See `Hero.tsx`, which collapses its 260dvh track to a single viewport." | `src/lib/motion.ts:35–36` | `Hero.tsx:80,176` | TRUE |
+| 122 | "motion reads the media query once at mount and does not re-subscribe, so a mid-session OS change takes effect on the next page load" | `src/lib/motion.ts:38–39` | `framer-motion/dist/es/utils/reduced-motion/use-reduced-motion.mjs` — `useState(prefersReducedMotion.current)`, never updated (its own `TODO` says so) | TRUE as to effect; the mechanism wording is imprecise (P6-9) |
 | 123 | "Phase 7 moved the headline, lede and Discord CTA out to `<IntroSection>`" | `src/components/Hero.tsx:23–24` | `src/components/sections/IntroSection.tsx:11,50`; commit `70a4578` | TRUE |
 | 124 | "no hand-rolled `addEventListener('scroll', …)` anywhere in `src/`" | `src/components/Hero.tsx:137–139` | See row 4 | TRUE |
 | 125 | "There is no scroll event listener anywhere" | `src/components/HeroClouds.tsx:26–28` | See row 4 | TRUE |
@@ -417,11 +417,11 @@ output are at their TS 6 default, which I probed directly (see §5).
 | Flag | `tsconfig.app.json` | `tsconfig.node.json` | Effective value | Evidence |
 |---|---|---|---|---|
 | `strict` | **not declared** | **not declared** | **true** (TS 6 default) | `--showConfig` omits it; probe: default-config `tsc` on a file with an untyped parameter, `null`-to-`string`, and an optional-object deref errors with TS7006 / TS2322 / TS18048, and `--strict false` silences all three. Ref **P2-3** for the fact that it is undeclared |
-| `noUnusedLocals` | `:20` `true` | `:18` `true` | true | `--showConfig` |
-| `noUnusedParameters` | `:21` `true` | `:19` `true` | true | `--showConfig` |
+| `noUnusedLocals` | `:20` `true` | `:17` `true` | true | `--showConfig` |
+| `noUnusedParameters` | `:21` `true` | `:18` `true` | true | `--showConfig` |
 | `noFallthroughCasesInSwitch` | `:23` `true` | `:20` `true` | true | `--showConfig` |
 | `erasableSyntaxOnly` | `:22` `true` | `:19` `true` | true | `--showConfig` |
-| `verbatimModuleSyntax` | `:14` `true` | `:13` `true` | true | `--showConfig` |
+| `verbatimModuleSyntax` | `:14` `true` | `:12` `true` | true | `--showConfig` |
 | `isolatedModules` | **not declared** | not declared | **true** — implied by `verbatimModuleSyntax` | printed by `--showConfig` though absent from the file (alongside `preserveConstEnums: true`) |
 | `noUncheckedSideEffectImports` | **not declared** | not declared | **true** (TS 6 default) | Probe: a side-effect import of a non-existent `.css` errors TS2882 under bare defaults. The project is unaffected because `types: ["vite/client"]` (`tsconfig.app.json:7`) declares `*.css` |
 | `noUncheckedIndexedAccess` | **not declared** | not declared | **false** | Probe: `const arr: string[] = ['a']; const first: string = arr[0]` compiles clean under bare defaults. See **P6-16** |
@@ -514,7 +514,10 @@ comment states it correctly — `:15–16`, "Below `md` (768px) the three links 
 behind a toggle, so the 390px layout is the lockup plus a menu button."
 
 **Expected.** `src/components/SiteHeader.tsx:15–16`; 390px is the narrow *test viewport* used
-throughout the audit, not a breakpoint. There is no `390` anywhere in `src/`.
+throughout the audit, not a breakpoint. `grep -rn "390" src/` returns nine hits — comments naming
+the narrow test viewport (`Hero.tsx:115,127`, `HeroClouds.tsx:48,176,542,545`, `SiteHeader.tsx:16`,
+`sheet/parts/HeroPart.tsx:269`) and SVG path data (`SnowdriftDivider.tsx:62`) — and none is a
+breakpoint or media query. [Corrected after checker review.]
 
 **Fix.** `README.md:235` → "fixed header, collapses to a menu below `md` (768px)".
 
@@ -585,9 +588,9 @@ collide with the audit reports' own 1–8, so "Phase 6" in `ASSETS.md:77` and "(
 rewrite the labels as what they actually describe ("when the derivatives landed", "when the copy
 moved out of the hero"). At minimum, change `motion.ts:15–17` to past tense.
 
-### P6-9 — `note` — `src/lib/motion.ts:41`'s "does not re-subscribe" describes the wrong half of the mechanism
+### P6-9 — `note` — `src/lib/motion.ts:38`'s "does not re-subscribe" describes the wrong half of the mechanism
 
-**Evidence.** `src/lib/motion.ts:41–42`: "motion reads the media query once at mount and does not
+**Evidence.** `src/lib/motion.ts:38–39`: "motion reads the media query once at mount and does not
 re-subscribe, so a mid-session OS change takes effect on the next page load." The library does
 subscribe: `node_modules/motion-dom/dist/es/render/utils/reduced-motion/index.mjs` —
 `motionMediaQuery.addEventListener("change", setReducedMotionPreferences)`, which keeps the global
