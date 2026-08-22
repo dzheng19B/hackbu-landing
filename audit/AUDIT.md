@@ -69,7 +69,7 @@ cited by the owning phase.
 | P5-8 | note | The twelve cloud AVIFs (173 KB) are above the fold but undiscoverable until the bundle renders | `src/components/HeroClouds.tsx:615` | 5 | consequence of the client-rendering row above |
 | P5-13 | note | Two render-blocking stylesheets on the landing page, one of them 655 B of `@font-face` | `dist/index.html:72–73` | 5 | open |
 | P5-6 | note | Three `.woff` fallbacks (84,492 B) ship in `dist/` and can never be fetched | `dist/assets/SiteFooter-DgSLZxXM.css` | 5 | deploy weight only |
-| P1-1 | note | The shared vendor chunk is named `SiteFooter-*.js` (React + motion + shared components, 329 KB) | `vite.config.ts:24` | 1 | naming only |
+| P1-1 | note | The shared vendor chunk is named `SiteFooter-*.js` (React + motion + shared components, 329 KB) | `vite.config.ts:23` | 1 | naming only |
 | P1-2 | note | Gzip size exceeds raw size for the six font files | `dist/assets/*.woff2` (01 §4) | 1 | informational, not a defect |
 | P2-5 | note | Non-null assertion on the React root element | `src/main.tsx:28` | 2 | inventory item |
 | P2-6 | note | `as CSSProperties` assertion to pass a CSS custom property | `src/components/HeroClouds.tsx:780` | 2 | verified safe |
@@ -92,7 +92,7 @@ cited by the owning phase.
 | P6-7 | note | The cloud cast comment lists the `near` layer in an order the array does not use | `src/components/HeroClouds.tsx:143` | 6 | cosmetic |
 | P6-8 | note | "Phase N" labels across 8 files reference a plan that exists only in the git log; one is future-tense for shipped work | `src/lib/motion.ts:15` | 6 | open |
 | P6-9 | note | `motion.ts:38`'s "does not re-subscribe" describes the wrong half of the mechanism | `src/lib/motion.ts:38` | 6 | effect correct, mechanism wrong |
-| P6-10 | note | "a deploy is just `vite build`" is stated in three places; the build also type-checks | `README.md:71` | 6 | open |
+| P6-10 | note | "a build/deploy is just `vite build`" is stated in three places (README:71 says *build*; ASSETS.md:81, generate-images.mjs:9 say *deploy*); the build also type-checks | `README.md:71` | 6 | open |
 | P6-14 | note | `.gitignore`'s `.env*` would also ignore a committed `.env.example` | `.gitignore:7` | 6 | latent |
 | P6-16 | note | Two strictness flags beyond `strict` are off: `noUncheckedIndexedAccess`, `exactOptionalPropertyTypes` | `tsconfig.app.json:19–23` (absent) | 6 | policy choice; see the undeclared-`strict` row above |
 | P6-17 | note | No `engines` field and no documented Node version for a Vite 8 / TS 6 toolchain | `package.json:21–32` (absent) | 6 | open |
@@ -100,7 +100,7 @@ cited by the owning phase.
 | P4-6 | note | Three targets pass 2.5.8 only through the spacing/inline exception, on derived numbers | `src/components/SiteFooter.tsx:64` | 4 | **CLOSED** — Ph 7 measured 17 px links at 36 px pitch, 21 px mail link with 92 px clearance; exception holds |
 
 **Counts:** 1 medium · 23 low · 38 note = 62 findings in 57 rows (five merged, §4). Of those,
-2 RESOLVED, 1 WITHDRAWN, 1 CLOSED, 58 open. By owning phase: 1 → 5 · 2 → 9 · 3 → 8 · 4 → 8 ·
+2 RESOLVED, 1 WITHDRAWN, 1 CLOSED, 1 correction needing no action (the row marked "correction"), 57 open. By owning phase: 1 → 5 · 2 → 9 · 3 → 8 · 4 → 8 ·
 5 → 13 · 6 → 17 · 7 → 2. The two heaviest phases are documentation accuracy (Phase 6, of which
 12 are new doc defects and none is above `low`) and delivery (Phase 5, which owns the only medium).
 
@@ -142,8 +142,9 @@ Each README invariant, with the phase that settled it.
 | h | Link hover only in `LINK_ON_CLOUD` / `LINK_ON_FROST` | **PASS**, with the P3-1 caveat | Ph 3 §2 Rule 5 — every text link composes one of the two; the menu toggle is a `<button>`, outside the rule but undocumented |
 | i | No scroll event listeners | **PASS** | Ph 2 §2 — 5 grep hits, none a scroll listener (3 comments, 1 `useScroll`, 1 `keydown` with cleanup) |
 | j | Sheet excluded from the landing bundle | **PASS** | Ph 1 §6 — three sheet-only string literals: 0 hits in both chunks reachable from `index.html`, 1 hit in the sheet chunk |
+| j′ | Sheet utilities kept out of the landing *stylesheet* (README:80–81) | **PARTIAL FAIL** | Ph 1 §8 / P1-5 — `src/landing.css:22` excludes `src/sheet/`, but unscoped Tailwind scanning re-admitted `.grid-cols-5` from `audit/02-code.md:522` into `dist/assets/index-*.css`; holds once P1-5 is fixed |
 | k | Srcset triple agreement | **PASS** | Ph 5 §1.2 — `images.ts:25` vs `generate-images.mjs:90` vs `index.html:44` all `[640,960,1280,1672]`; byte-identical in the built HTML; `sizes` byte-identical everywhere |
-| l | Every image URL resolves; ASSETS.md inventory matches | **PASS** | Ph 5 §2–§3 — 53 referenced URLs, 53 files, a bijection; all dimensions and byte counts match; `clouds-all-b.png` correctly absent from `public/` |
+| l | Every image URL resolves; shipped-asset dimensions and bytes match ASSETS.md (two doc cells wrong: P5-9 alpha, P5-10 units) | **PASS** | Ph 5 §2–§3 — 53 referenced URLs, 53 files, a bijection; all dimensions and byte counts match; `clouds-all-b.png` correctly absent from `public/` |
 | m | Contrast: every text pair ≥ 4.5:1 | **PASS** | Ph 4 §7.3 — 41 pairs recomputed from the WCAG formula, worst text pair 4.62:1 (pine/90 on frost, 0.12 of headroom) |
 | n | Typecheck / lint / build clean | **PASS** | Ph 1 §1–§3 — all three exit 0, no warnings; 450 modules, 403 ms |
 | o | Zero console and network errors live | **PASS** | Ph 7 §1 — 0 errors, 0 warnings, 0 failed or ≥400 requests on five routes after a 3 s settle |
@@ -216,6 +217,8 @@ except for the intended chunk rename.
 
 ## 7. Open items / not measured
 
+
+- `/components.html` remains reachable as a second URL for the sheet (Ph 5 §7.4); benign because `components.html:17` is `noindex, nofollow`, but the README routing table (README.md:86–90) does not mention it. Documentation-only; referred by Phase 5, not picked up by Phase 6.
 - **Vercel-side behaviour.** Everything in P5-4 and P5-3 is derived from `vercel.json` and the
   platform docs, never observed. Phase 7 could only drive the Vite dev server, which has no
   `/components*` exclusion (P7-1). The default `Cache-Control` on static output, the exact

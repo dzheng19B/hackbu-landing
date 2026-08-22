@@ -397,6 +397,10 @@ Phase 6 measurement. Leave the six cloud elements alone.
 
 ### P2-9 — `note` — the lint config has no exhaustive-deps rule
 
+> **Superseded by P6-11** (`audit/06-docs-hygiene.md`): `npx oxlint --print-config` shows
+> `react/exhaustive-deps: "warn"` arriving from the react plugin's `correctness` defaults, so the
+> rule *is* enabled. The residual gap is enforcement — see P6-15. Kept for the record; WITHDRAWN.
+
 **Evidence.**
 
 ```

@@ -689,6 +689,10 @@ every time. This is the single highest-value change to the lint config.
 an OIDC token)", but the pattern is `.env*`, which matches `.env.example`, `.env.sample` and
 `.env.production` alike. Today the only match is `.env.local` (§2.2), so nothing is being lost.
 
+**Expected.** An ignore pattern should be no broader than the comment above it claims
+(`.gitignore:5–6` names only "the local env"); Vite's own convention (Vite docs, "Env Variables and
+Modes") is that `.env` / `.env.example` are committed and `*.local` files are ignored.
+
 **Fix.** Either narrow to `.env.local` / `.env*.local`, or add a negation `!.env.example`, before
 anyone adds a template that then silently fails to appear in `git status`.
 

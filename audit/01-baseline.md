@@ -73,6 +73,10 @@ EXIT=0
 
 ## 4. `dist/assets/` inventory (byte size + gzip size)
 
+> Snapshot from the §3 build. The §8 rebuild (with both audit reports on disk) superseded these
+> hashed filenames on disk — JS byte sizes unchanged, CSS +299 B each, all four per-entry hashes
+> rolled (e.g. `index-B2XwinZz.js` → `index-BCCAt3yZ.js`). Later phases wildcard the names.
+
 Byte size from `ls -la` (== `stat -c%s`); gzip size from `gzip -c f | wc -c` (raw gzip stream
 size, independent of Vite's own reported gzip column above — the two agree to within a couple of
 bytes, which is expected since Vite also uses gzip level 9-ish compression).
