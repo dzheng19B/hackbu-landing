@@ -105,20 +105,26 @@ type CloudLayerSpec = {
    *
    * These are derived from `scale`, not chosen: parallax reads as depth only
    * when apparent speed is proportional to apparent size, because both scale
-   * with 1/distance. So `driftSeconds ∝ 1 / scale`, anchored at near = 60s:
+   * with 1/distance. So `driftSeconds ∝ 1 / scale`, anchored at near = 90s:
    *
-   *   far   60 x (1.15 / 0.55) = 125s
-   *   mid   60 x (1.15 / 0.80) =  86s
-   *   near                        60s
+   *   far   90 x (1.15 / 0.55) = 188s
+   *   mid   90 x (1.15 / 0.80) = 129s
+   *   near                        90s
    *
-   * That gives a far:near speed ratio of 2.08x, matching the 2.09x size ratio.
-   * Merely ordering them (the earlier 88/74/62 — a 1.42x spread against a
+   * That gives a far:near speed ratio of 2.09x, matching the 2.09x size ratio.
+   * Merely ordering them (the original 88/74/62 — a 1.42x spread against a
    * 2.09x size spread) left the near layer looking too slow for its size, and
    * the effect read as drift rather than as depth.
    *
-   * Note this pushes `far` past the brief's 60-90s band. The band existed to
-   * keep the drift slow; 125s is slower still, so the intent is intact. The
-   * fastest layer is the one pinned to the 60s floor.
+   * The anchor is the one number to turn here. It was 60s; at 90s every layer
+   * is exactly 1.5x slower and the proportionality is untouched, because all
+   * three are derived from it. Raise it to slow the sky down further, lower it
+   * to liven it up — but change the anchor, not the individual layers, or the
+   * speed/size match that produces the depth is what breaks.
+   *
+   * The fastest layer now sits at the top of the brief's 60-90s band rather
+   * than its floor, which puts `far` well beyond it. The band existed to keep
+   * the drift slow, and 188s is slower still, so the intent is intact.
    */
   driftSeconds: number
   /** How far the layer lifts (as a % of stage height) while it fades out. */
@@ -170,7 +176,7 @@ const CLOUD_LAYERS: CloudLayerSpec[] = [
     id: 'far',
     scale: 0.55,
     opacity: 0.5,
-    driftSeconds: 125,
+    driftSeconds: 188,
     rise: 10,
     fadeStart: 0.04,
     fadeEnd: 0.3,
@@ -199,7 +205,7 @@ const CLOUD_LAYERS: CloudLayerSpec[] = [
     id: 'mid',
     scale: 0.8,
     opacity: 0.75,
-    driftSeconds: 86,
+    driftSeconds: 129,
     rise: 16,
     fadeStart: 0.02,
     fadeEnd: 0.26,
@@ -228,7 +234,7 @@ const CLOUD_LAYERS: CloudLayerSpec[] = [
     id: 'near',
     scale: 1.15,
     opacity: 1,
-    driftSeconds: 60,
+    driftSeconds: 90,
     rise: 24,
     fadeStart: 0.01,
     fadeEnd: 0.22,
