@@ -24,7 +24,13 @@ type Shape = {
 }
 
 const SHAPES: Record<DriftVariant, Shape> = {
-  // Hero (sky) settling into the first content section (cloud).
+  /*
+   * A sky-backed band settling into cloud. Currently unrendered: it was the
+   * divider under the hero until Phase 7, when the hero lost its copy and the
+   * boundary was re-read against the *finished* pan — whose bottom edge is the
+   * snowy plaza, not sky — and moved to `drift-c`. Kept as the one variant that
+   * fits a sky section above a cloud one, should the page grow one.
+   */
   'sky-to-cloud': {
     background: 'bg-sky',
     paths: [

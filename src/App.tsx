@@ -1,6 +1,7 @@
 import { SiteHeader } from './components/SiteHeader'
 import { Hero } from './components/Hero'
 import { SnowdriftDivider } from './components/SnowdriftDivider'
+import { IntroSection } from './components/sections/IntroSection'
 import { AboutSection } from './components/sections/AboutSection'
 import { GetInvolvedSection } from './components/sections/GetInvolvedSection'
 import { QuestionsSection } from './components/sections/QuestionsSection'
@@ -8,13 +9,18 @@ import { ContactSection } from './components/sections/ContactSection'
 import { SiteFooter } from './components/SiteFooter'
 
 /**
- * Page shell (Phase 2).
+ * Page shell.
  *
- * Order is: fixed header -> 100dvh hero -> four content sections on cloud,
- * separated by snowdrift dividers -> footer on frost.
+ * Order is: fixed header -> the hero's scroll track -> five content sections on
+ * cloud, separated by snowdrift dividers -> footer on frost.
  *
- * The hero is the only element the scroll work in Phases 3-4 needs to touch;
- * see src/components/Hero.tsx for its layer contract.
+ * The hero is illustration only. <IntroSection> directly under it is the
+ * page's masthead and carries the only <h1>; it and <AboutSection> are one
+ * uninterrupted stretch of cloud, so the drift between them would separate
+ * nothing and there isn't one.
+ *
+ * The hero is the only element the scroll work touches; see
+ * src/components/Hero.tsx for its layer contract.
  */
 export default function App() {
   return (
@@ -31,7 +37,23 @@ export default function App() {
       <main id="main">
         <Hero />
 
-        <SnowdriftDivider variant="sky-to-cloud" />
+        {/*
+         * `drift-c`, not `sky-to-cloud`. That variant paints its band `bg-sky`
+         * because it was chosen when the hero's bottom edge was open sky. The
+         * divider is only ever *seen* after the stage unpins, i.e. after the pan
+         * has finished, and the finished frame ends on the snowy foreground
+         * plaza: the bottom 20 rows of Campus.png average #ccc3ad, a warm
+         * sand-grey. A saturated blue band under that reads as a stripe.
+         *
+         * The `drift-*` variants band `bg-frost` with cloud-coloured drifts top
+         * and bottom, which under the plaza reads as a bank of settled snow
+         * carrying the eye into the page — the thing the component was built to
+         * do. `drift-c` specifically, so that its other use (questions ->
+         * contact) is as far away as the page allows and no shape repeats in a
+         * row.
+         */}
+        <SnowdriftDivider variant="drift-c" />
+        <IntroSection />
         <AboutSection />
 
         <SnowdriftDivider variant="drift-a" />

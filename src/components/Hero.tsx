@@ -1,9 +1,6 @@
-import { useMemo, useRef, useState } from 'react'
-import { motion, useMotionValueEvent, useScroll, useTransform } from 'motion/react'
-import { Container } from './Layout'
-import { ButtonLink } from './ButtonLink'
+import { useMemo, useRef } from 'react'
+import { motion, useScroll, useTransform } from 'motion/react'
 import { HeroClouds } from './HeroClouds'
-import { DISCORD_URL } from '../lib/links'
 import {
   CAMPUS_ALT,
   CAMPUS_HEIGHT,
@@ -23,23 +20,25 @@ import {
 /**
  * The hero: a scroll-driven pan down the campus illustration.
  *
- * Layer contract (unchanged from Phase 2, now animated):
+ * It is illustration and nothing else. Phase 7 moved the headline, lede and
+ * Discord CTA out to <IntroSection>, on the cloud background below — cloud text
+ * over the painted sky measured 1.43:1, and the only wash that lifted it past
+ * 4.5:1 was a near-opaque pine field covering most of the frame. Removing the
+ * copy retires that trade rather than tuning it: no text sits over the artwork
+ * at any scroll position, so there is nothing left to make legible.
+ *
+ * Layer contract:
  *
  *   <section data-hero>            the scroll TRACK. Taller than the viewport
  *                                  purely to buy scroll distance for the pan.
  *     <div data-hero-stage>        sticky top-0, exactly one viewport tall.
  *       <div data-hero-artwork>    the campus illustration, as a <picture> —
  *                                  scaled up and panned down.
- *       <div data-hero-clouds>     Phase 4: cloud-1..6 parallax layers.
- *       <div data-hero-copy>       headline + CTA, fades out before the reveal.
- *         <div data-hero-scrim>            the contrast wash behind the copy,
- *         <div data-hero-scrim-feather>    and its soft upper edge. Phase 6
- *                                  moved both inside the copy layer so they are
- *                                  bounded to the text and inherit its fade.
+ *       <div data-hero-clouds>     the cloud-1..6 parallax layers.
  *
- * Everything inside the stage is wrapped in a HeroScrollContext, so Phase 4's
- * cloud layers can read the same progress values instead of opening a second
- * scroll subscription. See src/lib/motion.ts.
+ * Everything inside the stage is wrapped in a HeroScrollContext, so the cloud
+ * layers read the same progress values instead of opening a second scroll
+ * subscription. See src/lib/motion.ts.
  */
 
 /* -------------------------------------------------------------------------- */
@@ -86,13 +85,6 @@ const TRACK_HEIGHT = 'h-[260dvh]'
  * the finished frame before the stage unpins and the hero scrolls away.
  */
 const PAN_SCROLL_FRACTION = 0.75
-
-/** The hero copy fades out over this window of raw track progress. */
-const COPY_FADE_START = 0.04
-const COPY_FADE_END = 0.26
-
-/** How far the copy drifts up (px) as it goes. Transform only. */
-const COPY_DRIFT = -24
 
 /**
  * How the illustration's top edge stays pinned — and why the previous scheme
@@ -164,24 +156,6 @@ export function Hero() {
     (p) => PAN_START_SCALE + (1 - PAN_START_SCALE) * p,
   )
 
-  /**
-   * The copy is gone by 0.26 of the track, long before the pan completes at
-   * 0.75 — the finished campus view is never sitting behind body text.
-   */
-  const copyOpacity = useTransform(progress, (p) =>
-    reducedMotion ? 1 : 1 - rangeProgress(p, COPY_FADE_START, COPY_FADE_END),
-  )
-  const copyY = useTransform(copyOpacity, (o) => (1 - o) * COPY_DRIFT)
-
-  // Faded-out copy must not stay focusable, or the Discord CTA becomes an
-  // invisible tab stop over the illustration. `inert` is a discrete attribute
-  // toggle at a threshold, not an animated property.
-  const [copyHidden, setCopyHidden] = useState(false)
-  useMotionValueEvent(copyOpacity, 'change', (value) => {
-    const hidden = value <= 0.01
-    setCopyHidden((wasHidden) => (wasHidden === hidden ? wasHidden : hidden))
-  })
-
   const heroScroll = useMemo<HeroScroll>(
     () => ({ progress, pan, reducedMotion }),
     [progress, pan, reducedMotion],
@@ -192,7 +166,10 @@ export function Hero() {
       id="top"
       data-hero
       ref={trackRef}
-      aria-labelledby="hero-title"
+      // The hero carries no heading now, so it names itself. Short on purpose:
+      // this is the landmark's label, and the full description of what is in
+      // the picture is the <img>'s alt (CAMPUS_ALT), one level down.
+      aria-label="Campus illustration"
       // No `overflow-hidden` here: an overflow-clipped ancestor becomes the
       // sticky element's scrollport and the stage would never pin. The stage
       // clips the scaled artwork itself.
@@ -237,98 +214,10 @@ export function Hero() {
             </picture>
           </div>
 
-          {/* Phase 4: the drifting cloud parallax. <HeroClouds> renders the
+          {/* The drifting cloud parallax. <HeroClouds> renders the
               `data-hero-clouds` layer itself and reads useHeroScroll() from the
               context above rather than opening its own subscription. */}
           <HeroClouds />
-
-          <motion.div
-            data-hero-copy
-            inert={copyHidden}
-            className="relative z-10 flex h-full flex-col justify-end"
-            style={{ opacity: copyOpacity, y: copyY }}
-          >
-            <div className="relative pt-16 pb-14 sm:pt-20 sm:pb-20">
-              {/*
-               * Legibility scrim (rebuilt in Phase 6 — see the note below).
-               *
-               * Phase 3 shipped this as a stage-height gradient running
-               * pine/60 -> pine/25 -> transparent, on the claim that it lifted
-               * the copy past 4.5:1. Measured, it does not: sampling the actual
-               * illustration behind each line at scroll 0 and compositing the
-               * gradient over it gives 1.43:1 for the headline and 1.80:1 for
-               * the lede, because at scale 3 the copy sits over sky and painted
-               * cloud — the brightest pixels in the artwork reach luma 0.98 —
-               * while the gradient is only ~0.2-0.4 opaque that far up.
-               *
-               * cloud (#F7F5EE) over an arbitrary painterly backdrop needs a
-               * pine wash of **alpha 0.836** to clear 4.5:1 in the worst case
-               * (solved against a pure white backdrop, which bounds every pixel
-               * in the artwork). There is no lighter treatment that passes:
-               * inverting to pine-on-cloud needs the same alpha in the other
-               * direction. So the scrim has to be near-opaque where the text is
-               * — the only real choice is *where*.
-               *
-               * It is therefore no longer stage-height. A stage-height gradient
-               * cannot work: the copy occupies 56% of the stage at 1440x900,
-               * 62% at 390x844 and 86% at 800x500, so no fixed stop covers the
-               * text at every viewport without washing the whole frame. Instead
-               * the scrim is bounded to the copy's own box — full-bleed across,
-               * exactly as tall as the copy plus its padding — so it covers the
-               * text by construction at every viewport, and a fixed 144px
-               * feather above it fades the edge out over a constant distance
-               * rather than a percentage.
-               *
-               * Both halves are plain children of the copy layer now, so they
-               * inherit its opacity and drift instead of re-deriving them —
-               * one less animated element, and the scrim can no longer fall out
-               * of step with the text it exists to protect.
-               *
-               * The cost is real and deliberate: at scroll 0 the lower half of
-               * the frame is a pine field rather than the illustration. It
-               * clears completely by 0.26 of the track, before the pan reaches
-               * anything worth looking at, so the reveal reads stronger for it.
-               */}
-              <div
-                data-hero-scrim
-                aria-hidden="true"
-                className="from-pine/94 to-pine/88 pointer-events-none absolute inset-0 bg-linear-to-t"
-              />
-              <div
-                data-hero-scrim-feather
-                aria-hidden="true"
-                className="from-pine/88 pointer-events-none absolute inset-x-0 bottom-full h-36 bg-linear-to-t to-transparent"
-              />
-
-              <Container className="relative">
-                <div className="max-w-3xl">
-                  <p className="text-eyebrow text-cloud font-medium uppercase">
-                    Binghamton University
-                  </p>
-                  <h1
-                    id="hero-title"
-                    className="font-display text-display-xl text-cloud mt-5 font-semibold text-balance"
-                  >
-                    Learn to build apps with other students.
-                  </h1>
-                  <p className="text-lede text-cloud mt-6 max-w-xl">
-                    HackBU runs web and mobile development workshops every week
-                    and a hackathon once a year. You don’t need any programming
-                    experience to come to either.
-                  </p>
-                  <div className="mt-9 flex flex-wrap items-center gap-4">
-                    {/* The ring has to read against the pine scrim, not cloud. */}
-                    <ButtonLink href={DISCORD_URL} size="lg" focusTone="light">
-                      Join the Discord
-                    </ButtonLink>
-                    <p className="text-caption text-cloud">
-                      Free, open to all majors.
-                    </p>
-                  </div>
-                </div>
-              </Container>
-            </div>
-          </motion.div>
         </div>
       </HeroScrollContext>
     </section>
