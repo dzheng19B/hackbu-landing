@@ -3095,9 +3095,9 @@ $ cd dist/assets && for s in "Add to your calendar" "Registration opens"; do ech
   about-CVP1pGar.js            0
   schedule-8bNgrPmI.js         0
   sponsors-BZ65Yu9L.js         0
-  hackathons-Ln8f0CVt.js       0
+  hackathons-Ln8f0CVt.js       1
   shared-DQViWOsl.js           0
-  components-DqkT7AXf.js       1
+  components-DqkT7AXf.js       0
 ```
 
 (Before this change both strings returned **1** in `shared-*.js` and **0** everywhere else.)
@@ -3217,10 +3217,13 @@ Documentation, brought back in line with a six-page build.
 
 ```
 $ grep -n "both pages\|two pages\|two entries\|Two entry\|both entries\|two entry" vite.config.ts scripts/prerender.mjs src/entry-server.tsx src/main.tsx src/sheet/main.tsx README.md src/index.css src/landing.css ; echo "(exit $?)"
-(exit 1)
+vite.config.ts:215: * landing sections really are rendered by two entries.)
+(exit 0)
 $ grep -rn "Phase [0-9]" src index.html components.html about.html schedule.html sponsors.html hackathons.html README.md ASSETS.md scripts vercel.json ; echo "(exit $?)"
 (exit 1)
 ```
+
+(The one surviving wording hit, `vite.config.ts:215` "rendered by two entries", is the `manualChunks` comment I-8 added after this grep was first captured; it describes the landing page and the sheet both rendering `src/components/sections/`, which is true, not a stale "two pages" claim.)
 
 The one `Phase [0-9]` hit that survived the merge was at `src/components/sections/AboutSection.tsx:11`
 ("Phase 7 moved it here instead"), inherited from the landing page's own history; it is now written
