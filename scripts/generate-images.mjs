@@ -13,12 +13,15 @@
  * ---------------------------------------------------------------------------
  * Widths
  * ---------------------------------------------------------------------------
- * Campus.png is 1672 x 941. **1672 is the ceiling** — the hero magnifies the
- * illustration up to 3x, so every viewport above a phone already wants more
- * pixels than the source has, and emitting a width above the intrinsic one
- * would spend bytes on interpolation the browser can do for free. The ladder
- * below therefore stops at the source width and steps down for small and
- * low-DPR viewports.
+ * Campus.png is 1672 x 941, and the hero magnifies the illustration up to 3x —
+ * so at the start frame every screen wants far more pixels than the painted
+ * source has, and the top of the ladder used to be visibly soft. The rungs
+ * above 1672 are therefore cut from `artwork/campus/Campus-upscaled-3344.png`,
+ * a 2x Real-ESRGAN (realesrgan-x4plus, 4x then Lanczos-halved) enlargement of
+ * the painting; the rungs at and below 1672 still come from the true source,
+ * where no interpolation is involved at all. **3344 is the ceiling** — it is
+ * the upscaled master's own width, and past 2x the enlarger is inventing
+ * detail rather than recovering plausible brushwork.
  *
  * The twelve clouds are 224-430px cutouts rendered at up to 1.15x, so they are
  * also already at or past 1:1 on every screen. One derivative each, at the
@@ -88,7 +91,13 @@ const BRAND_OUT = join(ROOT, 'public', 'brand')
  * `src/lib/images.ts` and with the preload `imagesrcset` in `index.html`.**
  * The script prints both strings at the end of a run so a drift is visible.
  */
-const CAMPUS_WIDTHS = [640, 960, 1280, 1672]
+const CAMPUS_WIDTHS = [640, 960, 1280, 1672, 2508, 3344]
+
+/**
+ * Widths above this rung are cut from the upscaled master instead of the
+ * painted source (see the Widths note at the top of the file).
+ */
+const CAMPUS_NATIVE_CEILING = 1672
 
 const AVIF = { quality: 68, effort: 6 }
 const CAMPUS_WEBP = { quality: 82, effort: 6 }
@@ -122,15 +131,17 @@ async function emit(pipeline, outPath) {
 }
 
 async function generateCampus() {
-  const src = join(ARTWORK, 'campus', 'Campus.png')
-  const { width: intrinsic } = await sharp(src).metadata()
+  const native = join(ARTWORK, 'campus', 'Campus.png')
+  const upscaled = join(ROOT, 'artwork', 'campus', 'Campus-upscaled-3344.png')
+  const { width: upscaledWidth } = await sharp(upscaled).metadata()
 
   for (const width of CAMPUS_WIDTHS) {
-    if (width > intrinsic) {
+    if (width > upscaledWidth) {
       throw new Error(
-        `Campus width ${width} exceeds the intrinsic ${intrinsic}px source.`,
+        `Campus width ${width} exceeds the ${upscaledWidth}px upscaled master.`,
       )
     }
+    const src = width > CAMPUS_NATIVE_CEILING ? upscaled : native
     const resized = () => sharp(src).resize({ width, withoutEnlargement: true })
     await emit(resized().avif(AVIF), join(ARTWORK, 'campus', `Campus-${width}.avif`))
     await emit(
@@ -282,7 +293,9 @@ const cloudCount = written.filter(
   (w) => w.path.includes('clouds') && w.path.endsWith('avif'),
 ).length
 for (const ext of ['avif', 'webp']) {
-  const campusTop = written.find((w) => w.path.endsWith(`Campus-1672.${ext}`))
+  const campusTop = written.find((w) =>
+    w.path.endsWith(`Campus-${CAMPUS_WIDTHS.at(-1)}.${ext}`),
+  )
   const clouds = written
     .filter((w) => w.path.includes('clouds') && w.path.endsWith(ext))
     .reduce((sum, w) => sum + w.bytes, 0)

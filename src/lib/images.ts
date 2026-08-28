@@ -18,11 +18,14 @@ export const CAMPUS_WIDTH = 1672
 export const CAMPUS_HEIGHT = 941
 
 /**
- * The derivative ladder. It stops at the intrinsic 1672px because the hero
- * magnifies the illustration rather than shrinking it — there is no real
- * detail above the source width to deliver.
+ * The derivative ladder. The rungs at and below the intrinsic 1672px are cut
+ * from the painted source; 2508 and 3344 are cut from
+ * `artwork/campus/Campus-upscaled-3344.png`, a 2x Real-ESRGAN enlargement of
+ * the painting (see scripts/generate-images.mjs). The hero magnifies the
+ * illustration up to 3x, so the start frame is displayed far wider than 1672px
+ * on every screen — the upscaled rungs are what keep it from rendering soft.
  */
-const CAMPUS_WIDTHS = [640, 960, 1280, 1672] as const
+const CAMPUS_WIDTHS = [640, 960, 1280, 1672, 2508, 3344] as const
 
 function campusSrcSet(extension: 'avif' | 'webp'): string {
   return CAMPUS_WIDTHS.map(
@@ -44,17 +47,21 @@ export const CAMPUS_SRCSET = {
  *   viewport aspect <  1672/941  ->  height-constrained, content width
  *                                    = 100vh x 1672/941 = 177.68vh
  *
- * The second case covers every phone and most desktops, and `100vw` would
- * understate it by a third at 1440x900 — enough to drop the browser a rung down
- * the ladder on a 2x screen. The hero then magnifies this by up to 3x, which
- * `sizes` has no way to express; it does not matter, because the ladder is
- * capped at the source width and the top rung is already selected everywhere
- * this expression matters.
+ * The image is fetched while the hero sits at its start frame, where the pan
+ * has the content magnified by PAN_START_SCALE = 3 (see Hero.tsx) — so both
+ * regimes are written here multiplied by 3: `300vw`, and
+ * `300vh x 1672/941 = 533.05vh`. `sizes` has no way to see a transform, so the
+ * factor is baked into the expression. When the ladder was capped at the
+ * source's 1672px this did not matter — the top rung was selected everywhere
+ * either way — but with the 2508/3344 upscaled rungs it is exactly what lets a
+ * low-DPR desktop reach them: at 1440x900 the start frame draws the content
+ * 533.05vh = ~4797 CSS px wide, and quoting the unmagnified ~1599px would
+ * leave the browser on the 1672 rung the blur came from.
  *
  * Must match `imagesizes` on the preload link in index.html, or the preload
  * fetches a different rung than `<picture>` asks for and the image loads twice.
  */
-export const CAMPUS_SIZES = '(min-aspect-ratio: 1672/941) 100vw, 177.68vh'
+export const CAMPUS_SIZES = '(min-aspect-ratio: 1672/941) 300vw, 533.05vh'
 
 /**
  * The campus illustration is content, not decoration — it is the reason the

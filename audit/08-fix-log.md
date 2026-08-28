@@ -697,7 +697,7 @@ the catch-all changed nothing locally — the dev server never reads `vercel.jso
 still returns the landing page here and is derived to 404 on Vercel; that gap is the finding, and
 it is now written down rather than merely true.
 
-### P2-2 · FIXED · `index.html:83–86`
+### P2-2 · FIXED · `index.html:85–88`
 
 The three absent basic-metadata properties are declared next to the existing `og:image` block:
 
@@ -720,7 +720,7 @@ of the one page this document is. `og:description` is deliberately still absent:
 back to `<meta name="description">`, which is present and accurate, so declaring it twice would
 create two strings to keep in step. All four values appear in the live readout below.
 
-### P5-12 · FIXED · `vite.config.ts:6–45,183`, applied at `index.html:85–86`, documented at `README.md:117–122`
+### P5-12 · FIXED · `vite.config.ts:6–45,183`, applied at `index.html:87–88`, documented at `README.md:117–122`
 
 The hardcoded `https://hackbu-landing.vercel.app` is gone from the HTML. Both absolute URLs are
 written as a percent-delimited placeholder and substituted at build time by a 15-line plugin:
@@ -791,7 +791,7 @@ substitution is a plain string replace over the whole document, so the first dra
 explanatory comment — which quoted the placeholder by name — was itself rewritten, and
 `dist/index.html` shipped a comment reading "the origin is `https://hackbu-landing.vercel.app`,
 replaced at build time" directly above the two tags that had just been replaced. The comment
-(`index.html:57–80`) no longer spells the placeholder out, and says why. That is also why the grep
+(`index.html:59–82`) no longer spells the placeholder out, and says why. That is also why the grep
 count above is exactly 2 rather than 3.
 
 `README.md:110–121` is the domain-move checklist item, under its own **"When the custom domain
@@ -801,7 +801,7 @@ the site ever moves somewhere without that variable, change the fallback constan
 `vite.config.ts` and not the HTML. The section's opening line no longer claims "No environment
 variables" — the build now reads one.
 
-### P3-6 · FIXED · `index.html:98`, `components.html:30`
+### P3-6 · FIXED · `index.html:100`, `components.html:30`
 
 ```
 $ grep -c 'name="theme-color"' index.html components.html
@@ -2512,9 +2512,9 @@ file** at which the closure entry's `###` heading sits.
 | P4-8 | note | **DOCUMENTED** (no code change needed) | Phase 2 | `08-fix-log.md:459` — `### P4-8 · DOCUMENTED · src/index.css:170,174,178 measured live` |
 | P5-4 | low | **FIXED** | Phase 3 | `08-fix-log.md:581` — `### P5-4 · FIXED · vercel.json:6–9, public/404.html (new), README.md:134–153` |
 | P7-1 | note | **DOCUMENTED** (same change; the dev-vs-Vercel split recorded at `README.md:150–153`) | Phase 3 | `08-fix-log.md:581` — same entry |
-| P2-2 | low | **FIXED** | Phase 3 | `08-fix-log.md:700` — `### P2-2 · FIXED · index.html:83–86` |
+| P2-2 | low | **FIXED** | Phase 3 | `08-fix-log.md:700` — `### P2-2 · FIXED · index.html:85–88` |
 | P5-12 | note | **FIXED** | Phase 3 | `08-fix-log.md:723` — `### P5-12 · FIXED · vite.config.ts:6–45,183` |
-| P3-6 | note | **FIXED** | Phase 3 | `08-fix-log.md:804` — `### P3-6 · FIXED · index.html:98, components.html:30` |
+| P3-6 | note | **FIXED** | Phase 3 | `08-fix-log.md:804` — `### P3-6 · FIXED · index.html:100, components.html:30` |
 | P5-1 | **medium** | **FIXED** (prerender) | Phase 4 | `08-fix-log.md:1011` — `### P5-1 · FIXED · scripts/prerender.mjs (new), src/entry-server.tsx (new)` |
 | P5-8 | note | **FIXED** (by P5-1) | Phase 4 | `08-fix-log.md:1098` — `### P5-8 · FIXED (by P5-1) · dist/index.html body` |
 | P5-5 | low | **FIXED** | Phase 4 | `08-fix-log.md:1124` — `### P5-5 · FIXED · vite.config.ts:62-127, :183` |
@@ -2571,7 +2571,7 @@ file** at which the closure entry's `###` heading sits.
 | i | No scroll event listeners | **PASS** | `grep -rn "addEventListener('scroll'" src/` → **1 hit**, and it is the comment at `src/components/Hero.tsx:138` asserting there are none. Both switches the plan added (`drifting` in `HeroClouds`, `panning` in `Hero`) use `useMotionValueEvent` on the existing `useScroll` value |
 | j | Sheet excluded from the landing bundle | **PASS** | `dist/index.html` loads `index-*.js`, `shared-*.js`, `vendor-*.js`, `rolldown-runtime-*.js`; the sheet-only literals `"component sheet"` and `"Skip to the sheet"` return **0 hits** across all four and **1 hit** each in `components-*.js` |
 | j′ | Sheet utilities kept out of the landing *stylesheet* (README:80–81) | **PASS** *(was PARTIAL FAIL)* | `grep -c 'grid-cols-5' dist/assets/index-*.css` → **0** (sheet CSS: **1**); `grep -c 'transition' dist/assets/index-*.css` → **0**. P1-5 scoped Tailwind to `src/` with `@import 'tailwindcss' source('.')` (`src/index.css:19`) and blocklisted the phantom `transition` candidate (`src/index.css:28`) |
-| k | Srcset triple agreement | **PASS** | `src/lib/images.ts:25` and `scripts/generate-images.mjs:91` both `[640, 960, 1280, 1672]`; `index.html`'s `imagesrcset` carries the same four rungs; the built HTML's only artwork `sizes` is `(min-aspect-ratio: 1672/941) 100vw, 177.68vh`, byte-identical between the preload and the `<picture>` |
+| k | Srcset triple agreement | **PASS** *(re-verified 2026-08-27 after the upscaled 2508/3344 rungs landed)* | `src/lib/images.ts:28` and `scripts/generate-images.mjs:94` both `[640, 960, 1280, 1672, 2508, 3344]`; `index.html`'s `imagesrcset` carries the same six rungs; the only artwork `sizes` is `(min-aspect-ratio: 1672/941) 300vw, 533.05vh`, identical between the preload and the `<picture>`, and the dev server showed one campus fetch (`Campus-3344.avif`) at 1440×900 |
 | l | Every image URL resolves; shipped assets match `ASSETS.md` | **PASS** | bijection scan of `dist/`: **56** image/font files, **56** referenced, **56** distinct referenced URLs, **0 missing, 0 unreferenced**; the two wrong doc cells are fixed — P5-9 at `ASSETS.md:118`, P5-10 at `ASSETS.md:138` |
 | m | Contrast: every text pair ≥ 4.5:1 | **PASS** | `08-fix-verification.md` §14 — all 41 rows recomputed from the live `@theme` hexes; **20 text pairs, 0 below 4.5:1**, worst 4.62:1 (pine/90 on frost); **0 non-text pairs below their 3:1 threshold**, and the two that used to be invisible (the toggle border and its hover fill, P4-2/P3-1) now read **6.83:1** |
 | n | Typecheck / lint / build clean | **PASS** | `npm run typecheck` exit 0; `npm run lint` exit 0 and now `oxlint --deny-warnings` (P6-15) with `unicorn` and `jsx-a11y` restored (P6-12, P6-13); `npm run build` exit 0 — lint, `tsc -b`, `vite build` (448 modules, 350 ms), `node scripts/prerender.mjs` |

@@ -204,9 +204,11 @@ site actually ships are in `public/artwork/`.
 
 ```
 artwork/                     read-only originals
+  campus/Campus-upscaled-3344.png   2x Real-ESRGAN enlargement — source of the
+                                    2508/3344 rungs; never shipped itself
 public/artwork/
   campus/Campus.png          the campus illustration
-  campus/Campus-{640,960,1280,1672}.{avif,webp}
+  campus/Campus-{640,960,1280,1672,2508,3344}.{avif,webp}
   clouds/cloud-1..12.png     transparent cloud cutouts
   clouds/cloud-1..12.{avif,webp}
 ```
@@ -216,10 +218,14 @@ To replace the artwork:
 1. Drop the new PNGs into `public/artwork/`, keeping the same filenames. The campus
    illustration must stay a single opaque image; the clouds must stay RGBA cutouts with
    real alpha.
-2. Run `npm run images` to regenerate the AVIF and WebP derivatives. The PNGs remain as
+2. Rebuild `artwork/campus/Campus-upscaled-3344.png` for the new campus illustration:
+   a 2x machine enlargement (Real-ESRGAN `realesrgan-x4plus` at 4x, then Lanczos-halved
+   to 2x). The hero's start frame magnifies the artwork 3x, and the srcset rungs above
+   the source width are cut from this file — without it `npm run images` fails.
+3. Run `npm run images` to regenerate the AVIF and WebP derivatives. The PNGs remain as
    the `<picture>` fallback.
-3. Update `ASSETS.md`, which records every file with its pixel dimensions.
-4. Commit the regenerated derivatives along with the new PNGs.
+4. Update `ASSETS.md`, which records every file with its pixel dimensions.
+5. Commit the regenerated derivatives along with the new PNGs.
 
 ### If the new campus illustration is framed differently
 
@@ -290,31 +296,31 @@ palette colours, no `#000000`.
 | --- | --- | --- |
 | `sky` | `#4A96D2` | hero sky |
 | `horizon` | `#A8D0EB` | **currently unused** — the sky is a single flat field, not a gradient |
-| `cloud` | `#F7F5EE` | page background below the fold |
-| `frost` | `#DCE3EA` | dividers, muted surfaces, card fills |
+| `cloud` | `#F4F8FB` | page background below the fold — fresh-snow white |
+| `frost` | `#DBE6F0` | dividers, muted surfaces, card fills — ice blue |
 | `brick` | `#A2593A` | the single accent — links, buttons, hover |
-| `stone` | `#C4B79E` | tertiary / decorative only |
+| `stone` | `#B1C2D2` | tertiary / decorative only — glacier grey hairlines |
 | `pine` | `#3C5C48` | body text, headings, focus rings, the button hover fill and the toggle's border/hover fill (never pure black) |
-| `haze` | `#7C99B4` | **currently unused** — retired from text (2.72:1 on `cloud`, below AA) and not used as a scene colour either |
+| `haze` | `#7C99B4` | **currently unused** — retired from text (2.78:1 on `cloud`, below AA) and not used as a scene colour either |
 | `fern` | `#339966` | **logo only** — the two brand marks, and nothing else |
 
 `brick` is the **only** accent; adding a second one is a design regression. `haze` is
-retired from text use — it measures 2.72:1 on `cloud`, well below WCAG AA. Secondary text
+retired from text use — it measures 2.78:1 on `cloud`, well below WCAG AA. Secondary text
 uses `pine/90`.
 
 `fern` is the brand green and is **not** an accent. It exists so the two logo marks —
 which ship in two different greens, neither of them a palette colour — can be normalised
 to one. It fills the marks and nothing else: no link, button, border, background or text.
-It measures 3.27:1 on `cloud`, which a logotype is exempt from and a word is not.
+It measures 3.34:1 on `cloud`, which a logotype is exempt from and a word is not.
 
 Link hover is a per-surface rule, and it lives in one place. `LINK_ON_CLOUD` and
 `LINK_ON_FROST` in `src/components/ExternalLink.tsx` are the only two **text-link**
-treatments on the page: brick hover on `cloud` (4.78:1), underline hover on `frost`, because brick on
-frost measures 4.03:1 and fails AA. Pick by the surface the link is painted on.
+treatments on the page: brick hover on `cloud` (4.89:1), underline hover on `frost`, because brick on
+frost measures 4.12:1 and fails AA. Pick by the surface the link is painted on.
 
 There is a third named treatment, and it is not for links: `TOGGLE_ON_CLOUD` in
 `src/components/controls.ts` — the small outlined pill `<button>` (the header's menu
-toggle, and two controls on the component sheet). Border `pine` on `cloud` at **6.83:1**,
+toggle, and two controls on the component sheet). Border `pine` on `cloud` at **6.98:1**,
 clearing the 3:1 of WCAG 1.4.11, and a `pine` hover fill with the label flipping to
 `cloud`. It replaces a `frost` border and `frost` hover fill that measured 1.19:1 — a
 boundary and a hover state that could not be seen. `pine` rather than `brick`, because
