@@ -37,11 +37,14 @@ the only *source* file in `public/artwork/campus/` (the AVIF/WebP derivatives si
 it — see Derivatives below), and the only non-cloud source asset.
 
 A second campus file lives in `artwork/campus/` only:
-**`Campus-upscaled-3344.png` (3344 × 1882, 13,298,667 B)** is a 2x machine enlargement of
-the painting — Real-ESRGAN (`realesrgan-x4plus`) run at 4x, then Lanczos-halved — made
-because the hero's start frame magnifies the artwork 3x and the 1672px source rendered
-visibly soft there. It is the source for the two srcset rungs above 1672 (see
-Derivatives) and is never copied to `public/` or shipped itself.
+**`Campus-upscaled-6688.webp` (6688 × 3764, lossless WebP, 25,095,724 B)** is the raw 4x
+Real-ESRGAN (`realesrgan-x4plus`) enlargement of the painting, made because the hero's
+start frame magnifies the artwork 3x and the 1672px source rendered visibly soft there —
+conspicuously so next to the pixel-crisp cloud cutouts. (A 2x-capped master was tried
+first and still read soft on 1x desktops.) It is the source for the four srcset rungs
+above 1672 (see Derivatives) and is never copied to `public/` or shipped itself; it is
+stored as lossless WebP rather than PNG purely because that is ~7 MB smaller in the
+repository.
 
 ## The cloud cutouts
 
@@ -84,7 +87,7 @@ Not shipped, listed for completeness:
 | File | Dimensions (px) | File size | Why it stays in `artwork/` |
 | --- | --- | --- | --- |
 | `artwork/clouds/clouds-all-b.png` | 2172 × 724 | 453,487 B (442.9 KiB) | Reference contact sheet of all twelve cutouts, not a cutout. Never copied to `public/`, never rendered, never fed to `npm run images`. |
-| `artwork/campus/Campus-upscaled-3344.png` | 3344 × 1882 | 13,298,667 B (12.7 MiB) | 2x Real-ESRGAN enlargement of `Campus.png` — the source `npm run images` cuts the 2508/3344 rungs from. Never copied to `public/`; only its AVIF/WebP derivatives ship. |
+| `artwork/campus/Campus-upscaled-6688.webp` | 6688 × 3764 | 25,095,724 B (23.9 MiB) | 4x Real-ESRGAN enlargement of `Campus.png` (lossless WebP) — the source `npm run images` cuts the 2508/3344/5016/6688 rungs from. Never copied to `public/`; only its AVIF/WebP derivatives ship. |
 
 All thirteen are valid PNGs at 8-bit depth, and every cutout is tightly cropped — the
 ink fills its canvas. Dimensions were read directly from each file's IHDR chunk; sizes
@@ -135,8 +138,8 @@ fails the deploy too) and nothing else.
 
 | Output | Widths | Encoder | Total |
 | --- | --- | --- | --- |
-| `campus/Campus-{640,960,1280,1672,2508,3344}.avif` | 6 | AVIF q68 | 2,155 KB |
-| `campus/Campus-{640,960,1280,1672,2508,3344}.webp` | 6 | WebP q82 | 2,340 KB |
+| `campus/Campus-{640,…,3344,5016,6688}.avif` | 8 | AVIF q68 | 5,447 KB |
+| `campus/Campus-{640,…,3344,5016,6688}.webp` | 8 | WebP q82 | 5,802 KB |
 | `clouds/cloud-N.avif` | 1 each (intrinsic) × 12 | AVIF q70 | 169 KB |
 | `clouds/cloud-N.webp` | 1 each (intrinsic) × 12 | WebP q82, alphaQuality 90 | 256 KB |
 | `about/{collaborate,table,hackathon,hall}.avif` | 1 each (intrinsic) × 4 | AVIF q68 | 448 KB |
@@ -144,24 +147,36 @@ fails the deploy too) and nothing else.
 | `sponsors/workshop.avif` | 1 (intrinsic) | AVIF q68 | 128 KB |
 | `sponsors/workshop.webp` | 1 (intrinsic) | WebP q82 | 133 KB |
 
-The campus ladder tops out at **3344px**, twice the painted source's 1672: the rungs at
-and below 1672 are cut from `Campus.png`, and the 2508/3344 rungs from
-`artwork/campus/Campus-upscaled-3344.png` (see "The campus illustration" above). The
-hero magnifies the artwork up to 3x at its start frame, which is why `sizes`
+The campus ladder tops out at **6688px**, four times the painted source's 1672: the
+rungs at and below 1672 are cut from `Campus.png`, and the 2508/3344/5016/6688 rungs
+from `artwork/campus/Campus-upscaled-6688.webp` (see "The campus illustration" above).
+The hero magnifies the artwork up to 3x at its start frame, which is why `sizes`
 (`CAMPUS_SIZES` in `src/lib/images.ts`, mirrored by the preload's `imagesizes` in
-`index.html`) quotes the drawn width times 3 — so every screen selects a rung sized for
-the zoomed frame it actually sees at load, which in practice is the top rung.
+`index.html`) quotes the drawn width times 3 for laptop-and-up screens — a 1440x900 @1x
+display selects 5016, anything wider or denser 6688. Small screens are deliberately
+capped by the leading `1114px` entries (one for portrait width, one for landscape
+height): a phone's `object-cover` crop discards ~74% of the drawn width, so the heavy
+top rungs would be mostly cropped bytes — DPR-2 phones land on 2508 and DPR-3 phones on
+3344 instead.
 The clouds render at up to 1.15x their intrinsic width, so they get one derivative each
 and their `<picture>` switches on format only, with no `srcset`.
 
-**Measured first load of the landing page** (dev server, Chromium, verified at both
-1440x900 @1x and 375x812 @2x after the upscaled rungs landed): 13 image requests,
-**1,033,102 bytes (1,008.9 KB)** — the top campus AVIF (`Campus-3344.avif`, 859,883 B,
-selected at both viewports) plus the twelve cloud AVIFs (173,219 B), each fetched
-exactly once. That is 27% of what the PNGs would cost and **66% of the 1.5 MB budget** —
-up from 483.7 KB / 32% when the ladder topped out at 1672, the price of the sharp start
-frame. (An earlier production-build measurement of the 1672-ladder first load was
-495,259 B; only the campus tier has changed since.)
+**Measured first load of the landing page** (dev server, Chromium, after the 4x rungs
+landed): 13 image requests either way, split by screen class —
+
+- **Desktop** (verified at 1900x912 @1x and 1440x900 @2x, both selecting
+  `Campus-6688.avif`): **2,251,760 bytes (2,199 KB)** — the 6688 AVIF (2,078,541 B)
+  plus the twelve cloud AVIFs (173,219 B), each fetched exactly once. That is **143% of
+  the 1.5 MB budget: the budget is deliberately exceeded on desktop**, traded for a
+  start frame that is not visibly soft next to the pixel-crisp cloud cutouts. A
+  1440x900 @1x laptop selects 5016 (1,344,385 B; 1,482 KB first load, 97% of budget).
+- **Phone** (verified at 390x844 @3x and 844x390 @3x, both capped to
+  `Campus-3344.avif`): **1,014,069 bytes (990 KB)** — 66% of the budget, unchanged in
+  spirit from the 3344-ceiling ladder.
+
+(History: 495,259 B / 32% of budget when the ladder topped out at the painted 1672;
+1,033,102 B / 66% everywhere at the 3344 ceiling; only the campus tier has changed
+across all three.)
 
 Every cloud loads on first paint whatever the viewport: the drift track mounts
 `SET_COUNT` copies of each cutout, but they share one URL each, so the request count is

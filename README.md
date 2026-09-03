@@ -204,11 +204,11 @@ site actually ships are in `public/artwork/`.
 
 ```
 artwork/                     read-only originals
-  campus/Campus-upscaled-3344.png   2x Real-ESRGAN enlargement — source of the
-                                    2508/3344 rungs; never shipped itself
+  campus/Campus-upscaled-6688.webp  4x Real-ESRGAN enlargement (lossless) — source
+                                    of the rungs above 1672; never shipped itself
 public/artwork/
   campus/Campus.png          the campus illustration
-  campus/Campus-{640,960,1280,1672,2508,3344}.{avif,webp}
+  campus/Campus-{640,960,1280,1672,2508,3344,5016,6688}.{avif,webp}
   clouds/cloud-1..12.png     transparent cloud cutouts
   clouds/cloud-1..12.{avif,webp}
 ```
@@ -218,10 +218,12 @@ To replace the artwork:
 1. Drop the new PNGs into `public/artwork/`, keeping the same filenames. The campus
    illustration must stay a single opaque image; the clouds must stay RGBA cutouts with
    real alpha.
-2. Rebuild `artwork/campus/Campus-upscaled-3344.png` for the new campus illustration:
-   a 2x machine enlargement (Real-ESRGAN `realesrgan-x4plus` at 4x, then Lanczos-halved
-   to 2x). The hero's start frame magnifies the artwork 3x, and the srcset rungs above
-   the source width are cut from this file — without it `npm run images` fails.
+2. Rebuild `artwork/campus/Campus-upscaled-6688.webp` for the new campus illustration:
+   the raw 4x Real-ESRGAN (`realesrgan-x4plus`) enlargement, stored as lossless WebP.
+   The hero's start frame magnifies the artwork 3x, and the srcset rungs above the
+   source width are cut from this file — without it `npm run images` fails. Inspect the
+   enlargement at 1:1 before committing it: at 4x the model paints plausible brushwork
+   rather than recovering detail, and it must still read as the same painting.
 3. Run `npm run images` to regenerate the AVIF and WebP derivatives. The PNGs remain as
    the `<picture>` fallback.
 4. Update `ASSETS.md`, which records every file with its pixel dimensions.

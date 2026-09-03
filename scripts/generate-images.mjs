@@ -16,12 +16,16 @@
  * Campus.png is 1672 x 941, and the hero magnifies the illustration up to 3x —
  * so at the start frame every screen wants far more pixels than the painted
  * source has, and the top of the ladder used to be visibly soft. The rungs
- * above 1672 are therefore cut from `artwork/campus/Campus-upscaled-3344.png`,
- * a 2x Real-ESRGAN (realesrgan-x4plus, 4x then Lanczos-halved) enlargement of
- * the painting; the rungs at and below 1672 still come from the true source,
- * where no interpolation is involved at all. **3344 is the ceiling** — it is
- * the upscaled master's own width, and past 2x the enlarger is inventing
- * detail rather than recovering plausible brushwork.
+ * above 1672 are therefore cut from `artwork/campus/Campus-upscaled-6688.webp`
+ * (lossless), the raw 4x Real-ESRGAN (`realesrgan-x4plus`) enlargement of the
+ * painting; the rungs at and below 1672 still come from the true source, where
+ * no interpolation is involved at all. **6688 is the ceiling** — the enlarger's
+ * own 4x output, inspected at 1:1 before shipping: at 4x it is painting
+ * plausible brushwork rather than recovering real detail, but next to the
+ * pixel-crisp cloud cutouts the honest alternative (a soft campus) reads as a
+ * defect, so the invented detail is the better trade. A 2x-capped ladder was
+ * tried first and still rendered visibly soft beside the clouds on 1x
+ * desktops, which is what pushed the ceiling to the full 4x.
  *
  * The twelve clouds are 224-430px cutouts rendered at up to 1.15x, so they are
  * also already at or past 1:1 on every screen. One derivative each, at the
@@ -91,7 +95,7 @@ const BRAND_OUT = join(ROOT, 'public', 'brand')
  * `src/lib/images.ts` and with the preload `imagesrcset` in `index.html`.**
  * The script prints both strings at the end of a run so a drift is visible.
  */
-const CAMPUS_WIDTHS = [640, 960, 1280, 1672, 2508, 3344]
+const CAMPUS_WIDTHS = [640, 960, 1280, 1672, 2508, 3344, 5016, 6688]
 
 /**
  * Widths above this rung are cut from the upscaled master instead of the
@@ -132,7 +136,7 @@ async function emit(pipeline, outPath) {
 
 async function generateCampus() {
   const native = join(ARTWORK, 'campus', 'Campus.png')
-  const upscaled = join(ROOT, 'artwork', 'campus', 'Campus-upscaled-3344.png')
+  const upscaled = join(ROOT, 'artwork', 'campus', 'Campus-upscaled-6688.webp')
   const { width: upscaledWidth } = await sharp(upscaled).metadata()
 
   for (const width of CAMPUS_WIDTHS) {
