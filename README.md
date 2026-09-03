@@ -9,11 +9,11 @@ top third of it — sky, drifting clouds, and the wooded ridgeline on the far si
 campus, but **no buildings**; scrolling tilts the view down through the cloud layers to
 reveal the whole campus, holds for a beat, then scrolls away to the content below.
 
-(At `PAN_START_SCALE = 3` the opening frame is at most image rows 0–0.333, and the hill
-silhouette breaks the horizon at row 0.3039 — so the frame is sky and clouds with the
-hill crests just entering at the bottom on screens at or below 16:9, and all sky on
-wider ones. The first brick is at row 0.4293 and stays far off screen. The guarantee
-the hero keeps is *no buildings*, not *only sky*.)
+(At `PAN_START_SCALE = 3.8` the opening frame is at most image rows 0–0.263, and the
+hill silhouette breaks the horizon at row 0.1413 — so roughly the lower half of the
+frame is bare winter hillside on screens at or below 16:9, less on wider ones. The
+first brick is at row 0.2763 and stays off screen with 12 source pixels to spare. The
+guarantee the hero keeps is *no buildings*, not *only sky*.)
 
 Five public pages live here now: the landing page plus **About us**, **Schedule**,
 **Sponsors** and **Hackathons**, each a separate HTML entry with its own bundle (see
@@ -220,7 +220,7 @@ To replace the artwork:
 2. Rebuild `artwork/campus/Campus-upscaled-6688.webp` (named for the 4x width — rename
    if the new source's width differs) for the new campus illustration: the raw 4x
    Real-ESRGAN (`realesrgan-x4plus`) enlargement, stored as lossless WebP.
-   The hero's start frame magnifies the artwork 3x, and the srcset rungs above the
+   The hero's start frame magnifies the artwork 3.8x, and the srcset rungs above the
    source width are cut from this file — without it `npm run images` fails. Inspect the
    enlargement at 1:1 before committing it: at 4x the model paints plausible brushwork
    rather than recovering detail, and it must still read as the same painting.
@@ -233,12 +233,13 @@ To replace the artwork:
 
 Two numbers in the hero are tied to the specific artwork and will need re-deriving:
 
-- **`PAN_START_SCALE`** in `src/components/Hero.tsx` (currently `3`). The hero shows the
+- **`PAN_START_SCALE`** in `src/components/Hero.tsx` (currently `3.8`). The hero shows the
   top `1/scale` of the image at scroll 0, and **no buildings** may be visible there. In
-  the current illustration the first buildings appear at `0.4293` of the image height, so
-  the start scale must stay above `1 / 0.4293 ≈ 2.33`. Measure where buildings begin in the new
+  the current illustration the first buildings appear at `0.2763` of the image height, so
+  the start scale must stay above `1 / 0.2763 ≈ 3.62`. Measure where buildings begin in the new
   image and set the scale accordingly. Note this is a floor, not a preference — dropping
-  below it puts rooftops on screen before the user has scrolled.
+  below it puts rooftops on screen before the user has scrolled. Keep the `sizes`
+  multiplier in `src/lib/images.ts` (`CAMPUS_SIZES`) equal to the scale.
 - **`object-position`** on the campus `<img>` (currently `49% 0%`). The horizontal value
   keeps the focal point — the Library Tower — centred when narrow viewports crop the
   sides. The vertical `0%` pins the image's top edge and, together with

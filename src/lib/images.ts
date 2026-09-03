@@ -22,7 +22,7 @@ export const CAMPUS_HEIGHT = 941
  * from the illustrated source; the four above it are cut from
  * `artwork/campus/Campus-upscaled-6688.webp`, a 4x Real-ESRGAN enlargement of
  * the illustration (see scripts/generate-images.mjs for why 4x). The hero
- * magnifies the illustration up to 3x, so the start frame is displayed far
+ * magnifies the illustration up to 3.8x, so the start frame is displayed far
  * wider than 1672px on every screen — the upscaled rungs are what keep it from
  * rendering soft next to the pixel-crisp cloud cutouts.
  */
@@ -53,12 +53,14 @@ export const CAMPUS_SRCSET = {
  * sit in the vh branch; only screens wider than 16:9 take `vw`.)
  *
  * The image is fetched while the hero sits at its start frame, where the pan
- * has the content magnified by PAN_START_SCALE = 3 (see Hero.tsx) — so both
- * regimes are written here multiplied by 3: `300vw`, and
- * `300vh x 1672/941 = 533.05vh`. `sizes` has no way to see a transform, so the
+ * has the content magnified by PAN_START_SCALE = 3.8 (see Hero.tsx) — so both
+ * regimes are written here multiplied by 3.8: `380vw`, and
+ * `380vh x 1672/941 = 675.20vh`. `sizes` has no way to see a transform, so the
  * factor is baked into the expression; it is exactly what lets a desktop reach
  * the upscaled rungs — quoting the unmagnified width would leave the browser
- * three rungs down, on the blur the ladder exists to fix.
+ * three rungs down, on the blur the ladder exists to fix. **Keep this factor
+ * equal to PAN_START_SCALE** — the two moved together when the scale rose
+ * from 3 for the current artwork's shorter sky.
  *
  * The two leading `1114px` entries cap small TOUCH screens out of the heavy
  * top rungs. On a phone, `object-cover` discards most of the drawn width (see
@@ -79,7 +81,7 @@ export const CAMPUS_SRCSET = {
  * fetches a different rung than `<picture>` asks for and the image loads twice.
  */
 export const CAMPUS_SIZES =
-  '((pointer: coarse) and (max-width: 767px)) 1114px, ((pointer: coarse) and (max-height: 500px)) 1114px, (min-aspect-ratio: 1672/941) 300vw, 533.05vh'
+  '((pointer: coarse) and (max-width: 767px)) 1114px, ((pointer: coarse) and (max-height: 500px)) 1114px, (min-aspect-ratio: 1672/941) 380vw, 675.20vh'
 
 /**
  * The campus illustration is content, not decoration — it is the reason the
@@ -89,8 +91,8 @@ export const CAMPUS_SIZES =
 export const CAMPUS_ALT =
   'Illustration of the Binghamton University campus under snow, seen from ' +
   'above: red brick academic buildings and dormitories along snow-covered ' +
-  'walkways, the Library Tower at the centre, wooded hills behind, and a ' +
-  'bright blue sky with white clouds overhead.'
+  'walkways, the Library Tower at the centre, bare winter hillsides behind, ' +
+  'and a bright blue sky with white clouds overhead.'
 
 /* -------------------------------------------------------------------------- */
 /* Brand marks                                                                */

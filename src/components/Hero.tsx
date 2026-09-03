@@ -58,20 +58,22 @@ import {
  *     viewport aspect >  1672/941   ->  f1 = aspect_image / aspect_viewport
  *
  * Measured against the source file, the first brick of the dormitory
- * complexes begins at row 404 of 941 = 0.4293 of the image height. (Verified
- * by scanning the PNG for brick-orange pixels: every row above 404 returns
- * none, then the count passes 10 at row 404.)
+ * complexes begins at row 260 of 941 = 0.2763 of the image height. (Verified
+ * by scanning the PNG for brick-orange pixels: every row above 260 returns
+ * none, then the count passes 10 at row 260 and 40 within three rows.)
  *
- * `f1` never exceeds 1, so `f1/S <= 1/S` and S = 3 shows at most the top
- * 1/3 = 0.333 of the image at *every* aspect ratio — sky, clouds and the
- * wooded hills, with 90 source pixels of clearance before the first brick.
- * The binding constraint is 1/S < 0.4293, i.e. S > 2.33 — looser than either
- * previous artwork, so the scale is held at 3 for the composition, not
- * because the floor demands it. Viewports at or below 16:9 — 1440x900 and
- * every portrait screen — have `f1 = 1` and see the full third; wider ones
- * only shrink the band.
+ * `f1` never exceeds 1, so `f1/S <= 1/S` and S = 3.8 shows at most the top
+ * 1/3.8 = 0.263 of the image at *every* aspect ratio — sky, clouds and the
+ * bare winter hillsides, with 12 source pixels of clearance before the first
+ * brick. The binding constraint is 1/S < 0.2763, i.e. **S > 3.62** — this
+ * artwork's sky band is shorter than any before it, which is what pushed the
+ * scale up from the long-standing 3. The cost of the extra magnification is
+ * carried by the 4x-upscaled srcset rungs (see src/lib/images.ts, whose
+ * `sizes` bakes in the same 3.8 factor). Viewports at or below 16:9 —
+ * 1440x900 and every portrait screen — have `f1 = 1` and see the full
+ * 0.263; wider ones only shrink the band.
  */
-const PAN_START_SCALE = 3
+const PAN_START_SCALE = 3.8
 
 /**
  * Total height of the scroll track. The sticky stage is one viewport tall, so
@@ -113,9 +115,9 @@ const PAN_SCROLL_FRACTION = 0.75
  * `translateY` is gone; scale alone drives the pan.
  *
  * The horizontal `49%` is the focal crop: the Library Tower is centred at
- * 0.4940 of the image width (the tallest run of brick-orange pixels in a
+ * 0.4964 of the image width (the tallest run of brick-orange pixels in a
  * column scan), and on a 390x844 viewport cover draws the 16:9 image 1500 CSS
- * px wide and discards ~74% of it, so `center` would leave the tower ~9px
+ * px wide and discards ~74% of it, so `center` would leave the tower ~5px
  * left of centre. It is applied at every width — above `sm` the horizontal
  * crop is small enough that the 1% shift is invisible, and one value is one
  * thing to reason about.

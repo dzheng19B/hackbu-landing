@@ -32,8 +32,8 @@ type Param = { name: string; value: string; note: string }
 const PAN_PARAMS: readonly Param[] = [
   {
     name: 'PAN_START_SCALE',
-    value: '3',
-    note: 'Scale of the illustration at scroll 0, easing to 1 as the pan runs. At 3 the stage shows at most the top third of the image at every aspect ratio — the first rooftops begin at 0.351 of the image height, so the binding constraint is scale > 2.85.',
+    value: '3.8',
+    note: 'Scale of the illustration at scroll 0, easing to 1 as the pan runs. At 3.8 the stage shows at most the top 0.263 of the image at every aspect ratio — the first brick begins at 0.2763 of the image height, so the binding constraint is scale > 3.62.',
   },
   {
     name: 'PAN_SCROLL_FRACTION',
@@ -182,8 +182,8 @@ export function HeroPart() {
           <Caption>
             public/artwork/campus/Campus.png — {CAMPUS_WIDTH}×{CAMPUS_HEIGHT},
             with AVIF and WebP derivatives from 640 up to a 4x-upscaled 6688.
-            This is the frame the pan ends on; it opens at three times this
-            size, showing only the sky, the clouds and the wooded hills.
+            This is the frame the pan ends on; it opens at 3.8 times this
+            size, showing only the sky, the clouds and the bare winter hills.
           </Caption>
         </Block>
 

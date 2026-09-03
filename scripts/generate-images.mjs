@@ -14,7 +14,7 @@
  * Widths
  * ---------------------------------------------------------------------------
  * Campus.png is 1672 x 941, and the hero magnifies the illustration up to
- * 3x — so at the start frame every screen wants far more pixels than the
+ * 3.8x — so at the start frame every screen wants far more pixels than the
  * source has, and a ladder capped at the intrinsic width rendered visibly
  * soft. The rungs above 1672 are therefore cut from
  * `artwork/campus/Campus-upscaled-6688.webp` (lossless), the raw 4x
