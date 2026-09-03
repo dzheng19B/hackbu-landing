@@ -14,19 +14,19 @@
  */
 
 export const CAMPUS_PNG = '/artwork/campus/Campus.png'
-export const CAMPUS_WIDTH = 1672
-export const CAMPUS_HEIGHT = 941
+export const CAMPUS_WIDTH = 1448
+export const CAMPUS_HEIGHT = 1086
 
 /**
- * The derivative ladder. The rungs at and below the intrinsic 1672px are cut
- * from the painted source; the four above it are cut from
- * `artwork/campus/Campus-upscaled-6688.webp`, a 4x Real-ESRGAN enlargement of
- * the painting (see scripts/generate-images.mjs for why 4x). The hero
+ * The derivative ladder. The rungs at and below the intrinsic 1448px are cut
+ * from the illustrated source; the four above it are cut from
+ * `artwork/campus/Campus-upscaled-5792.webp`, a 4x Real-ESRGAN enlargement of
+ * the illustration (see scripts/generate-images.mjs for why 4x). The hero
  * magnifies the illustration up to 3x, so the start frame is displayed far
- * wider than 1672px on every screen — the upscaled rungs are what keep it from
+ * wider than 1448px on every screen — the upscaled rungs are what keep it from
  * rendering soft next to the pixel-crisp cloud cutouts.
  */
-const CAMPUS_WIDTHS = [640, 960, 1280, 1672, 2508, 3344, 5016, 6688] as const
+const CAMPUS_WIDTHS = [640, 960, 1280, 1448, 2172, 2896, 4344, 5792] as const
 
 function campusSrcSet(extension: 'avif' | 'webp'): string {
   return CAMPUS_WIDTHS.map(
@@ -44,36 +44,38 @@ export const CAMPUS_SRCSET = {
  * box. The `<img>` is `object-cover` into a viewport-sized stage, so at scale 1
  * the drawn content is:
  *
- *   viewport aspect >= 1672/941  ->  width-constrained, content width = 100vw
- *   viewport aspect <  1672/941  ->  height-constrained, content width
- *                                    = 100vh x 1672/941 = 177.68vh
+ *   viewport aspect >= 1448/1086 (4:3)  ->  width-constrained, content
+ *                                           width = 100vw
+ *   viewport aspect <  1448/1086        ->  height-constrained, content width
+ *                                           = 100vh x 1448/1086 = 133.33vh
+ *
+ * (The artwork is 4:3 now, so unlike the old 16:9 painting, laptops and
+ * desktops sit in the width-constrained branch and only portrait screens take
+ * the vh one.)
  *
  * The image is fetched while the hero sits at its start frame, where the pan
  * has the content magnified by PAN_START_SCALE = 3 (see Hero.tsx) — so both
  * regimes are written here multiplied by 3: `300vw`, and
- * `300vh x 1672/941 = 533.05vh`. `sizes` has no way to see a transform, so the
- * factor is baked into the expression. When the ladder was capped at the
- * source's 1672px this did not matter — the top rung was selected everywhere
- * either way — but with the upscaled rungs it is exactly what lets a desktop
- * reach them: at 1440x900 the start frame draws the content 533.05vh = ~4797
- * CSS px wide (x DPR), and quoting the unmagnified ~1599px would leave the
- * browser on the 1672 rung the blur came from.
+ * `300vh x 1448/1086 = 400vh`. `sizes` has no way to see a transform, so the
+ * factor is baked into the expression; it is exactly what lets a desktop reach
+ * the upscaled rungs — quoting the unmagnified width would leave the browser
+ * three rungs down, on the blur the ladder exists to fix.
  *
- * The two leading `1114px` entries cap small screens out of the heavy top
- * rungs. On a phone, `object-cover` discards ~74% of the drawn width (see
- * CAMPUS_OBJECT_POSITION in Hero.tsx), so most of a 1.4-2.0 MB rung's bytes
- * would be cropped off screen; 1114px quotes a slot that lands DPR-2 phones on
- * the 2508 rung and DPR-3 phones on 3344 (1114 x 3 = 3342 <= 3344) — the same
- * rung every phone fetched when 3344 was the ceiling. The `max-height` entry
- * is the same cap for landscape phones, which a width test alone misses.
- * Everything larger reads the honest magnified size: a 1x desktop selects
- * 5016, a 2x one 6688.
+ * The two leading `965px` entries cap small screens out of the heavy top
+ * rungs. On a phone, `object-cover` discards most of the drawn width (see
+ * CAMPUS_OBJECT_POSITION in Hero.tsx), so a 1-2 MB rung's bytes would be
+ * mostly cropped off screen; 965px quotes a slot that lands DPR-2 phones on
+ * the 2172 rung and DPR-3 phones on 2896 (965 x 3 = 2895 <= 2896). The
+ * `max-height` entry is the same cap for landscape phones, which a width test
+ * alone misses. Everything larger reads the honest magnified size: 300vw is
+ * past the 4344 rung from a 1449px-wide window upward, so desktops take the
+ * top of the ladder.
  *
  * Must match `imagesizes` on the preload link in index.html, or the preload
  * fetches a different rung than `<picture>` asks for and the image loads twice.
  */
 export const CAMPUS_SIZES =
-  '(max-width: 767px) 1114px, (max-height: 500px) 1114px, (min-aspect-ratio: 1672/941) 300vw, 533.05vh'
+  '(max-width: 767px) 965px, (max-height: 500px) 965px, (min-aspect-ratio: 1448/1086) 300vw, 400vh'
 
 /**
  * The campus illustration is content, not decoration — it is the reason the
@@ -81,9 +83,10 @@ export const CAMPUS_SIZES =
  * rather than an empty alt.
  */
 export const CAMPUS_ALT =
-  'Illustration of the Binghamton University campus under snow: a wooded ' +
-  'ridgeline above red brick academic buildings and dormitories, with the ' +
-  'Library Tower standing at the centre and a pale winter sky overhead.'
+  'Illustration of the Binghamton University campus under snow, seen from ' +
+  'above: red brick academic buildings and dormitories along snow-covered ' +
+  'walkways, the Library Tower at the centre, wooded hills behind, and a ' +
+  'bright blue sky with white clouds overhead.'
 
 /* -------------------------------------------------------------------------- */
 /* Brand marks                                                                */

@@ -52,8 +52,8 @@ const PAN_PARAMS: readonly Param[] = [
   },
   {
     name: 'object-position / transform-origin',
-    value: 'object-[52%_0%] · origin-top',
-    note: 'Pins the drawn content’s top edge to the top of the stage before any transform, so scale alone drives the pan and there is no translate. 52% horizontally is the Library Tower’s centre.',
+    value: 'object-[53%_0%] · origin-top',
+    note: 'Pins the drawn content’s top edge to the top of the stage before any transform, so scale alone drives the pan and there is no translate. 53% horizontally is the Library Tower’s centre.',
   },
 ]
 
@@ -181,9 +181,9 @@ export function HeroPart() {
           </div>
           <Caption>
             public/artwork/campus/Campus.png — {CAMPUS_WIDTH}×{CAMPUS_HEIGHT},
-            with AVIF and WebP derivatives at 640/960/1280/1672. This is the
-            frame the pan ends on; it opens at three times this size, showing
-            only the sky and the ridgeline.
+            with AVIF and WebP derivatives from 640 up to a 4x-upscaled 5792.
+            This is the frame the pan ends on; it opens at three times this
+            size, showing only the sky, the clouds and the wooded hills.
           </Caption>
         </Block>
 

@@ -205,21 +205,21 @@ type CloudLayerSpec = {
  * ---------------------------------------------------------------------------
  * Vertical placement keeps every cloud over sky. At the pan's starting scale of
  * 3 the stage shows image rows 0..f1/3 (see PAN_START_SCALE in Hero.tsx), and
- * the first silhouette pixel of the hills is source row 182 of 941 = 0.1934 of
- * the image height, so **the ridgeline breaks the stage at 58.02% of its
- * height** at every aspect at or below the artwork's 16:9, and lower still on
- * wider ones. 58.02% — not the 60% it is usually quoted at — is the number the
- * placement is checked against.
+ * the first silhouette pixel of the hills is source row 270 of 1086 = 0.2486
+ * of the image height, so **the ridgeline breaks the stage at 74.58% of its
+ * height** at every aspect at or below the artwork's 4:3, and lower still on
+ * wider ones (image row r maps to stage rS/f1, and f1 < 1 only pushes it
+ * down). 74.58% is the number the placement is checked against.
  *
  * At 1440x900 the lowest cloud edge is **43.64%** of the stage height
- * (cloud-9, mid), clearing the ridgeline by 14.38 points; cloud-8 and cloud-1
- * are next at 43.6% and 43.1%. Every cloud clears at every viewport whose stage
- * is at least **650 CSS px tall**, and below 720px wide — where the clouds
- * scale with the viewport — down to a 352px stage. Under that the two tallest
- * cutouts (cloud-11 at 348px rendered, cloud-8 at 338px) do not fit the band:
- * a 405px-tall landscape phone has no sky band to speak of. The six-cloud
- * layout had the same failure below a 522px stage; the threshold moved because
- * the new near cutouts are taller, not because of where they were placed.
+ * (cloud-9, mid), clearing the ridgeline by 30.94 points; cloud-8 and cloud-1
+ * are next at 43.6% and 43.1%. The viewport thresholds below were derived
+ * against the previous artwork's 58.02% band: every cloud cleared at every
+ * viewport whose stage was at least **650 CSS px tall** (352px below 720px
+ * wide, where the clouds scale with the viewport). The current band is 16.56
+ * points deeper, so those thresholds still hold and are now conservative —
+ * the placement was left untouched through the artwork swap precisely because
+ * the sky only grew.
  */
 const CLOUD_LAYERS: CloudLayerSpec[] = [
   {
@@ -508,23 +508,23 @@ const LOOP_END = trackPercent(LEAD_SETS + 1)
  *
  * 1. **Size.** The pan's resting scale is 1 where the animation starts at 3, so
  *    the whole scene is a third of the size it was. The clouds follow the same
- *    camera: `RESTING_SCALE = 1/3`. The sky band is only about 92px tall at
+ *    camera: `RESTING_SCALE = 1/3`. The sky band is about 188px tall at
  *    1440x900 once the header has taken its bite, so at full size the near
- *    clouds — 291px to 348px — could not sit in it at all.
+ *    clouds — 291px to 348px — could not sit in it.
  * 2. **Position.** Each cloud is pinned by its *bottom* edge to a percentage of
  *    the stage height, so the edge that matters — the low one — is placed
  *    directly rather than inferred from a `top` plus a height.
  *
- * Where the band is, measured off Campus.png (1672 x 941) rather than guessed:
- * the first pixel darker than luma 105 — the hill/tree silhouette breaking the
- * horizon — is at source row 181, i.e. **0.1923** of the image height, and the
- * first brick-coloured pixel of the dormitories is at row 240 (**0.2550**),
- * with the roofs proper from row 291 (0.3092). At scale 1 the illustration is
- * `object-cover` into a stage that is narrower than its 16:9, so it is
- * height-constrained and image-height fraction `f` lands at stage `f·H`. Every
- * `restingBottom` above is therefore >= 82% (bottom edge at or above 0.18·H),
- * clearing the ridgeline by at least 1.23% of the stage height — 11.1px at
- * 1440x900, held by cloud-11 — and the first brick by 7.5%.
+ * Where the band is, measured off Campus.png (1448 x 1086) rather than
+ * guessed: the hill silhouette breaks the horizon at source row 270, i.e.
+ * **0.2486** of the image height, and the first brick-coloured pixel of the
+ * dormitories is at row 383 (**0.3527**). At scale 1 the artwork is 4:3, so a
+ * portrait stage is height-constrained and image fraction `f` lands at stage
+ * `f·H`, while a landscape stage is width-constrained and `f` lands *lower*,
+ * at `f·H/f1`. Every `restingBottom` above is >= 82% (bottom edge at or above
+ * 0.18·H), clearing the ridgeline by at least 6.86% of the stage height — the
+ * portrait worst case; at 1440x900 (f1 = 0.8333) the ridge sits at 29.84% and
+ * the clearance is 11.84%, 107px — and the first brick by at least 17.3%.
  *
  * All twelve clouds are placed here, interleaved across the width rather than
  * grouped by layer, so neighbours differ in depth and size: cloud-5, cloud-6,
@@ -559,14 +559,11 @@ const LOOP_END = trackPercent(LEAD_SETS + 1)
  * tops a little way behind it — at 1440x900 the least-visible cloud, cloud-1,
  * still shows 72px of its 99px height below the header.
  *
- * (An earlier version of this calculation assumed a stage narrower than the
- * artwork's 16:9, and noted that a wider viewport ate the sky band from both
- * ends. That was fixed in the pan: the illustration is now pinned by its top edge at every
- * aspect, so at 2545x1080 the resting frame shows image rows 0..0.754 and the
- * ridgeline lands at 25.5% of the stage height instead of 9.2%. Every
- * `restingBottom` above puts its cloud's lower edge in the top 18%, so the
- * clearance over the ridgeline is now larger at ultrawide than it was at 16:9,
- * not smaller.)
+ * (The top-edge pin from the pan is what keeps ultrawide safe here too: at
+ * 2545x1080 (f1 = 0.5659) the resting frame shows image rows 0..0.566 and the
+ * ridgeline lands at 43.9% of the stage height. Every `restingBottom` above
+ * puts its cloud's lower edge in the top 18%, so the clearance over the
+ * ridgeline only grows as the viewport widens.)
  */
 const RESTING_SCALE = 1 / 3
 
