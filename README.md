@@ -10,10 +10,10 @@ campus, but **no buildings**; scrolling tilts the view down through the cloud la
 reveal the whole campus, holds for a beat, then scrolls away to the content below.
 
 (At `PAN_START_SCALE = 3` the opening frame is at most image rows 0–0.333, and the hill
-silhouette breaks the horizon at row 0.2486 — so on portrait screens about a quarter of
-that frame is wooded hills, and on wide screens (where `object-cover` shows less of the
-4:3 image's height) it is nearly all sky. The first brick is at row 0.3527 and stays
-off screen. The guarantee the hero keeps is *no buildings*, not *only sky*.)
+silhouette breaks the horizon at row 0.3039 — so the frame is sky and clouds with the
+hill crests just entering at the bottom on screens at or below 16:9, and all sky on
+wider ones. The first brick is at row 0.4293 and stays far off screen. The guarantee
+the hero keeps is *no buildings*, not *only sky*.)
 
 Five public pages live here now: the landing page plus **About us**, **Schedule**,
 **Sponsors** and **Hackathons**, each a separate HTML entry with its own bundle (see
@@ -203,11 +203,11 @@ site actually ships are in `public/artwork/`.
 
 ```
 artwork/                     read-only originals
-  campus/Campus-upscaled-5792.webp  4x Real-ESRGAN enlargement (lossless) — source
-                                    of the rungs above 1448; never shipped itself
+  campus/Campus-upscaled-6688.webp  4x Real-ESRGAN enlargement (lossless) — source
+                                    of the rungs above 1672; never shipped itself
 public/artwork/
   campus/Campus.png          the campus illustration
-  campus/Campus-{640,960,1280,1448,2172,2896,4344,5792}.{avif,webp}
+  campus/Campus-{640,960,1280,1672,2508,3344,5016,6688}.{avif,webp}
   clouds/cloud-1..12.png     transparent cloud cutouts
   clouds/cloud-1..12.{avif,webp}
 ```
@@ -217,7 +217,7 @@ To replace the artwork:
 1. Drop the new PNGs into `public/artwork/`, keeping the same filenames. The campus
    illustration must stay a single opaque image; the clouds must stay RGBA cutouts with
    real alpha.
-2. Rebuild `artwork/campus/Campus-upscaled-5792.webp` (named for the 4x width — rename
+2. Rebuild `artwork/campus/Campus-upscaled-6688.webp` (named for the 4x width — rename
    if the new source's width differs) for the new campus illustration: the raw 4x
    Real-ESRGAN (`realesrgan-x4plus`) enlargement, stored as lossless WebP.
    The hero's start frame magnifies the artwork 3x, and the srcset rungs above the
@@ -235,11 +235,11 @@ Two numbers in the hero are tied to the specific artwork and will need re-derivi
 
 - **`PAN_START_SCALE`** in `src/components/Hero.tsx` (currently `3`). The hero shows the
   top `1/scale` of the image at scroll 0, and **no buildings** may be visible there. In
-  the current illustration the first buildings appear at `0.3527` of the image height, so
-  the start scale must stay above `1 / 0.3527 ≈ 2.84`. Measure where buildings begin in the new
+  the current illustration the first buildings appear at `0.4293` of the image height, so
+  the start scale must stay above `1 / 0.4293 ≈ 2.33`. Measure where buildings begin in the new
   image and set the scale accordingly. Note this is a floor, not a preference — dropping
   below it puts rooftops on screen before the user has scrolled.
-- **`object-position`** on the campus `<img>` (currently `53% 0%`). The horizontal value
+- **`object-position`** on the campus `<img>` (currently `49% 0%`). The horizontal value
   keeps the focal point — the Library Tower — centred when narrow viewports crop the
   sides. The vertical `0%` pins the image's top edge and, together with
   `transform-origin: top`, is what keeps the framing correct on ultra-wide displays; leave

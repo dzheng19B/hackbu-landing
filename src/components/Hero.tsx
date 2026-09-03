@@ -49,26 +49,27 @@ import {
  * Starting scale of the illustration.
  *
  * The image is rendered `object-cover` into a stage exactly one viewport tall,
- * with its top edge pinned to the top of the stage (see `object-[53%_0%]` and
+ * with its top edge pinned to the top of the stage (see `object-[49%_0%]` and
  * `origin-top` below). Writing `f1` for the fraction of the image's height that
  * `object-cover` leaves visible at scale 1, **the visible band at scale S runs
  * from 0 to f1/S**, and
  *
- *     viewport aspect <= 1448/1086  ->  f1 = 1        (cover is height-bound)
- *     viewport aspect >  1448/1086  ->  f1 = aspect_image / aspect_viewport
+ *     viewport aspect <= 1672/941   ->  f1 = 1        (cover is height-bound)
+ *     viewport aspect >  1672/941   ->  f1 = aspect_image / aspect_viewport
  *
  * Measured against the source file, the first brick of the dormitory
- * complexes begins at row 383 of 1086 = 0.3527 of the image height. (Verified
- * by scanning the PNG for brick-orange pixels: every row above 383 returns
- * none, then the count jumps to 11 at row 383 and past 30 within two rows.)
+ * complexes begins at row 404 of 941 = 0.4293 of the image height. (Verified
+ * by scanning the PNG for brick-orange pixels: every row above 404 returns
+ * none, then the count passes 10 at row 404.)
  *
  * `f1` never exceeds 1, so `f1/S <= 1/S` and S = 3 shows at most the top
  * 1/3 = 0.333 of the image at *every* aspect ratio — sky, clouds and the
- * wooded hills, with 21 source pixels of clearance before the first brick.
- * The binding constraint is 1/S < 0.3527, i.e. S > 2.84. The artwork is 4:3,
- * so landscape viewports are *wider* than it and take the `f1 < 1` branch,
- * which only shrinks the band; portrait viewports have `f1 = 1` and see the
- * full third.
+ * wooded hills, with 90 source pixels of clearance before the first brick.
+ * The binding constraint is 1/S < 0.4293, i.e. S > 2.33 — looser than either
+ * previous artwork, so the scale is held at 3 for the composition, not
+ * because the floor demands it. Viewports at or below 16:9 — 1440x900 and
+ * every portrait screen — have `f1 = 1` and see the full third; wider ones
+ * only shrink the band.
  */
 const PAN_START_SCALE = 3
 
@@ -98,12 +99,11 @@ const PAN_SCROLL_FRACTION = 0.75
  * width-constrained, `C > H`, and the top edge sits above the stage: the
  * visible band at scale 3 becomes `(1-f1)/2 .. (1-f1)/2 + f1/3`, which put
  * rooftops on screen at scroll 0 on wide viewports (measured 0.115..0.372
- * against the previous 16:9 artwork's 0.351 roofline at 1400x600 — and the
- * current 4:3 artwork makes every landscape viewport a wide one).
+ * against an earlier artwork's 0.351 roofline at 1400x600).
  *
  * The fix is to stop compensating and move the two reference points instead:
  *
- *   object-position `53% 0%`   the drawn content's top edge sits on the stage's
+ *   object-position `49% 0%`   the drawn content's top edge sits on the stage's
  *                              top edge before any transform, at every aspect
  *   transform-origin `top`     scaling then grows downward from that edge
  *
@@ -112,27 +112,26 @@ const PAN_SCROLL_FRACTION = 0.75
  * `(1-f1)/2` and is what makes the no-buildings criterion aspect-independent.
  * `translateY` is gone; scale alone drives the pan.
  *
- * The horizontal `53%` is the focal crop: the Library Tower is centred at
- * 0.5276 of the image width (the tallest run of brick-orange pixels in a
- * column scan), and on a 390x844 viewport cover draws the 4:3 image 1125 CSS
- * px wide and discards ~65% of it, so `center` would leave the tower ~31px
- * right of centre. It is applied at every width — above `sm` the horizontal
- * crop is small enough that the 3% shift is invisible, and one value is one
+ * The horizontal `49%` is the focal crop: the Library Tower is centred at
+ * 0.4940 of the image width (the tallest run of brick-orange pixels in a
+ * column scan), and on a 390x844 viewport cover draws the 16:9 image 1500 CSS
+ * px wide and discards ~74% of it, so `center` would leave the tower ~9px
+ * left of centre. It is applied at every width — above `sm` the horizontal
+ * crop is small enough that the 1% shift is invisible, and one value is one
  * thing to reason about.
  *
  * (`origin-top` is `50% 0%`, so the horizontal half of the scale still grows
  * about the stage's centre and the tower stays centred through the whole pan.)
  *
- * The trade this accepts: on viewports wider than 4:3 — which is every
- * landscape screen now that the artwork is 4:3 — the pan's end state shows the
- * top `f1` of the image rather than the middle `f1`. Cover has to crop
- * something at those aspects either way; cropping only the foreground plaza
- * snow, and keeping an exact top pin at every aspect with no viewport
- * measurement, is the better half of that trade. At or below 4:3 — phones in
- * portrait — nothing changes: `f1 = 1`, the band is `0..1/S`, and the pan
+ * The trade this accepts: above 16:9 the pan's end state shows the top `f1`
+ * of the image rather than the middle `f1`. Cover has to crop something at
+ * those aspects either way; cropping only the foreground plaza snow, and
+ * keeping an exact top pin at every aspect with no viewport measurement, is
+ * the better half of that trade. At or below 16:9 — 1440x900 and 390x844
+ * included — nothing changes: `f1 = 1`, the band is `0..1/S`, and the pan
  * still ends on the whole illustration at scale 1.
  */
-const CAMPUS_OBJECT_POSITION = 'object-[53%_0%]'
+const CAMPUS_OBJECT_POSITION = 'object-[49%_0%]'
 
 export function Hero() {
   const trackRef = useRef<HTMLElement>(null)

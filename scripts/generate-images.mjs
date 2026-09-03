@@ -13,14 +13,14 @@
  * ---------------------------------------------------------------------------
  * Widths
  * ---------------------------------------------------------------------------
- * Campus.png is 1448 x 1086, and the hero magnifies the illustration up to
+ * Campus.png is 1672 x 941, and the hero magnifies the illustration up to
  * 3x — so at the start frame every screen wants far more pixels than the
  * source has, and a ladder capped at the intrinsic width rendered visibly
- * soft. The rungs above 1448 are therefore cut from
- * `artwork/campus/Campus-upscaled-5792.webp` (lossless), the raw 4x
+ * soft. The rungs above 1672 are therefore cut from
+ * `artwork/campus/Campus-upscaled-6688.webp` (lossless), the raw 4x
  * Real-ESRGAN (`realesrgan-x4plus`) enlargement of the illustration; the
- * rungs at and below 1448 still come from the true source, where no
- * interpolation is involved at all. **5792 is the ceiling** — the enlarger's
+ * rungs at and below 1672 still come from the true source, where no
+ * interpolation is involved at all. **6688 is the ceiling** — the enlarger's
  * own 4x output, inspected at 1:1 before shipping. At 4x the model is drawing
  * plausible detail rather than recovering real pixels, but the artwork's flat
  * cel-shaded style survives that almost perfectly, and next to the pixel-crisp
@@ -94,13 +94,13 @@ const BRAND_OUT = join(ROOT, 'public', 'brand')
  * `src/lib/images.ts` and with the preload `imagesrcset` in `index.html`.**
  * The script prints both strings at the end of a run so a drift is visible.
  */
-const CAMPUS_WIDTHS = [640, 960, 1280, 1448, 2172, 2896, 4344, 5792]
+const CAMPUS_WIDTHS = [640, 960, 1280, 1672, 2508, 3344, 5016, 6688]
 
 /**
  * Widths above this rung are cut from the upscaled master instead of the
  * source illustration (see the Widths note at the top of the file).
  */
-const CAMPUS_NATIVE_CEILING = 1448
+const CAMPUS_NATIVE_CEILING = 1672
 
 const AVIF = { quality: 68, effort: 6 }
 const CAMPUS_WEBP = { quality: 82, effort: 6 }
@@ -135,7 +135,7 @@ async function emit(pipeline, outPath) {
 
 async function generateCampus() {
   const native = join(ARTWORK, 'campus', 'Campus.png')
-  const upscaled = join(ROOT, 'artwork', 'campus', 'Campus-upscaled-5792.webp')
+  const upscaled = join(ROOT, 'artwork', 'campus', 'Campus-upscaled-6688.webp')
   const { width: upscaledWidth } = await sharp(upscaled).metadata()
 
   for (const width of CAMPUS_WIDTHS) {
