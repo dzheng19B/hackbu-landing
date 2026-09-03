@@ -61,21 +61,27 @@ export const CAMPUS_SRCSET = {
  * the upscaled rungs — quoting the unmagnified width would leave the browser
  * three rungs down, on the blur the ladder exists to fix.
  *
- * The two leading `965px` entries cap small screens out of the heavy top
- * rungs. On a phone, `object-cover` discards most of the drawn width (see
+ * The two leading `965px` entries cap small TOUCH screens out of the heavy
+ * top rungs. On a phone, `object-cover` discards most of the drawn width (see
  * CAMPUS_OBJECT_POSITION in Hero.tsx), so a 1-2 MB rung's bytes would be
  * mostly cropped off screen; 965px quotes a slot that lands DPR-2 phones on
  * the 2172 rung and DPR-3 phones on 2896 (965 x 3 = 2895 <= 2896). The
  * `max-height` entry is the same cap for landscape phones, which a width test
- * alone misses. Everything larger reads the honest magnified size: 300vw is
- * past the 4344 rung from a 1449px-wide window upward, so desktops take the
- * top of the ladder.
+ * alone misses. Both are gated on `(pointer: coarse)` because the dimension
+ * tests alone also catch small *desktop* windows — a 455px-tall embedded
+ * pane was measured taking the landscape-phone cap and rendering the start
+ * frame from a 1280 rung stretched 2x. A desktop window is DPR-1-or-2 and
+ * resizable upward, so it always reads the honest magnified size below: 300vw
+ * is past the 4344 rung from a 1449px-wide window upward, so desktops take
+ * the top of the ladder. (A browser that cannot evaluate `pointer` treats the
+ * condition as false and falls through to the honest entries — the failure
+ * mode is extra bytes, never extra blur.)
  *
  * Must match `imagesizes` on the preload link in index.html, or the preload
  * fetches a different rung than `<picture>` asks for and the image loads twice.
  */
 export const CAMPUS_SIZES =
-  '(max-width: 767px) 965px, (max-height: 500px) 965px, (min-aspect-ratio: 1448/1086) 300vw, 400vh'
+  '((pointer: coarse) and (max-width: 767px)) 965px, ((pointer: coarse) and (max-height: 500px)) 965px, (min-aspect-ratio: 1448/1086) 300vw, 400vh'
 
 /**
  * The campus illustration is content, not decoration — it is the reason the

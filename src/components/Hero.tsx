@@ -161,31 +161,46 @@ export function Hero() {
   )
 
   /**
-   * Is the pan still running? (P5-7 / P2-8 — releasing `will-change`.)
+   * Is the pan actually moving? `will-change` is held ONLY inside the open
+   * interval (0, PAN_SCROLL_FRACTION] — released at rest on both ends.
    *
-   * `scale` stops changing at `PAN_SCROLL_FRACTION` and never moves again for
-   * the remaining 0.25 of the track, but the compositor keeps whatever the hint
+   * The top release (p = 0) is the load-bearing one, and it is about
+   * *sharpness*, not memory (measured live in an 800x455 Chromium pane,
+   * 2026-09-03). With the hint present from the first render, the compositor
+   * rasters the image layer once around hydration — before or as the scale(3)
+   * transform lands — and then, because `will-change` tells it not to
+   * re-raster on transform change, the start frame the reader sees is that
+   * stale raster GPU-stretched 3x: blurry at every srcset rung, and showing a
+   * subtly wrong crop. (Forced screenshots re-raster and hid this; toggling
+   * the hint off live snapped the frame sharp.) With no hint at p = 0 the
+   * browser paints the true scale-3 frame at full raster quality — this is
+   * the frame the page opens on and holds, so it is exactly where quality
+   * matters most. When scrolling starts the promotion arrives with the
+   * current (~3x) transform, so the texture is rastered near its largest
+   * scale and is only ever GPU-*down*scaled as the pan proceeds — supersampled
+   * rather than smeared.
+   *
+   * The bottom release past `PAN_SCROLL_FRACTION` is P5-7 / P2-8, as before:
+   * `scale` stops changing there, but the compositor keeps whatever the hint
    * bought for the life of the document. Measured with CDP `LayerTree` on
-   * GPU-backed Edge (`gpu_compositing=enabled`, ANGLE/D3D11): at track progress
-   * 0.8 the campus `<img>` is still its own layer, still `drawsContent`, still
-   * holding a full-viewport texture — 1425 × 900 × 4 = 5,130,000 B at 1440×900
-   * and 390 × 844 × 4 = 1,316,640 B at 390×844 — with `WillChangeTransform` as
-   * its only compositing reason. Dropping the hint past the pan lets that
-   * texture go; the illustration is then painted by the scrolling layer that
-   * already exists and already draws.
+   * GPU-backed Edge: at track progress 0.8 the campus `<img>` was still its
+   * own layer holding a full-viewport texture (5,130,000 B at 1440x900) with
+   * `WillChangeTransform` as its only compositing reason. Dropping the hint
+   * lets that texture go.
    *
-   * Scrolling back up sets this true again, so the promotion returns before the
-   * pan resumes rather than being a one-way latch. The same shape as
-   * `drifting` in HeroClouds: motion's own `useMotionValueEvent` on the single
-   * `useScroll` value — still no `scroll` listener in `src/` — and the boolean
-   * changes at most twice per traversal, so React bails out of a re-render on
-   * every frame either side of the crossing.
+   * Both directions re-arm when the reader scrolls back into the interval, so
+   * neither release is a one-way latch. The same shape as `drifting` in
+   * HeroClouds: motion's own `useMotionValueEvent` on the single `useScroll`
+   * value — still no `scroll` listener in `src/` — and the boolean changes at
+   * most twice per traversal, so React bails out of a re-render on every
+   * frame either side of a crossing.
    */
-  const [panning, setPanning] = useState(
-    () => progress.get() <= PAN_SCROLL_FRACTION,
-  )
+  const [panning, setPanning] = useState(() => {
+    const p = progress.get()
+    return p > 0 && p <= PAN_SCROLL_FRACTION
+  })
   useMotionValueEvent(progress, 'change', (p) => {
-    setPanning(p <= PAN_SCROLL_FRACTION)
+    setPanning(p > 0 && p <= PAN_SCROLL_FRACTION)
   })
 
   const heroScroll = useMemo<HeroScroll>(
@@ -250,8 +265,10 @@ export function Hero() {
                 decoding="async"
                 fetchPriority="high"
                 // `will-change` only while the scale is actually moving: never
-                // under reduced motion (where it is pinned to 1), and released
-                // past `PAN_SCROLL_FRACTION` — see `panning` above (P5-7).
+                // under reduced motion (where it is pinned to 1), never at
+                // rest at scroll 0 (where the hint made the compositor show a
+                // stale low-res raster of the start frame), and released past
+                // `PAN_SCROLL_FRACTION` — see `panning` above.
                 className={`h-full w-full origin-top ${CAMPUS_OBJECT_POSITION} object-cover select-none ${
                   reducedMotion || !panning ? '' : 'will-change-transform'
                 }`}

@@ -155,10 +155,11 @@ hero magnifies the artwork up to 3x at its start frame, which is why `sizes`
 (`CAMPUS_SIZES` in `src/lib/images.ts`, mirrored by the preload's `imagesizes` in
 `index.html`) quotes the drawn width times 3 for laptop-and-up screens — `300vw` passes
 the 4344 rung from a 1449px-wide window up, so desktops take the top of the ladder.
-Small screens are deliberately capped by the leading `965px` entries (one for portrait
-width, one for landscape height): a phone's `object-cover` crop discards most of the
-drawn width, so the heavy top rungs would be mostly cropped bytes — DPR-2 phones land
-on 2172 and DPR-3 phones on 2896 instead.
+Small touch screens are deliberately capped by the leading `965px` entries (one for
+portrait width, one for landscape height, both gated on `(pointer: coarse)` so short or
+narrow *desktop* windows never take them): a phone's `object-cover` crop discards most
+of the drawn width, so the heavy top rungs would be mostly cropped bytes — DPR-2 phones
+land on 2172 and DPR-3 phones on 2896 instead.
 The clouds render at up to 1.15x their intrinsic width, so they get one derivative each
 and their `<picture>` switches on format only, with no `srcset`.
 
